@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expert Group Project</title>
+    <title>Expert Group Project - MUSE</title>
 
     <!-- LINKED CSS HERE -->
     <link rel="stylesheet" href="style.css">
@@ -11,32 +11,172 @@
 </head>
 <body>
     <header>
-        <nav class = "navbar section-content">
-            <a href="#" class="nav-logo">
-            <h2 class="nav-text">MUSE</h2>
+        <nav class="navbar section-content">
+            <a href="index.html" class="nav-logo">
+                <h2 class="nav-text">MUSE</h2>
             </a>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="#" class="nav-link">Home</a>
+                    <a href="index.html" class="nav-link">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">About</a>
+                    <a href="about.html" class="nav-link">About</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">Dance</a>
+                    <a href="dance.html" class="nav-link">Dance</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">Music</a>
+                    <a href="music.html" class="nav-link">Music</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">Gallery</a>
+                    <a href="gallery.html" class="nav-link">Gallery</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">Profile</a>
+                    <a href="profile.html" class="nav-link">Profile</a>
                 </li>
             </ul>
         </nav>
     </header>
+
+    <!-- MAIN HOME PAGE CONTENT -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content-wrapper section-content">
+                <!-- Left Text Content -->
+                <div class="hero-text">
+                    <h1>Where Art Meets Expression</h1>
+                    <p>Welcome to MUSE. Explore the synergy of dance, rhythm, and visual artistry crafted by our expert group.</p>
+                    <a href="gallery.html" class="cta-btn">Explore Gallery</a>
+                </div>
+
+                <!-- Right 3D Geometric Floating Card (MUSE Styled) -->
+                <div class="hero-card-container">
+                    <div class="relative-card-wrapper">
+                        <!-- Outer Glowing Ring (Pink & Purple) -->
+                        <div class="card-glow-bg"></div>
+
+                        <!-- Main Interactive Glass Card with Tilt Effect -->
+                        <div id="hero-card" class="glass-card tilt-card">
+                            <!-- Card Header (Mac Window Style dots) -->
+                            <div class="card-top-bar">
+                                <div class="window-dots">
+                                    <span class="dot rose"></span>
+                                    <span class="dot purple"></span>
+                                    <span class="dot pink"></span>
+                                </div>
+                                <span class="card-version">MUSE.v1.0</span>
+                            </div>
+
+                            <!-- Central Abstract Shape / Illustration -->
+                            <div class="card-center-art">
+                                <div class="art-icon-box">
+                                    <span class="art-emoji">✨</span>
+                                </div>
+                                <div class="floating-badge">
+                                    Artistic Collective
+                                </div>
+                            </div>
+
+                            <!-- Card Footer Category Badges -->
+                            <div class="card-footer-tags">
+                                <div class="tags-title">Core Disciplines</div>
+                                <div class="tags-flex">
+                                    <span class="tag pink-tag">Dance</span>
+                                    <span class="tag purple-tag">Music</span>
+                                    <span class="tag pink-tag">Gallery</span>
+                                    <span class="tag purple-tag">Profile</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Highlights Section with Interactive Floating Glass Cards -->
+        <section class="highlights section-content">
+            <h2>Discover Our Craft</h2>
+            <div class="card-grid">
+                
+                <!-- Dance Card -->
+                <div class="tilt-card-wrapper">
+                    <div class="card-glow-bg"></div>
+                    <div class="glass-card tilt-card">
+                        <div class="card-top-bar">
+                            <div class="window-dots">
+                                <span class="dot rose"></span>
+                                <span class="dot purple"></span>
+                                <span class="dot pink"></span>
+                            </div>
+                            <span class="card-version">01 // ART</span>
+                        </div>
+                        <div class="card-center-art">
+                            <div class="art-icon-box">
+                                <span class="art-emoji">💃</span>
+                            </div>
+                        </div>
+                        <div class="card-content-area">
+                            <h3>Dance</h3>
+                            <p>Dynamic movement, choreography, and performance arts brought to life.</p>
+                            <a href="dance.html" class="card-link">Learn More &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Music Card -->
+                <div class="tilt-card-wrapper">
+                    <div class="card-glow-bg"></div>
+                    <div class="glass-card tilt-card">
+                        <div class="card-top-bar">
+                            <div class="window-dots">
+                                <span class="dot rose"></span>
+                                <span class="dot purple"></span>
+                                <span class="dot pink"></span>
+                            </div>
+                            <span class="card-version">02 // AUDIO</span>
+                        </div>
+                        <div class="card-center-art">
+                            <div class="art-icon-box">
+                                <span class="art-emoji">🎵</span>
+                            </div>
+                        </div>
+                        <div class="card-content-area">
+                            <h3>Music</h3>
+                            <p>Original compositions, soundtracks, and immersive acoustic audio.</p>
+                            <a href="music.html" class="card-link">Learn More &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gallery Card -->
+                <div class="tilt-card-wrapper">
+                    <div class="card-glow-bg"></div>
+                    <div class="glass-card tilt-card">
+                        <div class="card-top-bar">
+                            <div class="window-dots">
+                                <span class="dot rose"></span>
+                                <span class="dot purple"></span>
+                                <span class="dot pink"></span>
+                            </div>
+                            <span class="card-version">03 // VISUAL</span>
+                        </div>
+                        <div class="card-center-art">
+                            <div class="art-icon-box">
+                                <span class="art-emoji">🖼️</span>
+                            </div>
+                        </div>
+                        <div class="card-content-area">
+                            <h3>Gallery</h3>
+                            <p>Visual captures, creative moments, and stunning exhibition pieces.</p>
+                            <a href="gallery.html" class="card-link">Learn More &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
 
     <!-- LINKED JAVASCRIPT HERE -->
     <script src="script.js"></script>

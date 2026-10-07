@@ -9,12 +9,15 @@
 }
 
 :root {
-    /* Colours */
+    /* Colours - Richer Purple & Pastel Accents */
     --white-color: #fff;
-    --black-color: #000;
-    --dark-color: #252525;
-    --light-pink-color: #faf4f5;
-    --medium-gray-color: #ccc;
+    --black-color: #08050c;
+    --dark-card-color: #130e1a;
+    --pastel-pink: #ffb7c5;
+    --pastel-purple: #c084fc;
+    --deep-purple: #4c1d95;
+    --light-pink-color: #2b1f28;
+    --medium-gray-color: #a78bfa;
 
     /* Font Sizes */
     --font-size-s: 0.9rem;
@@ -22,7 +25,7 @@
     --font-size-m: 1.12rem;
     --font-size-l: 1.5rem;
     --font-size-xl: 2rem;
-    --font-size-xxl: 2.3rem;
+    --font-size-xxl: 3rem;
 
     /* Font Weight */
     --font-weight-normal: 400;
@@ -31,7 +34,7 @@
     --font-weight-bold: 700;
 
     /* Border Radius */
-    --border-radius-s: 8px;
+    --border-radius-s: 16px;
     --border-radius-m: 30px;
     --border-radius-circle: 50%;
 
@@ -40,6 +43,11 @@
 }
 
 /* Stylings for the whole website */
+body {
+    background-color: var(--black-color);
+    color: var(--white-color);
+    overflow-x: hidden;
+}
 
 ul {
     list-style: none;
@@ -59,39 +67,504 @@ img {
     width: 100%;
 }
 
-/* Navbar Styling*/
+.section-content {
+    max-width: var(--site-max-width);
+    margin: 0 auto;
+}
 
+/* Navbar Styling with Animation */
 header {
-    background: var(--black-color);
+    background: rgba(8, 5, 12, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(192, 132, 252, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 header .navbar {
     display: flex;
-    padding: 20px;
+    padding: 20px 40px;
     align-items: center;
     justify-content: space-between;
 }
 
 .navbar .nav-logo .nav-text {
-    color: var(--white-color);
+    color: var(--pastel-pink);
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-semi-bold);
+    letter-spacing: 3px;
+    transition: text-shadow 0.3s ease;
+}
+
+.navbar .nav-logo .nav-text:hover {
+    text-shadow: 0 0 15px var(--pastel-purple);
 }
 
 .navbar .nav-menu {
     display: flex;
-    gap: 10px;
+    gap: 15px;
 }
 
 .navbar .nav-menu .nav-link {
-    padding: 10px 18px;
+    padding: 8px 16px;
     color: var(--white-color);
     font-size: var(--font-size-m);
     border-radius: var(--border-radius-m);
-    transition: 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .navbar .nav-menu .nav-link:hover {
-    color: var(--medium-gray-color);
-    background: var(--light-pink-color);
+    color: var(--black-color);
+    background: var(--pastel-purple);
+    box-shadow: 0 0 20px rgba(192, 132, 252, 0.4);
 }
+
+/* Hero Section with Expanded Purple Glow & Float Animation */
+.hero {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 20px;
+    /* Expanded and richer purple gradient spread */
+    background: radial-gradient(circle at 50% 40%, rgba(76, 29, 149, 0.45) 0%, rgba(139, 92, 246, 0.2) 40%, var(--black-color) 80%);
+    position: relative;
+}
+
+/* Decorative background glowing light orb */
+.hero::before {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: var(--pastel-purple);
+    filter: blur(140px);
+    opacity: 0.15;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.hero-content {
+    max-width: 800px;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 1s ease-out;
+}
+
+.hero h1 {
+    font-size: var(--font-size-xxl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, var(--pastel-pink), var(--pastel-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+}
+
+.hero p {
+    font-size: var(--font-size-m);
+    color: #d1d5db;
+    margin-bottom: 35px;
+    line-height: 1.6;
+    animation: fadeInUp 1.2s ease-out;
+}
+
+/* Glowing Pulse CTA Button */
+.cta-btn {
+    display: inline-block;
+    padding: 14px 35px;
+    background: linear-gradient(135deg, var(--pastel-pink), var(--pastel-purple));
+    color: var(--black-color);
+    font-weight: var(--font-weight-bold);
+    border-radius: var(--border-radius-m);
+    transition: all 0.3s ease;
+    animation: fadeInUp 1.4s ease-out, pulseGlow 3s infinite;
+}
+
+.cta-btn:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 0 30px rgba(192, 132, 252, 0.6);
+}
+
+/* Highlights Section */
+.highlights {
+    padding: 100px 20px;
+    position: relative;
+}
+
+.highlights h2 {
+    text-align: center;
+    font-size: var(--font-size-xl);
+    margin-bottom: 50px;
+    color: var(--white-color);
+    letter-spacing: 1px;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+/* Interactive Card Styling with Smooth Hover Glow */
+.card {
+    background: var(--dark-card-color);
+    border: 1px solid rgba(192, 132, 252, 0.2);
+    padding: 40px 30px;
+    border-radius: var(--border-radius-s);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(192, 132, 252, 0.1), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    border-color: var(--pastel-purple);
+    box-shadow: 0 10px 30px rgba(76, 29, 149, 0.3);
+}
+
+.card:hover::after {
+    opacity: 1;
+}
+
+.card h3 {
+    font-size: var(--font-size-l);
+    color: var(--pastel-pink);
+    margin-bottom: 15px;
+}
+
+.card p {
+    color: #9ca3af;
+    font-size: var(--font-size-s);
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.card-link {
+    color: var(--pastel-purple);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-s);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: gap 0.3s ease, color 0.3s ease;
+}
+
+.card-link:hover {
+    color: var(--pastel-pink);
+    gap: 10px;
+}
+
+/* --- KEYFRAME ANIMATIONS --- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(192, 132, 252, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(192, 132, 252, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(192, 132, 252, 0);
+    }
+}
+
+/* --- HERO TWO-COLUMN & FLOATING CARD STYLING --- */
+
+.hero-content-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 50px;
+    width: 100%;
+    padding: 0 40px;
+}
+
+.hero-text {
+    flex: 1;
+    text-align: left;
+}
+
+.hero-card-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.relative-card-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+    aspect-ratio: 1;
+}
+
+/* Outer Glowing Background Aura */
+.card-glow-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(255, 183, 197, 0.3), rgba(192, 132, 252, 0.4));
+    filter: blur(30px);
+    animation: pulseGlowCard 4s ease-in-out infinite alternate;
+}
+
+/* Main Glassmorphism Card */
+.glass-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: rgba(19, 14, 26, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(192, 132, 252, 0.25);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease;
+    animation: floatCard 6s ease-in-out infinite;
+}
+
+.glass-card:hover {
+    transform: scale(1.02) translateY(-5px);
+    border-color: var(--pastel-pink);
+}
+
+/* Card Header Dots */
+.card-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.window-dots {
+    display: flex;
+    gap: 8px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.dot.rose { background-color: #ffb7c5; }
+.dot.purple { background-color: #c084fc; }
+.dot.pink { background-color: #e879f9; }
+
+.card-version {
+    font-size: 0.75rem;
+    font-family: monospace;
+    color: #9ca3af;
+}
+
+/* Central Art Box */
+.card-center-art {
+    margin: auto 0;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.art-icon-box {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--pastel-pink), var(--pastel-purple));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 25px rgba(192, 132, 252, 0.4);
+    transform: rotate(6deg);
+    transition: transform 0.4s ease;
+}
+
+.glass-card:hover .art-icon-box {
+    transform: rotate(0deg) scale(1.1);
+}
+
+.art-emoji {
+    font-size: 2rem;
+}
+
+.floating-badge {
+    position: absolute;
+    bottom: 5px;
+    padding: 6px 16px;
+    background: rgba(26, 18, 36, 0.9);
+    border: 1px solid rgba(192, 132, 252, 0.3);
+    border-radius: 30px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--pastel-pink);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Card Footer Badges */
+.card-footer-tags {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tags-title {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+.tags-flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.tag {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-family: monospace;
+    font-weight: 500;
+}
+
+.tag.pink-tag {
+    background: rgba(255, 183, 197, 0.1);
+    color: var(--pastel-pink);
+    border: 1px solid rgba(255, 183, 197, 0.2);
+}
+
+.tag.purple-tag {
+    background: rgba(192, 132, 252, 0.1);
+    color: var(--pastel-purple);
+    border: 1px solid rgba(192, 132, 252, 0.2);
+}
+
+/* Keyframes for Card Floating & Glowing */
+@keyframes floatCard {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes pulseGlowCard {
+    0% {
+        opacity: 0.2;
+        transform: scale(0.95);
+    }
+    100% {
+        opacity: 0.5;
+        transform: scale(1.05);
+    }
+}
+
+/* Responsive behavior for smaller phone screens */
+@media (max-width: 900px) {
+    .hero-content-wrapper {
+        flex-direction: column;
+        text-align: center;
+        padding: 0 20px;
+    }
+    .hero-text {
+        text-align: center;
+    }
+}
+
+/* Highlights & Grid Layout */
+.highlights {
+    padding: 100px 20px;
+}
+
+.highlights h2 {
+    text-align: center;
+    font-size: var(--font-size-xl);
+    margin-bottom: 50px;
+    color: var(--white-color);
+    letter-spacing: 1px;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+}
+
+.tilt-card-wrapper {
+    position: relative;
+    width: 100%;
+    perspective: 1000px; /* Gives 3D depth when tilting */
+}
+
+/* Glass Card styling shared for all cards */
+.glass-card {
+    position: relative;
+    width: 100%;
+    background: rgba(19, 14, 26, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(192, 132, 252, 0.25);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: border-color 0.3s ease;
+    transform-style: preserve-3d;
+}
+
+.glass-card:hover {
+    border-color: var(--pastel-pink);
+}
+
+.card-content-area {
+    margin-top: 15px;
+}
+
+.card-content-area h3 {
+    font-size: var(--font-size-l);
+    color: var(--pastel-pink);
+    margin-bottom: 10px;
+}
+
+.card-content-area p {
+    color: #9ca3af;
+    font-size: var(--font-size-s);
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
