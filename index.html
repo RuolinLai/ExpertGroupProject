@@ -3,182 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expert Group Project - MUSE</title>
-
-    <!-- LINKED CSS HERE -->
+    <title>Expert Group Project</title>
     <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
     <header>
         <nav class="navbar section-content">
-            <a href="index.html" class="nav-logo">
-                <h2 class="nav-text">MUSE</h2>
-            </a>
+            <a href="#" class="nav-logo"><h2 class="nav-text">MUSE</h2></a>
             <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="index.html" class="nav-link">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a href="about.html" class="nav-link">About</a>
-                </li>
-                <li class="nav-item">
-                    <a href="dance.html" class="nav-link">Dance</a>
-                </li>
-                <li class="nav-item">
-                    <a href="music.html" class="nav-link">Music</a>
-                </li>
-                <li class="nav-item">
-                    <a href="gallery.html" class="nav-link">Gallery</a>
-                </li>
-                <li class="nav-item">
-                    <a href="profile.html" class="nav-link">Profile</a>
-                </li>
+                <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">About</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Dance</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Gallery</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Profile</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- MAIN HOME PAGE CONTENT -->
-    <main>
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-content-wrapper section-content">
-                <!-- Left Text Content -->
-                <div class="hero-text">
-                    <h1>Where Art Meets Expression</h1>
-                    <p>Welcome to MUSE. Explore the synergy of dance, rhythm, and visual artistry crafted by our expert group.</p>
-                    <a href="gallery.html" class="cta-btn">Explore Gallery</a>
-                </div>
+    <main class="hero">
+        <!-- Background glow orbs -->
+        <div class="orb orb-pink"></div>
+        <div class="orb orb-purple"></div>
+        <div class="orb orb-blue"></div>
 
-                <!-- Right 3D Geometric Floating Card (MUSE Styled) -->
-                <div class="hero-card-container">
-                    <div class="relative-card-wrapper">
-                        <!-- Outer Glowing Ring (Pink & Purple) -->
-                        <div class="card-glow-bg"></div>
-
-                        <!-- Main Interactive Glass Card with Tilt Effect -->
-                        <div id="hero-card" class="glass-card tilt-card">
-                            <!-- Card Header (Mac Window Style dots) -->
-                            <div class="card-top-bar">
-                                <div class="window-dots">
-                                    <span class="dot rose"></span>
-                                    <span class="dot purple"></span>
-                                    <span class="dot pink"></span>
-                                </div>
-                                <span class="card-version">MUSE.v1.0</span>
-                            </div>
-
-                            <!-- Central Abstract Shape / Illustration -->
-                            <div class="card-center-art">
-                                <div class="art-icon-box">
-                                    <span class="art-emoji">✨</span>
-                                </div>
-                                <div class="floating-badge">
-                                    Artistic Collective
-                                </div>
-                            </div>
-
-                            <!-- Card Footer Category Badges -->
-                            <div class="card-footer-tags">
-                                <div class="tags-title">Core Disciplines</div>
-                                <div class="tags-flex">
-                                    <span class="tag pink-tag">Dance</span>
-                                    <span class="tag purple-tag">Music</span>
-                                    <span class="tag pink-tag">Gallery</span>
-                                    <span class="tag purple-tag">Profile</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <section class="hero-text">
+            <p class="hero-sub">Where movement meets memory</p>
+            <h1 class="hero-title">Feel the <span class="shimmer">rhythm</span>,<br>capture every <span class="shimmer">moment</span></h1>
+            <p class="hero-desc">Step into MUSE: a soft-lit space for dance and the pictures that remember it.</p>
         </section>
 
-        <!-- Highlights Section with Interactive Floating Glass Cards -->
-        <section class="highlights section-content">
-            <h2>Discover Our Craft</h2>
-            <div class="card-grid">
-                
-                <!-- Dance Card -->
-                <div class="tilt-card-wrapper">
-                    <div class="card-glow-bg"></div>
-                    <div class="glass-card tilt-card">
-                        <div class="card-top-bar">
-                            <div class="window-dots">
-                                <span class="dot rose"></span>
-                                <span class="dot purple"></span>
-                                <span class="dot pink"></span>
-                            </div>
-                            <span class="card-version">01 // ART</span>
-                        </div>
-                        <div class="card-center-art">
-                            <div class="art-icon-box">
-                                <span class="art-emoji">💃</span>
-                            </div>
-                        </div>
-                        <div class="card-content-area">
-                            <h3>Dance</h3>
-                            <p>Dynamic movement, choreography, and performance arts brought to life.</p>
-                            <a href="dance.html" class="card-link">Learn More &rarr;</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Music Card -->
-                <div class="tilt-card-wrapper">
-                    <div class="card-glow-bg"></div>
-                    <div class="glass-card tilt-card">
-                        <div class="card-top-bar">
-                            <div class="window-dots">
-                                <span class="dot rose"></span>
-                                <span class="dot purple"></span>
-                                <span class="dot pink"></span>
-                            </div>
-                            <span class="card-version">02 // AUDIO</span>
-                        </div>
-                        <div class="card-center-art">
-                            <div class="art-icon-box">
-                                <span class="art-emoji">🎵</span>
-                            </div>
-                        </div>
-                        <div class="card-content-area">
-                            <h3>Music</h3>
-                            <p>Original compositions, soundtracks, and immersive acoustic audio.</p>
-                            <a href="music.html" class="card-link">Learn More &rarr;</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gallery Card -->
-                <div class="tilt-card-wrapper">
-                    <div class="card-glow-bg"></div>
-                    <div class="glass-card tilt-card">
-                        <div class="card-top-bar">
-                            <div class="window-dots">
-                                <span class="dot rose"></span>
-                                <span class="dot purple"></span>
-                                <span class="dot pink"></span>
-                            </div>
-                            <span class="card-version">03 // VISUAL</span>
-                        </div>
-                        <div class="card-center-art">
-                            <div class="art-icon-box">
-                                <span class="art-emoji">🖼️</span>
-                            </div>
-                        </div>
-                        <div class="card-content-area">
-                            <h3>Gallery</h3>
-                            <p>Visual captures, creative moments, and stunning exhibition pieces.</p>
-                            <a href="gallery.html" class="card-link">Learn More &rarr;</a>
-                        </div>
-                    </div>
-                </div>
-
+        <section class="cards">
+            <!-- Decorations around the cards (purely visual) -->
+            <div class="deco-layer" aria-hidden="true">
+                <span class="deco ring l1" data-depth="30"></span>
+                <span class="deco star l2" data-depth="45">&#10022;</span>
+                <span class="deco dots l3" data-depth="20"></span>
+                <span class="deco diamond l4" data-depth="35"></span>
+                <span class="deco orbit l5" data-depth="25"></span>
+                <span class="deco ring r1" data-depth="30"></span>
+                <span class="deco star r2" data-depth="45">&#10022;</span>
+                <span class="deco dots r3" data-depth="20"></span>
+                <span class="deco diamond r4" data-depth="35"></span>
+                <span class="deco orbit r5" data-depth="25"></span>
+            </div>
+            <div class="card-float f1">
+                <a href="#" class="glass-card" data-card>
+                    <span class="card-icon">&#10043;</span>
+                    <h3>Dance</h3>
+                    <p>Styles, routines and performances in motion.</p>
+                    <span class="card-cta">Start moving</span>
+                </a>
+            </div>
+            <div class="card-float f2">
+                <a href="#" class="glass-card" data-card>
+                    <span class="card-icon">&#10048;</span>
+                    <h3>Gallery</h3>
+                    <p>Moments from every stage, frame by frame.</p>
+                    <span class="card-cta">Browse photos</span>
+                </a>
             </div>
         </section>
     </main>
 
-    <!-- LINKED JAVASCRIPT HERE -->
+    <div class="page-sections">
+
+        <!-- ============ FEATURES: SCREENSHOTS ============ -->
+        <section class="block" id="features">
+            <div class="block-head reveal">
+                <h2>Features <span class="shimmer">at a glance</span></h2>
+                <p>Screenshots of what you can do in MUSE.</p>
+            </div>
+
+            <div class="shots">
+                <!-- To add a screenshot: replace the <div class="media-slot">...</div> with
+                     <img src="images/your-file.png" alt="Describe the screen"> -->
+                <figure class="shot big reveal">
+                    <div class="shot-bar"><i></i><i></i><i></i></div>
+                    <div class="media-slot"><span>Feature screenshot 1</span></div>
+                    <figcaption><h4>Feature title</h4><p>One short line about what this screen does.</p></figcaption>
+                </figure>
+                <figure class="shot reveal d1">
+                    <div class="shot-bar"><i></i><i></i><i></i></div>
+                    <div class="media-slot"><span>Feature screenshot 2</span></div>
+                    <figcaption><h4>Feature title</h4><p>One short line about what this screen does.</p></figcaption>
+                </figure>
+                <figure class="shot reveal d2">
+                    <div class="shot-bar"><i></i><i></i><i></i></div>
+                    <div class="media-slot"><span>Feature screenshot 3</span></div>
+                    <figcaption><h4>Feature title</h4><p>One short line about what this screen does.</p></figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <!-- ============ DEMO VIDEO ============ -->
+        <section class="block" id="demo">
+            <div class="block-head reveal">
+                <h2>See it <span class="shimmer">in action</span></h2>
+                <p>A short walkthrough of the project.</p>
+            </div>
+            <div class="demo reveal">
+                <!-- To add a video: replace the <div class="media-slot">...</div> with
+                     <video src="videos/demo.mp4" controls poster="images/poster.jpg"></video>
+                     or a YouTube <iframe> -->
+                <div class="media-slot video">
+                    <button class="play" aria-label="Play demo video"><span></span></button>
+                    <em>Demo video goes here</em>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ DESCRIPTION ============ -->
+        <section class="block about" id="about-project">
+            <div class="about-text reveal">
+                <h2>About the <span class="shimmer">project</span></h2>
+                <p>Write your project description here: what MUSE is, who it is for and the problem it solves. Two or three short paragraphs work best.</p>
+                <p>Add a second paragraph about how it works or what makes it different.</p>
+            </div>
+            <ul class="points">
+                <li class="reveal d1"><b>01</b><div><h4>Highlight one</h4><p>A short explanation of this point.</p></div></li>
+                <li class="reveal d2"><b>02</b><div><h4>Highlight two</h4><p>A short explanation of this point.</p></div></li>
+                <li class="reveal d3"><b>03</b><div><h4>Highlight three</h4><p>A short explanation of this point.</p></div></li>
+            </ul>
+        </section>
+
+        <!-- ============ REVIEWS / SUCCESS STORIES ============ -->
+        <section class="block reviews" id="reviews">
+            <div class="block-head reveal">
+                <h2>Loved by <span class="shimmer">our community</span></h2>
+                <p>User reviews and success stories.</p>
+            </div>
+            <div class="marquee reveal">
+                <div class="track" id="track">
+                    <!-- To add a review: copy one <article class="review"> block. Replace the avatar-slot with <img src="..."> if you have a photo. -->
+                    <article class="review">
+                        <p>"Write a user review here. A sentence or two about how MUSE helped them."</p>
+                        <footer><div class="avatar-slot">A</div><div><h5>User name</h5><span>Role or story title</span></div></footer>
+                    </article>
+                    <article class="review">
+                        <p>"Another review goes here. Keep it short and specific."</p>
+                        <footer><div class="avatar-slot">B</div><div><h5>User name</h5><span>Role or story title</span></div></footer>
+                    </article>
+                    <article class="review">
+                        <p>"A success story: what changed for them after using MUSE?"</p>
+                        <footer><div class="avatar-slot">C</div><div><h5>User name</h5><span>Role or story title</span></div></footer>
+                    </article>
+                    <article class="review">
+                        <p>"One more review so the loop feels full."</p>
+                        <footer><div class="avatar-slot">D</div><div><h5>User name</h5><span>Role or story title</span></div></footer>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <footer class="site-foot">MUSE &middot; Expert Group Project</footer>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
