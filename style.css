@@ -415,22 +415,3 @@ header {
   .glass-card { width: 100%; max-width: 400px; }
   .deco-layer { display: none; }
 }
-
-.dance-ctrl-btn {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-    padding: 9px 16px;
-    border-radius: 30px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    border: 1px solid rgba(255,255,255,0.18);
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.dance-ctrl-btn:hover, .dance-ctrl-btn.active-btn {
-    background: linear-gradient(90deg, var(--pink, #f8b8d8), var(--purple, #c4b0ff));
-    color: #120e18;
-    border-color: transparent;
-    box-shadow: 0 0 15px rgba(248, 184, 216, 0.4);
-}
