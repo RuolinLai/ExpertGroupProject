@@ -258,3 +258,27 @@ if (canvas) {
     }
     drawWave();
 }
+
+/* Upload your own dance video */
+const uploadInput = document.getElementById('videoUpload');
+const uploadName = document.getElementById('uploadName');
+const uploadZone = document.getElementById('uploadZone');
+let currentVideoURL = null;
+
+function loadUploadedVideo(file) {
+    if (!file || !file.type.startsWith('video/')) {
+        if (uploadName) uploadName.textContent = 'Please choose a video file.';
+        return;
+    }
+    if (currentVideoURL) URL.revokeObjectURL(currentVideoURL);
+    currentVideoURL = URL.createObjectURL(file);
+    video.src = currentVideoURL;      // replaces the <source> element
+    video.load();
+    video.play().catch(() => {});
+    if (uploadName) uploadName.textContent = 'Now learning: ' + file.name;
+}
+
+uploadInput?.addEventListener('change', e => loadUploadedVideo(e.target.files[0]));
+['dragenter', 'dragover'].forEach(t => uploadZone?.addEventListener(t, e => { e.preventDefault(); uploadZone.classList.add('drag'); }));
+['dragleave', 'drop'].forEach(t => uploadZone?.addEventListener(t, e => { e.preventDefault(); uploadZone.classList.remove('drag'); }));
+uploadZone?.addEventListener('drop', e => loadUploadedVideo(e.dataTransfer.files[0]));

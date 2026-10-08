@@ -434,3 +434,70 @@ header {
     border-color: transparent;
     box-shadow: 0 0 15px rgba(248, 184, 216, 0.4);
 }
+
+/* ================= DANCE PAGE: BIG EDITOR + CAMERA LAYOUT ================= */
+
+#dance-page-container > section { max-width: 1400px !important; }
+
+.dance-top { display: grid; grid-template-columns: 1.6fr 1fr; gap: 28px; align-items: stretch; }
+.dance-bottom { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; margin-top: 28px; }
+
+.shot.dance-big {
+  transform: none;                       /* no tilt on the big video panels */
+  display: flex; flex-direction: column;
+  padding: 36px; border-radius: 28px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 0 70px rgba(196,176,255,0.14), 0 25px 60px rgba(0,0,0,0.55);
+}
+.dance-title { font-size: 1.6rem; color: #fff; margin-bottom: 8px; }
+.dance-sub { font-size: 0.95rem; color: rgba(255,255,255,0.65); margin-bottom: 24px; line-height: 1.6; }
+
+.video-frame { border-radius: 20px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 0 40px rgba(248,184,216,0.15); }
+.video-frame video { display: block; width: 100%; max-height: 62vh; min-height: 320px; object-fit: contain; background: #000; transition: transform .3s ease; }
+
+.ctrl-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+
+/* upload */
+.upload-zone {
+  margin-top: 22px; padding: 18px 20px; border-radius: 20px;
+  border: 2px dashed rgba(196,176,255,0.45); background: rgba(255,255,255,0.04);
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  transition: .3s ease;
+}
+.upload-zone.drag { border-color: var(--pink); background: rgba(248,184,216,0.12); transform: scale(1.01); }
+.upload-btn {
+  display: inline-flex; align-items: center; gap: 10px; cursor: pointer;
+  padding: 14px 28px; border-radius: 40px; font-weight: 600; font-size: 1rem; color: #1a1024;
+  background: linear-gradient(90deg, var(--pink), var(--purple)); background-size: 200% 100%;
+  box-shadow: 0 0 24px rgba(248,184,216,0.45); transition: .3s ease;
+  animation: ring 2.6s ease-out infinite;
+}
+.upload-btn:hover { background-position: 100% 0; transform: translateY(-3px); }
+.upload-ico { font-size: 1.3rem; line-height: 1; }
+.upload-name { font-size: 0.88rem; color: rgba(255,255,255,0.65); word-break: break-all; }
+
+/* camera panel */
+.cam-frame {
+  position: relative; flex: 1; min-height: 340px; border-radius: 20px; overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, rgba(196,176,255,0.18), #0a0710 70%);
+  border: 1px solid rgba(255,255,255,0.15); display: grid; place-items: center;
+}
+.cam-frame video, .cam-frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); } /* selfie view */
+.cam-frame:not(.live) video, .cam-frame:not(.live) canvas { display: none; }
+.cam-frame.live { border-color: var(--pink); box-shadow: 0 0 40px rgba(248,184,216,0.3); }
+.cam-placeholder { text-align: center; color: rgba(255,255,255,0.5); }
+.cam-ico { font-size: 3.2rem; color: var(--purple); animation: twinkle 3.5s ease-in-out infinite; }
+.cam-badge {
+  position: absolute; top: 14px; left: 14px; z-index: 2; padding: 5px 12px; border-radius: 20px;
+  font-size: 0.72rem; letter-spacing: 1.5px; font-weight: 600; color: #fff;
+  background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.2);
+}
+.cam-frame.live .cam-badge { color: #1a1024; background: var(--pink); border-color: transparent; }
+.cam-status { margin-top: 14px; font-size: 0.82rem; color: rgba(255,255,255,0.55); line-height: 1.5; }
+.dance-ctrl-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+@media (max-width: 1000px) {
+  .dance-top, .dance-bottom { grid-template-columns: 1fr; }
+  .shot.dance-big { padding: 24px; }
+}
