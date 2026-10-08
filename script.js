@@ -81,3 +81,180 @@ window.addEventListener('mousemove', e => {
     d.style.translate = `${-nx * k}px ${-ny * k}px`;
   });
 });
+
+/* ================= PAGE SWITCHING & DANCE FEATURES ================= */
+const homeContainer = document.getElementById('home-page-container');
+const mainHero = document.querySelector('main.hero');
+const pageSections = document.querySelector('.page-sections');
+const danceContainer = document.getElementById('dance-page-container');
+
+const danceNavLink = document.getElementById('dance-nav-link');
+const danceCardBtn = document.querySelector('.card-float.f1 a');
+const homeNavLinks = document.querySelectorAll('.nav-link:not(#dance-nav-link)');
+const logoLink = document.querySelector('.nav-logo');
+
+// Function to switch to Dance view
+function openDanceView(e) {
+    if (e) e.preventDefault();
+    if (homeContainer) {
+        homeContainer.style.display = 'none';
+    } else {
+        if (mainHero) mainHero.style.display = 'none';
+        if (pageSections) pageSections.style.display = 'none';
+    }
+    if (danceContainer) danceContainer.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Function to switch back to Home view while preserving exact original layout
+function openHomeView(e) {
+    if (e) e.preventDefault();
+    if (danceContainer) danceContainer.style.display = 'none';
+    
+    if (homeContainer) {
+        homeContainer.style.display = '';
+    } else {
+        if (mainHero) mainHero.style.display = '';
+        if (pageSections) pageSections.style.display = '';
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Attach listeners for switching to Dance Page
+danceNavLink?.addEventListener('click', openDanceView);
+danceCardBtn?.addEventListener('click', openDanceView);
+
+// Attach listeners for switching back to Home Page
+homeNavLinks.forEach(link => link.addEventListener('click', openHomeView));
+logoLink?.addEventListener('click', openHomeView);
+
+/* Video Player Controls */
+const video = document.getElementById('danceVideo');
+const slowBtn = document.getElementById('slowBtn');
+const normalBtn = document.getElementById('normalBtn');
+const fastBtn = document.getElementById('fastBtn');
+const mirrorBtn = document.getElementById('mirrorBtn');
+
+document.getElementById('playBtn')?.addEventListener('click', () => video?.play());
+document.getElementById('pauseBtn')?.addEventListener('click', () => video?.pause());
+
+function setRate(rate, btn) {
+    if (video) video.playbackRate = rate;
+    [slowBtn, normalBtn, fastBtn].forEach(b => b?.classList.remove('active-btn'));
+    btn?.classList.add('active-btn');
+}
+
+slowBtn?.addEventListener('click', () => setRate(0.5, slowBtn));
+normalBtn?.addEventListener('click', () => setRate(1.0, normalBtn));
+fastBtn?.addEventListener('click', () => setRate(1.5, fastBtn));
+
+mirrorBtn?.addEventListener('click', () => {
+    if (video) {
+        const isMirrored = video.style.transform === 'scaleX(-1)';
+        video.style.transform = isMirrored ? 'scaleX(1)' : 'scaleX(-1)';
+        mirrorBtn.classList.toggle('active-btn', !isMirrored);
+    }
+});
+
+/* Audio Metronome Logic */
+let audioCtx, timerId, isPlaying = false, bpm = 120, tapTimes = [];
+const bpmRange = document.getElementById('bpmRange');
+const bpmVal = document.getElementById('bpmVal');
+const metroToggleBtn = document.getElementById('metroToggleBtn');
+const beatLight = document.getElementById('beatLight');
+
+bpmRange?.addEventListener('input', (e) => {
+    bpm = e.target.value;
+    if (bpmVal) bpmVal.textContent = bpm;
+});
+
+metroToggleBtn?.addEventListener('click', () => {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    isPlaying = !isPlaying;
+
+    if (isPlaying) {
+        metroToggleBtn.textContent = 'Stop Metronome';
+        metroToggleBtn.classList.add('active-btn');
+        runMetronome();
+    } else {
+        metroToggleBtn.textContent = 'Start Metronome';
+        metroToggleBtn.classList.remove('active-btn');
+        clearTimeout(timerId);
+        if (beatLight) {
+            beatLight.style.background = 'rgba(255,255,255,0.2)';
+            beatLight.style.boxShadow = 'none';
+        }
+    }
+});
+
+function runMetronome() {
+    if (!isPlaying) return;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.08);
+
+    if (beatLight) {
+        beatLight.style.background = 'var(--pink, #f8b8d8)';
+        beatLight.style.boxShadow = '0 0 20px var(--pink, #f8b8d8)';
+    }
+    setTimeout(() => {
+        if (beatLight) {
+            beatLight.style.background = 'rgba(255,255,255,0.2)';
+            beatLight.style.boxShadow = 'none';
+        }
+    }, 100);
+
+    timerId = setTimeout(runMetronome, (60 / bpm) * 1000);
+}
+
+document.getElementById('tapTempoBtn')?.addEventListener('click', () => {
+    const now = Date.now();
+    tapTimes.push(now);
+    if (tapTimes.length > 4) tapTimes.shift();
+
+    if (tapTimes.length > 1) {
+        let diffs = [];
+        for (let i = 1; i < tapTimes.length; i++) diffs.push(tapTimes[i] - tapTimes[i - 1]);
+        const calcBpm = Math.round(60000 / (diffs.reduce((a, b) => a + b) / diffs.length));
+
+        if (calcBpm >= 40 && calcBpm <= 220) {
+            bpm = calcBpm;
+            if (bpmRange) bpmRange.value = bpm;
+            if (bpmVal) bpmVal.textContent = bpm;
+        }
+    }
+});
+
+/* Rhythm Waveform Visualizer */
+const canvas = document.getElementById('rhythmCanvas');
+if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let phase = 0;
+
+    function drawWave() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.strokeStyle = '#f8b8d8';
+        ctx.lineWidth = 2.5;
+
+        const amp = isPlaying ? 22 : 8;
+        for (let x = 0; x < canvas.width; x++) {
+            const y = canvas.height / 2 + Math.sin(x * 0.035 + phase) * amp * Math.cos(x * 0.01);
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        phase += isPlaying ? (bpm / 550) : 0.03;
+        requestAnimationFrame(drawWave);
+    }
+    drawWave();
+}
