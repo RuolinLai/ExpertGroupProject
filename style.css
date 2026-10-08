@@ -3,6 +3,11 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
 
+/*enable smooth scrolling across the page*/
+html {
+    scroll-behavior: smooth;
+}
+
 :root {
   --white-color: #fff; --black-color: #000; --dark-color: #252525;
   --light-pink-color: #faf4f5; --medium-gray-color: #ccc;
@@ -416,21 +421,183 @@ header {
   .deco-layer { display: none; }
 }
 
-.dance-ctrl-btn {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-    padding: 9px 16px;
-    border-radius: 30px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    border: 1px solid rgba(255,255,255,0.18);
-    transition: all 0.3s ease;
-    cursor: pointer;
+/* ================= PROFILE SECTION STYLES ================= */
+
+.profile-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 24px;
 }
 
-.dance-ctrl-btn:hover, .dance-ctrl-btn.active-btn {
-    background: linear-gradient(90deg, var(--pink, #f8b8d8), var(--purple, #c4b0ff));
-    color: #120e18;
-    border-color: transparent;
-    box-shadow: 0 0 15px rgba(248, 184, 216, 0.4);
+.profile-card {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 40px;
+    text-align: center;
+}
+
+.profile-title {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    margin-bottom: 24px;
+}
+
+/* Avatar Styling */
+.avatar-selection-wrapper {
+    margin-bottom: 30px;
+}
+
+.current-avatar-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    border: 3px solid var(--pink);
+    overflow: visible;
+    box-shadow: 0 0 20px rgba(248, 184, 216, 0.4);
+}
+
+.current-avatar-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.avatar-display {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-edit-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 2;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: #1a1024;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    transition: transform 0.2s ease;
+}
+
+.avatar-edit-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Avatar Picker Grid */
+.avatar-picker {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 18px;
+    padding: 16px;
+    margin-top: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.avatar-picker.hidden {
+    display: none;
+}
+
+.picker-instructions {
+    font-size: var(--font-size-s);
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 12px;
+}
+
+.avatar-grid {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.avatar-option, .avatar-option-placeholder {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    object-fit: cover;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.avatar-option-placeholder {
+    background: linear-gradient(135deg, rgba(248,184,216,0.3), rgba(196,176,255,0.3));
+    display: grid;
+    place-items: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: #1a1024;
+}
+
+.avatar-option:hover, .avatar-option-placeholder:hover,
+.avatar-option.selected, .avatar-option-placeholder.selected {
+    border-color: var(--pink);
+    transform: scale(1.08);
+    box-shadow: 0 0 12px var(--pink);
+}
+
+/* Form inputs */
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-size: var(--font-size-s);
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 12px 18px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--white-color);
+    font-size: var(--font-size-m);
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.input-wrapper input:focus {
+    border-color: var(--pink);
+    box-shadow: 0 0 10px rgba(248, 184, 216, 0.3);
+}
+
+.save-btn {
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.save-msg {
+    color: var(--pink);
+    font-size: var(--font-size-s);
+    margin-top: 10px;
+    transition: opacity 0.3s ease;
+}
+
+.save-msg.hidden {
+    opacity: 0;
+    pointer-events: none;
 }

@@ -14,13 +14,13 @@
             <a href="#" class="nav-logo">
                 <h2 class="nav-text">MUSE</h2>
             </a>
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
-                <li class="nav-item"><a href="#" class="nav-link">Profile</a></li>
-                <li class="nav-item"><a href="#dance" id="dance-nav-link" class="nav-link">Features</a></li>
-                <li class="nav-item"><a href="#" class="nav-link">Gallery</a></li>
-                <li class="nav-item"><a href="#" class="nav-link">About Us</a></li>
-            </ul>
+           <ul class="nav-menu">
+    <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
+    <li class="nav-item"><a href="#about-project" class="nav-link">About</a></li>
+    <li class="nav-item"><a href="#demo" class="nav-link">Dance</a></li>
+    <li class="nav-item"><a href="#features" class="nav-link">Gallery</a></li>
+    <li class="nav-item"><a href="#profile" class="nav-link">Profile</a></li>
+</ul>
         </nav>
     </header>
 
@@ -328,6 +328,48 @@
 
     <script src="script.js"></script>
     <script src="video-editor.js"></script>
-</body>
+    
+<!-- ============ PROFILE SECTION ============ -->
+<section class="block profile-section" id="profile">
+    <div class="profile-container glass-card profile-card">
+        <h2 class="profile-title">User <span class="shimmer">Profile</span></h2>
+        
+        <!-- Profile Picture Selection -->
+        <div class="avatar-selection-wrapper">
+            <div class="current-avatar-container">
+                <img id="currentAvatar" src="assets/ip-as-logo-wall.webp" alt="" class="avatar-display">
+                <button type="button" class="avatar-edit-btn" id="changeAvatarBtn" aria-label="Change Avatar">&#9998;</button>
+            </div>
+            
+            <!-- Avatar Selection Modal / Grid -->
+            <div class="avatar-picker hidden" id="avatarPicker">
+                <p class="picker-instructions">Select your profile picture:</p>
+                <div class="avatar-grid">
+                    <img src="assets/ip-as-logo-wall.webp" class="avatar-option selected" data-avatar="assets/ip-as-logo-wall.webp" alt="">
+                    <!-- Additional placeholder slots for IP mascot variations -->
+                    <div class="avatar-option-placeholder" data-avatar-text="M" aria-label="MUSE avatar"></div>
+                    <div class="avatar-option-placeholder" data-avatar-text="A" aria-label="Mascot A avatar"></div>
+                    <div class="avatar-option-placeholder" data-avatar-text="B" aria-label="Mascot B avatar"></div>
+                </div>
+            </div>
+        </div>
 
+        <!-- Username Form -->
+        <form id="profileForm" class="profile-form">
+            <div class="form-group">
+                <label for="usernameInput">Username</label>
+                <div class="input-wrapper">
+                    <input type="text" id="usernameInput" name="username" value="MUSE_Dancer" placeholder="Enter username" required maxlength="25">
+                </div>
+            </div>
+
+            <button type="submit" class="save-btn card-cta">Save Changes</button>
+            <p id="profileSaveMsg" class="save-msg hidden">Profile updated successfully!</p>
+        </form>
+    </div>
+</section>
+
+
+    
+</body>
 </html>
