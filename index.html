@@ -18,7 +18,7 @@
                 <li class="nav-item"><a href="#" class="nav-link">Home</a></li>
                 <li class="nav-item"><a href="#" class="nav-link">Profile</a></li>
                 <li class="nav-item"><a href="#dance" id="dance-nav-link" class="nav-link">Features</a></li>
-                <li class="nav-item"><a href="#" class="nav-link">Gallery</a></li>
+                <li class="nav-item"><a href="#gallery" id="gallery-nav-link" class="nav-link">Gallery</a></li>                
                 <li class="nav-item"><a href="#" class="nav-link">About Us</a></li>
             </ul>
         </nav>
@@ -208,7 +208,7 @@
         <footer class="site-foot">MUSE &middot; Expert Group Project</footer>
     </div>
 
-    <!-- ==================== DANCE STUDIO PAGE ==================== -->
+    <!-- ================= DANCE STUDIO PAGE ==================== -->
     <div id="dance-page-container" style="display: none;">
         <section style="max-width: var(--site-max-width, 1200px); margin: 0 auto; padding: 40px 24px 80px;">
 
@@ -218,7 +218,8 @@
                     style="color: var(--purple, #c4b0ff); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">
                     Where movement meets precision</p>
                 <h1 style="font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 700; margin: 10px 0; color: #fff;">Dance
-                    <span class="shimmer">Studio</span> & Suite</h1>
+                    <span class="shimmer">Studio</span> & Suite
+                </h1>
                 <p style="color: rgba(255,255,255,0.7); max-width: 600px; margin: 0 auto; font-size: 0.95rem;">Analyze
                     performance sync, mirror & edit practice footage, and lock into the beat with the Audio Copilot.</p>
             </div>
@@ -360,7 +361,293 @@
     </div>
 
     <!-- LINKED JAVASCRIPT HERE -->
-    <script src="script.js"></script>
+    <!-- ==================== GALLERY PAGE ==================== -->
+    <div id="gallery-page-container" style="display: none;">
+
+        <section class="gallery-page">
+
+            <!-- Gallery Header -->
+            <div class="gallery-header">
+                <div>
+                    <p class="gallery-eyebrow">Your dance archive</p>
+                    <h1>My <span class="shimmer">Gallery</span></h1>
+                    <p class="gallery-description">
+                        Keep your dance videos organized, track your progress, and revisit every moment.
+                    </p>
+                </div>
+
+                <div class="gallery-stats">
+                    <div class="gallery-stat">
+                        <strong id="videoCount">0</strong>
+                        <span>Videos</span>
+                    </div>
+
+                    <div class="gallery-stat">
+                        <strong id="completedCount">0</strong>
+                        <span>Completed</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gallery Controls -->
+            <div class="gallery-controls">
+
+                <div class="gallery-search">
+                    <span>⌕</span>
+                    <input type="text" id="gallerySearch" placeholder="Search your videos...">
+                </div>
+
+                <div class="gallery-filters">
+                    <button class="gallery-filter active-filter" data-filter="all">
+                        All
+                    </button>
+
+                    <button class="gallery-filter" data-filter="practice">
+                        Practice
+                    </button>
+
+                    <button class="gallery-filter" data-filter="performance">
+                        Performance
+                    </button>
+
+                    <button class="gallery-filter" data-filter="favourite">
+                        Favourites
+                    </button>
+                </div>
+
+                <label for="videoUpload" class="upload-video-btn">
+                    + Add Video
+                </label>
+
+                <input type="file" id="videoUpload" accept="video/*" multiple hidden>
+
+            </div>
+
+            <!-- Video Masonry Gallery -->
+            <div class="video-gallery" id="videoGallery">
+
+                <!-- Video Card 1 -->
+                <article class="video-card" data-category="practice" data-title="Hip Hop Practice">
+
+                    <div class="video-preview">
+                        <video controls>
+                            <source src="your-dance-video.mp4" type="video/mp4">
+                        </video>
+
+                        <button class="favourite-btn" aria-label="Favourite video">
+                            ♡
+                        </button>
+                    </div>
+
+                    <div class="video-info">
+                        <div class="video-title-row">
+                            <h3>Hip Hop Practice</h3>
+                            <span class="video-status status-progress">
+                                In Progress
+                            </span>
+                        </div>
+
+                        <p>Working on my choreography and timing.</p>
+
+                        <div class="video-meta">
+                            <span>Hip Hop</span>
+                            <span>•</span>
+                            <span>Oct 8, 2026</span>
+                        </div>
+
+                        <div class="video-progress">
+                            <div class="progress-label">
+                                <span>Progress</span>
+                                <strong>65%</strong>
+                            </div>
+
+                            <div class="progress-bar">
+                                <span style="width: 65%;"></span>
+                            </div>
+                        </div>
+
+                        <div class="video-actions">
+                            <button class="complete-video">
+                                Mark Complete
+                            </button>
+
+                            <button class="delete-video">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+
+                <!-- Video Card 2 -->
+                <article class="video-card" data-category="performance" data-title="School Performance">
+
+                    <div class="video-preview tall-preview">
+                        <video controls>
+                            <source src="performance-video.mp4" type="video/mp4">
+                        </video>
+
+                        <button class="favourite-btn" aria-label="Favourite video">
+                            ♡
+                        </button>
+                    </div>
+
+                    <div class="video-info">
+                        <div class="video-title-row">
+                            <h3>School Performance</h3>
+                            <span class="video-status status-complete">
+                                Completed
+                            </span>
+                        </div>
+
+                        <p>Final performance recording.</p>
+
+                        <div class="video-meta">
+                            <span>Performance</span>
+                            <span>•</span>
+                            <span>Oct 5, 2026</span>
+                        </div>
+
+                        <div class="video-progress">
+                            <div class="progress-label">
+                                <span>Progress</span>
+                                <strong>100%</strong>
+                            </div>
+
+                            <div class="progress-bar">
+                                <span style="width: 100%;"></span>
+                            </div>
+                        </div>
+
+                        <div class="video-actions">
+                            <button class="complete-video completed">
+                                Completed ✓
+                            </button>
+
+                            <button class="delete-video">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+
+                <!-- Video Card 3 -->
+                <article class="video-card" data-category="practice" data-title="Ballet Practice">
+
+                    <div class="video-preview">
+                        <video controls>
+                            <source src="ballet-practice.mp4" type="video/mp4">
+                        </video>
+
+                        <button class="favourite-btn" aria-label="Favourite video">
+                            ♡
+                        </button>
+                    </div>
+
+                    <div class="video-info">
+                        <div class="video-title-row">
+                            <h3>Ballet Practice</h3>
+                            <span class="video-status status-progress">
+                                In Progress
+                            </span>
+                        </div>
+
+                        <p>Practicing balance, turns and transitions.</p>
+
+                        <div class="video-meta">
+                            <span>Ballet</span>
+                            <span>•</span>
+                            <span>Oct 2, 2026</span>
+                        </div>
+
+                        <div class="video-progress">
+                            <div class="progress-label">
+                                <span>Progress</span>
+                                <strong>40%</strong>
+                            </div>
+
+                            <div class="progress-bar">
+                                <span style="width: 40%;"></span>
+                            </div>
+                        </div>
+
+                        <div class="video-actions">
+                            <button class="complete-video">
+                                Mark Complete
+                            </button>
+
+                            <button class="delete-video">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+
+                <!-- Video Card 4 -->
+                <article class="video-card" data-category="performance" data-title="Dance Showcase">
+
+                    <div class="video-preview wide-preview">
+                        <video controls>
+                            <source src="showcase.mp4" type="video/mp4">
+                        </video>
+
+                        <button class="favourite-btn" aria-label="Favourite video">
+                            ♡
+                        </button>
+                    </div>
+
+                    <div class="video-info">
+                        <div class="video-title-row">
+                            <h3>Dance Showcase</h3>
+                            <span class="video-status status-complete">
+                                Completed
+                            </span>
+                        </div>
+
+                        <p>A full recording from the showcase.</p>
+
+                        <div class="video-meta">
+                            <span>Showcase</span>
+                            <span>•</span>
+                            <span>Sept 28, 2026</span>
+                        </div>
+
+                        <div class="video-progress">
+                            <div class="progress-label">
+                                <span>Progress</span>
+                                <strong>100%</strong>
+                            </div>
+
+                            <div class="progress-bar">
+                                <span style="width: 100%;"></span>
+                            </div>
+                        </div>
+
+                        <div class="video-actions">
+                            <button class="complete-video completed">
+                                Completed ✓
+                            </button>
+
+                            <button class="delete-video">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+
+            <!-- Empty State -->
+            <div class="gallery-empty" id="galleryEmpty">
+                <div class="empty-icon">✦</div>
+                <h2>No videos found</h2>
+                <p>Try another search or add a new dance video.</p>
+            </div>
+
+        </section>
+    </div>
 
     <!-- MEDIAPIPE POSE (camera) -->
     <script type="module">
@@ -463,6 +750,9 @@
             skelBtn.classList.toggle('active-btn', showSkeleton);
         });
     </script>
+
+    <script src="script.js"></script>
+
 </body>
 
 </html>

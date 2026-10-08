@@ -282,3 +282,494 @@ uploadInput?.addEventListener('change', e => loadUploadedVideo(e.target.files[0]
 ['dragenter', 'dragover'].forEach(t => uploadZone?.addEventListener(t, e => { e.preventDefault(); uploadZone.classList.add('drag'); }));
 ['dragleave', 'drop'].forEach(t => uploadZone?.addEventListener(t, e => { e.preventDefault(); uploadZone.classList.remove('drag'); }));
 uploadZone?.addEventListener('drop', e => loadUploadedVideo(e.dataTransfer.files[0]));
+/* =========================================================
+   GALLERY PAGE
+   ========================================================= */
+
+const galleryContainer =
+    document.getElementById('gallery-page-container');
+
+const galleryNavLink =
+    document.getElementById('gallery-nav-link');
+
+const gallerySearch =
+    document.getElementById('gallerySearch');
+
+const galleryFilters =
+    document.querySelectorAll('.gallery-filter');
+
+const videoGallery =
+    document.getElementById('videoGallery');
+
+const videoUpload =
+    document.getElementById('videoUpload');
+
+const galleryEmpty =
+    document.getElementById('galleryEmpty');
+
+const videoCount =
+    document.getElementById('videoCount');
+
+const completedCount =
+    document.getElementById('completedCount');
+
+
+/* =========================================================
+   OPEN GALLERY
+   ========================================================= */
+
+function openGalleryView(e) {
+
+    if (e) e.preventDefault();
+
+    if (mainHero) {
+        mainHero.style.display = 'none';
+    }
+
+    if (pageSections) {
+        pageSections.style.display = 'none';
+    }
+
+    if (danceContainer) {
+        danceContainer.style.display = 'none';
+    }
+
+    if (galleryContainer) {
+        galleryContainer.style.display = 'block';
+    }
+
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+
+    updateGalleryStats();
+}
+
+
+/* =========================================================
+   GALLERY NAVIGATION
+   ========================================================= */
+
+galleryNavLink?.addEventListener(
+    'click',
+    openGalleryView
+);
+
+
+/* Update the existing home navigation links */
+
+homeNavLinks.forEach(link => {
+
+    link.addEventListener('click', function(e) {
+
+        if (this.id === 'gallery-nav-link') {
+            return;
+        }
+
+        if (galleryContainer) {
+            galleryContainer.style.display = 'none';
+        }
+
+        openHomeView(e);
+
+    });
+
+});
+
+
+/* Logo returns home */
+
+logoLink?.addEventListener('click', function(e) {
+
+    if (galleryContainer) {
+        galleryContainer.style.display = 'none';
+    }
+
+    openHomeView(e);
+
+});
+
+
+/* =========================================================
+   GALLERY FILTERS
+   ========================================================= */
+
+let currentGalleryFilter = 'all';
+
+galleryFilters.forEach(filter => {
+
+    filter.addEventListener('click', () => {
+
+        galleryFilters.forEach(btn => {
+            btn.classList.remove('active-filter');
+        });
+
+        filter.classList.add('active-filter');
+
+        currentGalleryFilter =
+            filter.dataset.filter;
+
+        filterGallery();
+
+    });
+
+});
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+gallerySearch?.addEventListener('input', () => {
+    filterGallery();
+});
+
+
+function filterGallery() {
+
+    const searchText =
+        gallerySearch?.value.toLowerCase().trim() || '';
+
+    const cards =
+        document.querySelectorAll('.video-card');
+
+    let visibleCards = 0;
+
+    cards.forEach(card => {
+
+        const category =
+            card.dataset.category || '';
+
+        const title =
+            card.dataset.title?.toLowerCase() || '';
+
+        const description =
+            card.querySelector('.video-info > p')
+                ?.textContent.toLowerCase() || '';
+
+        const matchesSearch =
+            title.includes(searchText) ||
+            description.includes(searchText) ||
+            category.includes(searchText);
+
+        let matchesFilter = true;
+
+        if (currentGalleryFilter !== 'all') {
+
+            if (currentGalleryFilter === 'favourite') {
+
+                matchesFilter =
+                    card.querySelector('.favourite-btn')
+                        ?.classList.contains('is-favourite');
+
+            } else {
+
+                matchesFilter =
+                    category === currentGalleryFilter;
+            }
+        }
+
+        if (matchesSearch && matchesFilter) {
+
+            card.classList.remove('hidden');
+            visibleCards++;
+
+        } else {
+
+            card.classList.add('hidden');
+
+        }
+
+    });
+
+
+    if (galleryEmpty) {
+
+        galleryEmpty.classList.toggle(
+            'visible',
+            visibleCards === 0
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   FAVOURITES
+   ========================================================= */
+
+document.addEventListener('click', e => {
+
+    const favourite =
+        e.target.closest('.favourite-btn');
+
+    if (!favourite) return;
+
+    favourite.classList.toggle('is-favourite');
+
+    if (favourite.classList.contains('is-favourite')) {
+        favourite.textContent = '♥';
+    } else {
+        favourite.textContent = '♡';
+    }
+
+    filterGallery();
+
+});
+
+
+/* =========================================================
+   COMPLETE VIDEO
+   ========================================================= */
+
+document.addEventListener('click', e => {
+
+    const button =
+        e.target.closest('.complete-video');
+
+    if (!button) return;
+
+    const card =
+        button.closest('.video-card');
+
+    if (!card) return;
+
+    const status =
+        card.querySelector('.video-status');
+
+    const progress =
+        card.querySelector('.progress-bar span');
+
+    const percentage =
+        card.querySelector('.progress-label strong');
+
+    if (status) {
+
+        status.textContent = 'Completed';
+
+        status.classList.remove(
+            'status-progress'
+        );
+
+        status.classList.add(
+            'status-complete'
+        );
+
+    }
+
+    if (progress) {
+        progress.style.width = '100%';
+    }
+
+    if (percentage) {
+        percentage.textContent = '100%';
+    }
+
+    button.textContent = 'Completed ✓';
+    button.classList.add('completed');
+
+    updateGalleryStats();
+
+});
+
+
+/* =========================================================
+   DELETE VIDEO
+   ========================================================= */
+
+document.addEventListener('click', e => {
+
+    const button =
+        e.target.closest('.delete-video');
+
+    if (!button) return;
+
+    const card =
+        button.closest('.video-card');
+
+    if (!card) return;
+
+    card.style.opacity = '0';
+    card.style.transform = 'scale(0.95)';
+
+    setTimeout(() => {
+
+        card.remove();
+
+        updateGalleryStats();
+        filterGallery();
+
+    }, 300);
+
+});
+
+
+/* =========================================================
+   VIDEO UPLOAD
+   ========================================================= */
+
+videoUpload?.addEventListener('change', e => {
+
+    const files =
+        Array.from(e.target.files);
+
+    files.forEach(file => {
+
+        if (!file.type.startsWith('video/')) {
+            return;
+        }
+
+        createVideoCard(file);
+
+    });
+
+    videoUpload.value = '';
+
+    updateGalleryStats();
+
+});
+
+
+function createVideoCard(file) {
+
+    const videoURL =
+        URL.createObjectURL(file);
+
+    const card =
+        document.createElement('article');
+
+    card.className = 'video-card';
+
+    card.dataset.category = 'practice';
+
+    card.dataset.title =
+        file.name
+            .replace(/\.[^/.]+$/, '');
+
+    const today =
+        new Date().toLocaleDateString(
+            'en-US',
+            {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            }
+        );
+
+    card.innerHTML = `
+
+        <div class="video-preview">
+
+            <video controls>
+                <source
+                    src="${videoURL}"
+                    type="${file.type}">
+            </video>
+
+            <button
+                class="favourite-btn"
+                aria-label="Favourite video">
+                ♡
+            </button>
+
+        </div>
+
+        <div class="video-info">
+
+            <div class="video-title-row">
+
+                <h3>
+                    ${file.name.replace(/\.[^/.]+$/, '')}
+                </h3>
+
+                <span class="video-status status-progress">
+                    In Progress
+                </span>
+
+            </div>
+
+            <p>
+                Newly added dance video.
+            </p>
+
+            <div class="video-meta">
+
+                <span>Practice</span>
+                <span>•</span>
+                <span>${today}</span>
+
+            </div>
+
+            <div class="video-progress">
+
+                <div class="progress-label">
+
+                    <span>Progress</span>
+                    <strong>0%</strong>
+
+                </div>
+
+                <div class="progress-bar">
+
+                    <span style="width: 0%;"></span>
+
+                </div>
+
+            </div>
+
+            <div class="video-actions">
+
+                <button class="complete-video">
+                    Mark Complete
+                </button>
+
+                <button class="delete-video">
+                    Delete
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    videoGallery.prepend(card);
+
+    filterGallery();
+
+}
+
+
+/* =========================================================
+   GALLERY STATISTICS
+   ========================================================= */
+
+function updateGalleryStats() {
+
+    const cards =
+        document.querySelectorAll(
+            '.video-card'
+        );
+
+    const completed =
+        document.querySelectorAll(
+            '.video-status.status-complete'
+        );
+
+    if (videoCount) {
+        videoCount.textContent =
+            cards.length;
+    }
+
+    if (completedCount) {
+        completedCount.textContent =
+            completed.length;
+    }
+
+}
+
+
+/* Initial count */
+
+updateGalleryStats();
