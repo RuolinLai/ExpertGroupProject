@@ -5,6 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- YouTube needs the page origin as a referrer, otherwise it shows error 153 -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Expert Group Project</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -250,10 +252,28 @@
                     <p class="dance-sub">Slow down tricky footwork, change playback speed, or flip video orientation for mirror practice.</p>
 
 
-                    <div class="video-frame">
-                        <video id="danceVideo" controls>
-                            <source src="your-dance-video.mp4" type="video/mp4">
-                        </video>
+                    <div class="video-frame" id="videoFrame">
+                        <!-- ONLY this layer is flipped by Mirror. The controls below are outside it. -->
+                        <div class="video-stage" id="videoStage">
+                            <video id="danceVideo" playsinline>
+                                <source src="your-dance-video.mp4" type="video/mp4">
+                            </video>
+                            <!-- Shows a YouTube / TikTok / Instagram video when a link is loaded -->
+                            <div class="embed-stage wide" id="embedStage" hidden></div>
+                        </div>
+
+                        <!-- Transparent layer over YouTube so its own (flippable) UI never shows -->
+                        <div class="click-shield" id="clickShield" hidden></div>
+
+                        <!-- Our own controls: never mirrored -->
+                        <div class="player-bar" id="playerBar">
+                            <button type="button" class="pb-btn" id="pbPlay" aria-label="Play">&#9654;</button>
+                            <span class="pb-time" id="pbTime">0:00 / 0:00</span>
+                            <input type="range" class="pb-seek" id="pbSeek" min="0" max="1000" step="1" value="0" aria-label="Seek">
+                            <button type="button" class="pb-btn" id="pbMute" aria-label="Mute">&#128266;</button>
+                            <input type="range" class="pb-vol" id="pbVol" min="0" max="1" step="0.05" value="1" aria-label="Volume">
+                            <button type="button" class="pb-btn" id="pbFull" aria-label="Fullscreen">&#9974;</button>
+                        </div>
                     </div>
 
 
@@ -266,6 +286,13 @@
                         <button id="mirrorBtn" class="dance-ctrl-btn">Mirror Video</button>
                     </div>
 
+
+                    <!-- Paste a link to learn from an online video -->
+                    <form class="link-zone" id="linkForm" novalidate>
+                        <input type="url" id="videoLinkInput" placeholder="Paste a YouTube, TikTok or Instagram link..." autocomplete="off">
+                        <button type="submit" class="dance-ctrl-btn" id="loadLinkBtn">Load Link</button>
+                    </form>
+                    <p class="link-status" id="linkStatus">YouTube: play, pause, seek and speed all work. TikTok &amp; Instagram: use their own player controls; Mirror still works.</p>
 
                     <!-- Upload your own dance video to learn -->
                     <div class="upload-zone" id="uploadZone">
@@ -457,12 +484,12 @@
                 </div>
 
 
-                <label for="videoUpload" class="upload-video-btn">
+                <label for="galleryVideoUpload" class="upload-video-btn">
                     + Add Video
                 </label>
 
 
-                <input type="file" id="videoUpload" accept="video/*" multiple hidden>
+                <input type="file" id="galleryVideoUpload" accept="video/*" multiple hidden>
 
 
             </div>

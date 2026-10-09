@@ -1229,8 +1229,8 @@ header {
 .dance-sub { font-size: 0.95rem; color: rgba(255,255,255,0.65); margin-bottom: 24px; line-height: 1.6; }
 
 
-.video-frame { border-radius: 20px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 0 40px rgba(248,184,216,0.15); }
-.video-frame video { display: block; width: 100%; max-height: 62vh; min-height: 320px; object-fit: contain; background: #000; transition: transform .3s ease; }
+.video-frame { position: relative; border-radius: 20px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 0 40px rgba(248,184,216,0.15); }
+.video-frame video { display: block; width: 100%; max-height: 62vh; min-height: 320px; object-fit: contain; background: #000; }
 
 
 .ctrl-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
@@ -1986,3 +1986,66 @@ header {
 }
 
 
+
+
+/* =========================================================
+   MIRROR-SAFE PLAYER + PLAY FROM A LINK
+   Only .video-stage is flipped; the control bar sits outside it.
+   ========================================================= */
+.video-stage { transition: transform .3s ease; background: #000; }
+
+.embed-stage { width: 100%; background: #000; }
+.embed-stage[hidden] { display: none; }
+.embed-stage.wide { aspect-ratio: 16 / 9; }
+.embed-stage.tall { max-width: 380px; height: 640px; min-height: 460px; max-height: 72vh; margin: 0 auto; }
+.embed-stage iframe { display: block; width: 100%; height: 100%; border: 0; }
+
+.click-shield { position: absolute; left: 0; right: 0; top: 0; bottom: 52px; z-index: 2; cursor: pointer; }
+.click-shield[hidden] { display: none; }
+
+.player-bar {
+  display: flex; align-items: center; gap: 10px;
+  height: 52px; padding: 0 14px; box-sizing: border-box;
+  background: rgba(10, 8, 16, 0.92);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff; position: relative; z-index: 3;
+}
+.player-bar[hidden] { display: none; }
+
+.pb-btn {
+  flex: none; width: 34px; height: 34px; border: 0; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 0.95rem;
+  cursor: pointer; transition: background .2s ease;
+}
+.pb-btn:hover { background: rgba(196, 176, 255, 0.35); }
+.pb-time { flex: none; min-width: 88px; font-size: 0.8rem; font-variant-numeric: tabular-nums; color: rgba(255, 255, 255, 0.8); }
+.pb-seek { flex: 1; min-width: 60px; accent-color: var(--purple, #c4b0ff); cursor: pointer; }
+.pb-vol { flex: none; width: 80px; accent-color: var(--pink, #f8b8d8); cursor: pointer; }
+@media (max-width: 600px) { .pb-vol { display: none; } .pb-time { min-width: 76px; } }
+
+/* Fullscreen is requested on .video-frame (not <video>) so the bar stays visible */
+.video-frame:fullscreen { display: flex; flex-direction: column; border-radius: 0; border: 0; }
+.video-frame:fullscreen .video-stage { flex: 1; min-height: 0; display: flex; }
+.video-frame:fullscreen .video-stage video { max-height: none; height: 100%; flex: 1; }
+.video-frame:fullscreen .embed-stage { flex: 1; aspect-ratio: auto; height: 100%; max-width: none; max-height: none; }
+.video-frame:-webkit-full-screen { display: flex; flex-direction: column; border-radius: 0; border: 0; }
+.video-frame:-webkit-full-screen .video-stage { flex: 1; min-height: 0; display: flex; }
+.video-frame:-webkit-full-screen .video-stage video { max-height: none; height: 100%; flex: 1; }
+.video-frame:-webkit-full-screen .embed-stage { flex: 1; aspect-ratio: auto; height: 100%; max-width: none; max-height: none; }
+
+/* link box */
+.link-zone { display: flex; gap: 8px; margin-top: 20px; }
+.link-zone input {
+  flex: 1; min-width: 0; padding: 12px 18px; border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(0, 0, 0, 0.35);
+  color: #fff; font-size: 0.9rem; outline: none;
+  transition: border-color .3s ease, box-shadow .3s ease;
+}
+.link-zone input::placeholder { color: rgba(255, 255, 255, 0.4); }
+.link-zone input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(196, 176, 255, 0.2); }
+.link-status { margin-top: 10px; font-size: 0.85rem; line-height: 1.5; color: rgba(255, 255, 255, 0.6); }
+.link-status.error { color: #ff9bb3; }
+@media (max-width: 600px) { .link-zone { flex-direction: column; } }
+
+/* disabled transport buttons (TikTok / Instagram can't be controlled from outside) */
+.dance-ctrl-btn:disabled { opacity: .4; cursor: not-allowed; }

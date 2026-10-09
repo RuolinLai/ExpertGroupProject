@@ -142,37 +142,347 @@ homeNavLinks.forEach(link => link.addEventListener('click', openHomeView));
 logoLink?.addEventListener('click', openHomeView);
 
 
-/* Video Player Controls */
+/* =========================================================
+   VIDEO PLAYER: local file, YouTube, TikTok, Instagram
+   Mirror flips ONLY #videoStage. The control bar is outside it,
+   so its buttons and text are never reversed.
+   ========================================================= */
+let mode = 'file';        // 'file' | 'youtube' | 'embed' (TikTok / Instagram)
+let ytPlayer = null;
+let currentRate = 1;
+let mirrored = false;
 const video = document.getElementById('danceVideo');
 const slowBtn = document.getElementById('slowBtn');
 const normalBtn = document.getElementById('normalBtn');
 const fastBtn = document.getElementById('fastBtn');
 const mirrorBtn = document.getElementById('mirrorBtn');
+const videoFrame = document.getElementById('videoFrame');
+const videoStage = document.getElementById('videoStage');
+const embedStage = document.getElementById('embedStage');
+const clickShield = document.getElementById('clickShield');
+const playerBar = document.getElementById('playerBar');
+const pbPlay = document.getElementById('pbPlay');
+const pbTime = document.getElementById('pbTime');
+const pbSeek = document.getElementById('pbSeek');
+const pbMute = document.getElementById('pbMute');
+const pbVol = document.getElementById('pbVol');
+const pbFull = document.getElementById('pbFull');
+const linkForm = document.getElementById('linkForm');
+const linkInput = document.getElementById('videoLinkInput');
+const linkStatus = document.getElementById('linkStatus');
+const LINK_HINT = 'YouTube: play, pause, seek and speed all work. TikTok & Instagram: use their own player controls; Mirror still works.';
+const transportIds = ['playBtn', 'pauseBtn', 'slowBtn', 'normalBtn', 'fastBtn'];
+let pbMuted = false;
+let pbSeeking = false;
+let ytApiPromise = null;
+let savedEmbedSrc = null;
 
-
-document.getElementById('playBtn')?.addEventListener('click', () => video?.play());
-document.getElementById('pauseBtn')?.addEventListener('click', () => video?.pause());
-
+/* ---------- Play / Pause / Speed buttons ---------- */
+document.getElementById('playBtn')?.addEventListener('click', () => {
+    if (mode === 'youtube') ytPlayer?.playVideo(); else video?.play();
+});
+document.getElementById('pauseBtn')?.addEventListener('click', () => {
+    if (mode === 'youtube') ytPlayer?.pauseVideo(); else video?.pause();
+});
 
 function setRate(rate, btn) {
     if (video) video.playbackRate = rate;
+    currentRate = rate;
+    if (mode === 'youtube') ytPlayer?.setPlaybackRate?.(rate);
     [slowBtn, normalBtn, fastBtn].forEach(b => b?.classList.remove('active-btn'));
     btn?.classList.add('active-btn');
 }
-
-
 slowBtn?.addEventListener('click', () => setRate(0.5, slowBtn));
 normalBtn?.addEventListener('click', () => setRate(1.0, normalBtn));
 fastBtn?.addEventListener('click', () => setRate(1.5, fastBtn));
 
-
+/* ---------- Mirror (picture only, never the controls) ---------- */
+function applyMirror() {
+    if (videoStage) videoStage.style.transform = mirrored ? 'scaleX(-1)' : 'scaleX(1)';
+    mirrorBtn?.classList.toggle('active-btn', mirrored);
+}
 mirrorBtn?.addEventListener('click', () => {
-    if (video) {
-        const isMirrored = video.style.transform === 'scaleX(-1)';
-        video.style.transform = isMirrored ? 'scaleX(1)' : 'scaleX(-1)';
-        mirrorBtn.classList.toggle('active-btn', !isMirrored);
+    mirrored = !mirrored;
+    applyMirror();
+});
+
+/* ---------- Our own control bar ---------- */
+function fmtTime(sec) {
+    if (!isFinite(sec) || sec < 0) sec = 0;
+    const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+    return m + ':' + String(s).padStart(2, '0');
+}
+
+function syncPlayerUI() {
+    if (playerBar) playerBar.hidden = (mode === 'embed');
+    if (clickShield) clickShield.hidden = (mode !== 'youtube');
+    updatePlayIcon();
+}
+
+function isPlayingNow() {
+    if (mode === 'youtube') return !!ytPlayer?.getPlayerState && ytPlayer.getPlayerState() === 1;
+    return !!video && !video.paused && !video.ended;
+}
+
+function updatePlayIcon() {
+    if (!pbPlay) return;
+    const playing = isPlayingNow();
+    pbPlay.innerHTML = playing ? '&#10074;&#10074;' : '&#9654;';
+    pbPlay.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+}
+
+function getTimes() {
+    if (mode === 'youtube' && ytPlayer?.getCurrentTime) {
+        return { cur: ytPlayer.getCurrentTime() || 0, dur: ytPlayer.getDuration() || 0 };
+    }
+    return { cur: video?.currentTime || 0, dur: video?.duration || 0 };
+}
+
+function updateProgress() {
+    if (mode === 'embed' || !pbSeek) return;
+    const { cur, dur } = getTimes();
+    if (!pbSeeking) pbSeek.value = dur ? Math.round(cur / dur * 1000) : 0;
+    pbTime.textContent = fmtTime(pbSeeking ? (pbSeek.value / 1000) * dur : cur) + ' / ' + fmtTime(dur);
+    updatePlayIcon();
+}
+
+function togglePlay() {
+    if (mode === 'youtube') {
+        if (isPlayingNow()) ytPlayer?.pauseVideo(); else ytPlayer?.playVideo();
+    } else if (video) {
+        if (video.paused) video.play().catch(() => {}); else video.pause();
+    }
+    setTimeout(updatePlayIcon, 50);
+}
+
+pbPlay?.addEventListener('click', togglePlay);
+clickShield?.addEventListener('click', togglePlay);
+video?.addEventListener('click', togglePlay);
+['play', 'pause', 'ended', 'loadedmetadata', 'timeupdate', 'durationchange']
+    .forEach(ev => video?.addEventListener(ev, updateProgress));
+setInterval(updateProgress, 250);   // YouTube has no time events, so poll
+
+pbSeek?.addEventListener('input', () => { pbSeeking = true; updateProgress(); });
+pbSeek?.addEventListener('change', () => {
+    const { dur } = getTimes();
+    const t = (pbSeek.value / 1000) * dur;
+    if (mode === 'youtube') ytPlayer?.seekTo?.(t, true); else if (video) video.currentTime = t;
+    pbSeeking = false;
+    updateProgress();
+});
+
+function applyVolume() {
+    const v = parseFloat(pbVol.value);
+    if (video) { video.volume = v; video.muted = pbMuted; }
+    if (mode === 'youtube' && ytPlayer?.setVolume) {
+        ytPlayer.setVolume(Math.round(v * 100));
+        if (pbMuted) ytPlayer.mute(); else ytPlayer.unMute();
+    }
+    pbMute.innerHTML = (pbMuted || v === 0) ? '&#128263;' : '&#128266;';
+}
+pbVol?.addEventListener('input', () => { if (parseFloat(pbVol.value) > 0) pbMuted = false; applyVolume(); });
+pbMute?.addEventListener('click', () => { pbMuted = !pbMuted; applyVolume(); });
+
+pbFull?.addEventListener('click', () => {
+    const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+    if (fsEl) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+    const req = videoFrame?.requestFullscreen || videoFrame?.webkitRequestFullscreen;
+    if (req) req.call(videoFrame);
+    else if (video?.webkitEnterFullscreen) video.webkitEnterFullscreen();   // iPhone Safari fallback
+});
+
+/* =========================================================
+   PLAY A VIDEO FROM A YOUTUBE / TIKTOK / INSTAGRAM LINK
+   ========================================================= */
+function setLinkStatus(msg, isError) {
+    if (!linkStatus) return;
+    linkStatus.textContent = msg;
+    linkStatus.classList.toggle('error', !!isError);
+}
+
+function setTransportEnabled(on) {
+    transportIds.forEach(id => { const b = document.getElementById(id); if (b) b.disabled = !on; });
+}
+
+/* Work out which site a link is from and get its video id */
+function parseVideoLink(raw) {
+    let u;
+    try { u = new URL(raw.trim()); }
+    catch { try { u = new URL('https://' + raw.trim()); } catch { return null; } }
+
+    const host = u.hostname.replace(/^(www\.|m\.)/, '');
+    const parts = u.pathname.split('/').filter(Boolean);
+
+    if (host === 'youtu.be' && parts[0]) {
+        return { type: 'youtube', id: parts[0] };
+    }
+    if (host === 'youtube.com' || host === 'youtube-nocookie.com' || host === 'music.youtube.com') {
+        let id = u.searchParams.get('v');
+        if (!id && ['shorts', 'embed', 'live', 'v'].includes(parts[0])) id = parts[1];
+        if (id) return { type: 'youtube', id, vertical: parts[0] === 'shorts' };
+    }
+    if (host.endsWith('tiktok.com')) {
+        const i = parts.indexOf('video');
+        if (i > -1 && /^\d+$/.test(parts[i + 1] || '')) return { type: 'tiktok', id: parts[i + 1] };
+        return { type: 'tiktok-short' };
+    }
+    if (host === 'instagram.com') {
+        const i = parts.findIndex(p => ['p', 'reel', 'reels', 'tv'].includes(p));
+        if (i > -1 && parts[i + 1]) {
+            return { type: 'instagram', id: parts[i + 1], kind: (parts[i] === 'reel' || parts[i] === 'reels') ? 'reel' : 'p' };
+        }
+    }
+    return null;
+}
+
+function destroyEmbed() {
+    if (ytPlayer) { try { ytPlayer.destroy(); } catch (e) { } ytPlayer = null; }
+    if (embedStage) embedStage.innerHTML = '';
+    savedEmbedSrc = null;
+}
+
+function showEmbedMode(newMode, vertical) {
+    mode = newMode;
+    video?.pause();
+    if (video) video.style.display = 'none';
+    embedStage.hidden = false;
+    embedStage.className = 'embed-stage ' + (vertical ? 'tall' : 'wide');
+    setTransportEnabled(newMode === 'youtube');
+    applyMirror();
+    syncPlayerUI();
+}
+
+/* Go back to the normal <video> (used when a file is uploaded) */
+function showFileMode() {
+    if (mode === 'file') return;
+    destroyEmbed();
+    mode = 'file';
+    if (embedStage) embedStage.hidden = true;
+    if (video) video.style.display = '';
+    setTransportEnabled(true);
+    applyMirror();
+    syncPlayerUI();
+    setLinkStatus(LINK_HINT, false);
+}
+
+function loadYouTubeApi() {
+    if (window.YT && window.YT.Player) return Promise.resolve();
+    if (!ytApiPromise) {
+        ytApiPromise = new Promise((resolve, reject) => {
+            const prev = window.onYouTubeIframeAPIReady;
+            window.onYouTubeIframeAPIReady = () => { if (prev) prev(); resolve(); };
+            const s = document.createElement('script');
+            s.src = 'https://www.youtube.com/iframe_api';
+            s.onerror = () => { ytApiPromise = null; reject(new Error('Could not load the YouTube player. Check your connection.')); };
+            document.head.appendChild(s);
+        });
+    }
+    return ytApiPromise;
+}
+
+async function loadYouTube(id, vertical) {
+    await loadYouTubeApi();
+    destroyEmbed();
+    const holder = document.createElement('div');
+    embedStage.appendChild(holder);
+    showEmbedMode('youtube', vertical);
+    ytPlayer = new YT.Player(holder, {
+        videoId: id,
+        // controls:0 hides YouTube's own UI so nothing in it gets mirrored; we use our own bar.
+        playerVars: Object.assign({
+            playsinline: 1, rel: 0,
+            controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, modestbranding: 1
+        }, /^https?:$/.test(location.protocol) ? { origin: location.origin } : {}),
+        events: {
+            onReady: e => {
+                e.target.setPlaybackRate(currentRate);
+                e.target.setVolume(Math.round(pbVol.value * 100));
+                if (pbMuted) e.target.mute();
+            },
+            onStateChange: () => updatePlayIcon(),
+            onError: e => {
+                const code = e && e.data;
+                let msg;
+                if (code === 153) {
+                    msg = location.protocol === 'file:'
+                        ? 'YouTube error 153: this page was opened as a local file (file://), so YouTube can\u2019t verify where it is embedded. Run it from a local server (http://localhost) or upload it to a website, then try again.'
+                        : 'YouTube error 153: YouTube did not receive a valid referrer from this page. Check that no browser extension or Referrer-Policy header is stripping it.';
+                } else if (code === 101 || code === 150) {
+                    msg = 'The owner of this YouTube video has turned off embedding. Try another video.';
+                } else if (code === 100) {
+                    msg = 'This YouTube video was not found or is private.';
+                } else if (code === 2) {
+                    msg = 'That YouTube link has an invalid video id.';
+                } else {
+                    msg = 'This YouTube video can\u2019t be played here (it may be private or embedding is turned off).';
+                }
+                setLinkStatus(msg, true);
+            }
+        }
+    });
+}
+
+function loadIframe(src) {
+    destroyEmbed();
+    const f = document.createElement('iframe');
+    f.src = src;
+    f.title = 'Embedded dance video';
+    f.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture';
+    f.allowFullscreen = true;
+    f.referrerPolicy = 'strict-origin-when-cross-origin';
+    embedStage.appendChild(f);
+    showEmbedMode('embed', true);
+}
+
+linkForm?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const raw = linkInput.value.trim();
+    if (!raw) { setLinkStatus('Paste a YouTube, TikTok or Instagram link first.', true); return; }
+
+    const info = parseVideoLink(raw);
+    if (!info) { setLinkStatus('That link isn\u2019t a YouTube, TikTok or Instagram video link.', true); return; }
+
+    try {
+        if (info.type === 'youtube') {
+            if (!/^[\w-]{11}$/.test(info.id)) { setLinkStatus('That YouTube link looks incomplete.', true); return; }
+            setLinkStatus('Loading YouTube video\u2026', false);
+            await loadYouTube(info.id, info.vertical);
+            setLinkStatus('Now learning from YouTube. ' + LINK_HINT, false);
+        } else if (info.type === 'tiktok') {
+            loadIframe('https://www.tiktok.com/embed/v2/' + info.id);
+            setLinkStatus('Now learning from TikTok. Use the player\u2019s own controls; Mirror still works.', false);
+        } else if (info.type === 'tiktok-short') {
+            setLinkStatus('Short TikTok links (vm.tiktok.com) can\u2019t be read. Open it in your browser and copy the full link that contains /video/.', true);
+        } else if (info.type === 'instagram') {
+            loadIframe('https://www.instagram.com/' + info.kind + '/' + info.id + '/embed');
+            setLinkStatus('Now learning from Instagram. Use the player\u2019s own controls; Mirror still works.', false);
+        }
+    } catch (err) {
+        setLinkStatus(err.message || 'Could not load that video.', true);
     }
 });
+
+/* Leaving the Dance page stops the sound; coming back restores the embed */
+function suspendEmbed() {
+    if (mode === 'youtube') { try { ytPlayer?.pauseVideo(); } catch (e) { } }
+    if (mode === 'embed') {
+        const f = embedStage.querySelector('iframe');
+        if (f && f.src !== 'about:blank') { savedEmbedSrc = f.src; f.src = 'about:blank'; }
+    }
+    if (mode === 'file') video?.pause();
+}
+function resumeEmbed() {
+    if (mode === 'embed' && savedEmbedSrc) {
+        const f = embedStage.querySelector('iframe');
+        if (f) f.src = savedEmbedSrc;
+        savedEmbedSrc = null;
+    }
+}
+document.querySelectorAll('.nav-link:not(#dance-nav-link), .nav-logo').forEach(el => el.addEventListener('click', suspendEmbed));
+danceNavLink?.addEventListener('click', resumeEmbed);
+danceCardBtn?.addEventListener('click', resumeEmbed);
+
+syncPlayerUI();
 
 
 /* Audio Metronome Logic */
@@ -305,6 +615,7 @@ function loadUploadedVideo(file) {
         return;
     }
     if (currentVideoURL) URL.revokeObjectURL(currentVideoURL);
+    showFileMode();                   // leave YouTube/TikTok/Instagram mode if active
     currentVideoURL = URL.createObjectURL(file);
     video.src = currentVideoURL;      // replaces the <source> element
     video.load();
@@ -343,7 +654,7 @@ const videoGallery =
 
 
 const videoUpload =
-    document.getElementById('videoUpload');
+    document.getElementById('galleryVideoUpload');
 
 
 const galleryEmpty =
