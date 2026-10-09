@@ -1998,7 +1998,7 @@ header {
 .pose-overlay { position: absolute; z-index: 1; pointer-events: none; }
 .pose-overlay[hidden] { display: none; }
 
-.embed-stage { width: 100%; background: #000; }
+.embed-stage { width: 100%; background: #000; isolation: isolate; }   /* own stacking context = required by Element Capture */
 .embed-stage[hidden] { display: none; }
 .embed-stage.wide { aspect-ratio: 16 / 9; }
 .embed-stage.tall { max-width: 380px; height: 640px; min-height: 460px; max-height: 72vh; margin: 0 auto; }
@@ -2069,3 +2069,12 @@ header {
 
 /* receives the screen capture; kept off-screen so it never shows or gets captured */
 .cap-video { position: fixed; left: -9999px; top: 0; width: 320px; height: 180px; opacity: 0; pointer-events: none; }
+
+/* Mirror: flip only the picture layers. The container (#embedStage), skeleton-on-link canvas
+   and the control bar are never flipped. The file-skeleton canvas flips together with the <video>. */
+.video-frame video,
+.embed-stage > * { transition: transform .3s ease; }
+.pose-overlay#poseOverlay { transition: transform .3s ease; }
+.video-frame.is-mirrored #danceVideo,
+.video-frame.is-mirrored .embed-stage > *,
+.video-frame.is-mirrored #poseOverlay { transform: scaleX(-1); }

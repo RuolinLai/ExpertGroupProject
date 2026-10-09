@@ -262,6 +262,8 @@
                             <div class="embed-stage wide" id="embedStage" hidden></div>
                             <!-- MediaPipe skeleton drawn over the video (flips together with it) -->
                             <canvas class="pose-overlay" id="poseOverlay" hidden></canvas>
+                            <!-- skeleton drawn over a linked video (YouTube / TikTok / Instagram) -->
+                            <canvas class="pose-overlay" id="poseCapOverlay" hidden></canvas>
                         </div>
 
                         <!-- Transparent layer over YouTube so its own (flippable) UI never shows -->
@@ -292,7 +294,7 @@
 
                     <!-- Skeleton for YouTube / TikTok / Instagram links (screen-capture of this tab) -->
                     <div class="pose-view" id="poseView" hidden>
-                        <div class="pose-view-head">Pose view &middot; skeleton from the linked video</div>
+                        <div class="pose-view-head">Pose view &middot; skeleton from the linked video (older browsers only)</div>
                         <canvas id="poseViewCanvas"></canvas>
                     </div>
                     <video id="capVideo" class="cap-video" autoplay muted playsinline></video>
@@ -784,6 +786,9 @@
         import { PoseLandmarker, FilesetResolver, DrawingUtils }
             from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
 
+        // If this line never runs, the MediaPipe library failed to download (script.js then explains it)
+        window.__museMediaPipeReady = true;
+
 
         const camVideo = document.getElementById('camVideo');
         const camCanvas = document.getElementById('camCanvas');
@@ -905,8 +910,11 @@
         const vpViewCtx = vpViewCanvas.getContext('2d');
         const vpCap = document.getElementById('capVideo');
         const vpEmbedStage = document.getElementById('embedStage');
+        const vpCapOverlay = document.getElementById('poseCapOverlay');
+        const vpCapCtx = vpCapOverlay.getContext('2d');
+        let vpCapKind = 'element';             // 'element' = skeleton on the video, 'region' = separate Pose view
         const VP_HINT = 'Turn on Skeleton to track the dancer in your uploaded video.';
-        const VP_LINK_HINT = 'Skeleton for links: press Skeleton, then in the window your browser shows choose \u201cThis tab\u201d and Share. Keep the player visible on screen. Needs Chrome or Edge on a computer.';
+        const VP_LINK_HINT = 'Skeleton for links: press Skeleton, then in the window your browser shows choose \u201cThis tab\u201d and Share. The skeleton is drawn right on the video. Needs Chrome or Edge 132+ on a computer.';
         const VP_COLORS = [['#c4b0ff', '#f8b8d8'], ['#8fe3d0', '#ffe08a']];   // line / dot colours per person
         let vpLandmarker = null, vpLoading = null;
         let vpOn = false, vpGen = 0, vpMode = 'file';
@@ -1036,32 +1044,53 @@
 
         /* ---------- B) YouTube / TikTok / Instagram: capture the player area of this tab ---------- */
 
+        /* Cover the player (#embedStage) exactly with the skeleton canvas */
+        function vpLayoutCap(cw, ch) {
+            vpCapOverlay.style.left = vpEmbedStage.offsetLeft + 'px';
+            vpCapOverlay.style.top = vpEmbedStage.offsetTop + 'px';
+            vpCapOverlay.style.width = vpEmbedStage.clientWidth + 'px';
+            vpCapOverlay.style.height = vpEmbedStage.clientHeight + 'px';
+            if (vpCapOverlay.width !== cw || vpCapOverlay.height !== ch) { vpCapOverlay.width = cw; vpCapOverlay.height = ch; }
+        }
+
         function vpDetectCap() {
             if (!vpOn || vpSource !== 'capture' || !vpLandmarker) return;
             const w0 = vpCap.videoWidth, h0 = vpCap.videoHeight;
             if (!w0 || !h0 || vpCap.readyState < 2) return;
             const cw = Math.min(w0, 960), ch = Math.round(cw * h0 / w0);
-            if (vpViewCanvas.width !== cw || vpViewCanvas.height !== ch) { vpViewCanvas.width = cw; vpViewCanvas.height = ch; }
-            vpViewCtx.drawImage(vpCap, 0, 0, cw, ch);       // the captured picture...
+            const onVideo = (vpCapKind === 'element');
+            if (!onVideo) {                                  // fallback: show the captured picture in the Pose view
+                if (vpViewCanvas.width !== cw || vpViewCanvas.height !== ch) { vpViewCanvas.width = cw; vpViewCanvas.height = ch; }
+                vpViewCtx.drawImage(vpCap, 0, 0, cw, ch);
+            }
             let res;
             try { res = vpLandmarker.detectForVideo(vpCap, vpNextTs()); }
             catch (err) { vpFail('Could not analyse the captured video: ', err); return; }
-            vpDrawPoses(vpViewCtx, cw, res);                // ...with the skeleton on top
+            if (onVideo) {                                   // skeleton directly on the original player
+                vpLayoutCap(cw, ch);
+                vpCapCtx.clearRect(0, 0, vpCapOverlay.width, vpCapOverlay.height);
+                vpDrawPoses(vpCapCtx, cw, res);
+            } else {
+                vpDrawPoses(vpViewCtx, cw, res);
+            }
             vpReport(res.landmarks.length);
         }
 
         async function vpStartCapture() {
-            const canCapture = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia
-                                  && window.CropTarget && CropTarget.fromElement);
+            const hasElement = !!(window.RestrictionTarget && RestrictionTarget.fromElement);   // Chrome / Edge 132+
+            const hasRegion = !!(window.CropTarget && CropTarget.fromElement);                  // Chrome / Edge 104+
+            const canCapture = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) && (hasElement || hasRegion);
             if (!canCapture) {
                 vpSetStatus('Skeleton for YouTube / TikTok / Instagram links needs Chrome or Edge on a computer (it uses screen capture of this tab). In other browsers, upload the video file instead.', true);
                 return;
             }
             vpBtn.disabled = true;
             vpSetStatus('Choose \u201cThis tab\u201d in the sharing window and press Share...');
-            let stream = null;
+            let stream = null, kind = 'element';
             try {
-                const cropTarget = await CropTarget.fromElement(vpEmbedStage);
+                let elTarget = null, regionTarget = null;
+                if (hasElement) { try { elTarget = await RestrictionTarget.fromElement(vpEmbedStage); } catch (e) { console.warn('Element Capture unavailable', e); } }
+                if (hasRegion) { try { regionTarget = await CropTarget.fromElement(vpEmbedStage); } catch (e) { console.warn('Region Capture unavailable', e); } }
                 stream = await navigator.mediaDevices.getDisplayMedia({
                     video: { frameRate: { ideal: 30 } },
                     audio: false,
@@ -1069,8 +1098,21 @@
                     selfBrowserSurface: 'include'
                 });
                 const track = stream.getVideoTracks()[0];
-                if (!track || typeof track.cropTo !== 'function') throw new Error('Please choose \u201cThis tab\u201d (not a window or the whole screen).');
-                await track.cropTo(cropTarget);              // keep only the player area
+                if (!track || (typeof track.restrictTo !== 'function' && typeof track.cropTo !== 'function')) {
+                    throw new Error('Please choose \u201cThis tab\u201d (not a window or the whole screen).');
+                }
+                let done = false;
+                if (elTarget && typeof track.restrictTo === 'function') {
+                    // Element Capture: only the player's own pixels. Our skeleton canvas lies on top of it
+                    // but is NOT part of the player, so it never ends up in the captured frames.
+                    try { await track.restrictTo(elTarget); done = true; kind = 'element'; }
+                    catch (e) { console.warn('Element Capture failed, falling back to Region Capture', e); }
+                }
+                if (!done) {
+                    if (!regionTarget || typeof track.cropTo !== 'function') throw new Error('This browser cannot isolate the player area.');
+                    await track.cropTo(regionTarget);        // older Chrome: skeleton shown in the Pose view below
+                    kind = 'region';
+                }
                 track.addEventListener('ended', () => { if (vpStream === stream) vpTurnOff(); });   // "Stop sharing" button
             } catch (err) {
                 if (stream) stream.getTracks().forEach(t => t.stop());
@@ -1081,6 +1123,7 @@
                 return;
             }
             vpStream = stream;
+            vpCapKind = kind;
             vpCap.srcObject = stream;
             vpCap.play().catch(() => {});
 
@@ -1099,8 +1142,11 @@
             vpOn = true; vpSource = 'capture';
             vpLastCount = -1;
             vpUpdateBtn();
-            vpView.hidden = false;
-            vpSetStatus('Skeleton on. Press play on the video; keep the player visible on screen.');
+            vpCapOverlay.hidden = (kind !== 'element');
+            vpView.hidden = (kind !== 'region');
+            vpSetStatus(kind === 'element'
+                ? 'Skeleton on. Press play: the skeleton is drawn right on the video.'
+                : 'Skeleton on. Your browser is older than Chrome 132, so the skeleton is shown in the Pose view below (keep the video visible on screen). Update Chrome to draw it on the video itself.');
             vpLoop(++vpGen);
         }
 
@@ -1120,6 +1166,8 @@
             vpGen++;
             vpClear();
             vpOverlay.hidden = true;
+            vpCapCtx.clearRect(0, 0, vpCapOverlay.width, vpCapOverlay.height);
+            vpCapOverlay.hidden = true;
             if (vpStream) { vpStream.getTracks().forEach(t => t.stop()); vpStream = null; }
             vpCap.srcObject = null;
             vpView.hidden = true;
@@ -1129,6 +1177,9 @@
         }
 
         vpBtn.addEventListener('click', () => {
+            console.info('[MUSE skeleton] click | mode:', vpMode, '| on:', vpOn,
+                '| screen capture API:', !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia),
+                '| CropTarget:', !!window.CropTarget);
             if (vpOn) vpTurnOff();
             else if (vpMode === 'file') vpStartFile();
             else vpStartCapture();

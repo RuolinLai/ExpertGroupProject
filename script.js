@@ -144,8 +144,8 @@ logoLink?.addEventListener('click', openHomeView);
 
 /* =========================================================
    VIDEO PLAYER: local file, YouTube, TikTok, Instagram
-   Mirror flips ONLY #videoStage. The control bar is outside it,
-   so its buttons and text are never reversed.
+   Mirror flips only the picture (the <video> / the embedded player).
+   The control bar is outside it, so its buttons and text are never reversed.
    ========================================================= */
 let mode = 'file';        // 'file' | 'youtube' | 'embed' (TikTok / Instagram)
 let ytPlayer = null;
@@ -198,7 +198,7 @@ fastBtn?.addEventListener('click', () => setRate(1.5, fastBtn));
 
 /* ---------- Mirror (picture only, never the controls) ---------- */
 function applyMirror() {
-    if (videoStage) videoStage.style.transform = mirrored ? 'scaleX(-1)' : 'scaleX(1)';
+    videoFrame?.classList.toggle('is-mirrored', mirrored);
     mirrorBtn?.classList.toggle('active-btn', mirrored);
 }
 mirrorBtn?.addEventListener('click', () => {
@@ -1304,3 +1304,14 @@ function updateGalleryStats() {
 updateGalleryStats();
 
 
+
+
+/* If the MediaPipe library could not load (slow network, blocked CDN, ad-blocker), say so
+   instead of the Skeleton button silently doing nothing. */
+document.getElementById('vidSkelBtn')?.addEventListener('click', () => {
+    if (window.__museMediaPipeReady) return;
+    const st = document.getElementById('vidPoseStatus');
+    if (!st) return;
+    st.textContent = 'The MediaPipe library has not loaded (slow network, a blocked cdn.jsdelivr.net, or an ad-blocker/VPN issue). Check your connection, refresh with Ctrl+Shift+R and try again.';
+    st.classList.add('error');
+});
