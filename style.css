@@ -2078,3 +2078,9 @@ header {
 .video-frame.is-mirrored #danceVideo,
 .video-frame.is-mirrored .embed-stage > *,
 .video-frame.is-mirrored #poseOverlay { transform: scaleX(-1); }
+
+/* skeleton sync slider */
+.sync-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px; font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); }
+.sync-row input[type="range"] { flex: 1; min-width: 120px; accent-color: var(--purple, #c4b0ff); cursor: pointer; }
+.sync-row #vpLeadVal { min-width: 52px; font-variant-numeric: tabular-nums; }
+.dance-ctrl-btn.small { padding: 6px 14px; font-size: 0.8rem; }

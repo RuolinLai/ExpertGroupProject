@@ -292,6 +292,13 @@
                     </div>
                     <p class="link-status" id="vidPoseStatus">Turn on Skeleton to track the dancer in your uploaded video.</p>
 
+                    <div class="sync-row">
+                        <label for="vpLead">Skeleton sync</label>
+                        <input type="range" id="vpLead" min="0" max="300" step="10" value="0" aria-label="Skeleton lag compensation">
+                        <span id="vpLeadVal">0 ms</span>
+                        <button type="button" class="dance-ctrl-btn small" id="vpPosesBtn" title="Tracking one dancer is faster">Dancers: 1</button>
+                    </div>
+
                     <!-- Skeleton for YouTube / TikTok / Instagram links (screen-capture of this tab) -->
                     <div class="pose-view" id="poseView" hidden>
                         <div class="pose-view-head">Pose view &middot; skeleton from the linked video (older browsers only)</div>
@@ -922,6 +929,87 @@
         let vpStream = null;
         let vpLastT = -1, vpLastTs = 0, vpLastCount = -1;
 
+        /* --- keeping the skeleton in time with the picture --- */
+        let vpPoses = 1;                       // 1 dancer is faster; the "Dancers" button switches to 2
+        let vpDelegate = 'GPU';
+        let vpInferMs = 15;                    // moving average of how long one detection takes
+        let vpTrack = [];                      // previous detection per person (used to estimate speed)
+        let vpLeadMs = { file: 0, capture: 80 };   // extra look-ahead, adjustable with the slider
+        let vpLayoutKey = '', vpCapLayoutKey = '';
+        const vpLeadSlider = document.getElementById('vpLead');
+        const vpLeadVal = document.getElementById('vpLeadVal');
+        const vpPosesBtn = document.getElementById('vpPosesBtn');
+        try {
+            const saved = JSON.parse(localStorage.getItem('muse.vpLead') || 'null');
+            if (saved && typeof saved.file === 'number' && typeof saved.capture === 'number') vpLeadMs = saved;
+        } catch (e) { /* storage not available: keep defaults */ }
+
+        function vpLeadKind() { return vpSource !== 'none' ? vpSource : (vpMode === 'file' ? 'file' : 'capture'); }
+        function vpSyncSlider() {
+            const v = vpLeadMs[vpLeadKind()];
+            vpLeadSlider.value = v;
+            vpLeadVal.textContent = v + ' ms';
+        }
+        vpLeadSlider.addEventListener('input', () => {
+            vpLeadMs[vpLeadKind()] = Number(vpLeadSlider.value);
+            vpLeadVal.textContent = vpLeadSlider.value + ' ms';
+            try { localStorage.setItem('muse.vpLead', JSON.stringify(vpLeadMs)); } catch (e) { }
+        });
+        vpPosesBtn.addEventListener('click', async () => {
+            vpPoses = vpPoses === 1 ? 2 : 1;
+            vpPosesBtn.textContent = 'Dancers: ' + vpPoses;
+            vpTrack = [];
+            if (vpLandmarker) { try { await vpLandmarker.setOptions({ numPoses: vpPoses }); } catch (e) { console.warn(e); } }
+        });
+        function vpStartNote() {
+            return vpDelegate === 'CPU' ? ' (Running on CPU, so it may lag. Turn on hardware acceleration in your browser settings.)' : '';
+        }
+
+        /* Every detection is already a little old when it is drawn (the model needs time, the screen needs
+           another refresh, and a captured tab adds its own delay). So we estimate each joint's speed from the
+           last two detections and draw it slightly ahead in time. */
+        function vpHip(lm) {
+            const a = lm[23], b = lm[24];
+            return a && b ? [(a.x + b.x) / 2, (a.y + b.y) / 2] : [lm[0].x, lm[0].y];
+        }
+        function vpExtrapolate(landmarks, clock, leadSec) {
+            const prev = vpTrack, next = [];
+            const used = new Set();
+            const out = landmarks.map(lm => {
+                const hip = vpHip(lm);
+                let best = -1, bestD = 0.15;                 // match this person with the nearest one from the last frame
+                prev.forEach((p, j) => {
+                    if (used.has(j)) return;
+                    const d = Math.hypot(p.hip[0] - hip[0], p.hip[1] - hip[1]);
+                    if (d < bestD) { bestD = d; best = j; }
+                });
+                let vel = null;
+                if (best >= 0) {
+                    used.add(best);
+                    const p = prev[best];
+                    const dt = clock - p.clock;
+                    if (dt > 0.004 && dt < 0.25 && p.lm.length === lm.length) {   // seeks / pauses / gaps: don't predict
+                        vel = lm.map((pt, k) => {
+                            const vx = (pt.x - p.lm[k].x) / dt, vy = (pt.y - p.lm[k].y) / dt;
+                            const o = p.vel ? p.vel[k] : null;
+                            return o ? [0.6 * vx + 0.4 * o[0], 0.6 * vy + 0.4 * o[1]] : [vx, vy];   // light smoothing
+                        });
+                    }
+                }
+                next.push({ hip, lm, clock, vel });
+                if (!vel || leadSec <= 0) return lm;
+                const lead = Math.min(leadSec, 0.4);
+                const clamp = v => Math.max(-0.1, Math.min(0.1, v));            // never jump more than 10% of the picture
+                const dead = v => (Math.abs(v) < 0.04 ? 0 : v);                 // ignore tiny jitter
+                return lm.map((pt, k) => Object.assign({}, pt, {
+                    x: pt.x + clamp(dead(vel[k][0]) * lead),
+                    y: pt.y + clamp(dead(vel[k][1]) * lead)
+                }));
+            });
+            vpTrack = next;
+            return out;
+        }
+
         function vpSetStatus(msg, isError) {
             vpStatusEl.textContent = msg;
             vpStatusEl.classList.toggle('error', !!isError);
@@ -931,6 +1019,7 @@
         function vpUpdateBtn() {
             vpBtn.textContent = 'Skeleton: ' + (vpOn ? 'On' : 'Off');
             vpBtn.classList.toggle('active-btn', vpOn);
+            vpSyncSlider();
         }
 
         async function vpLoadModel() {
@@ -945,20 +1034,20 @@
                             delegate
                         },
                         runningMode: "VIDEO",
-                        numPoses: 2          // change to 1 if you only ever have one dancer
+                        numPoses: vpPoses     // 1 is faster; use the Dancers button for 2
                     });
-                    try { vpLandmarker = await make('GPU'); }
-                    catch (e) { console.warn('GPU delegate failed, using CPU instead', e); vpLandmarker = await make('CPU'); }
+                    try { vpLandmarker = await make('GPU'); vpDelegate = 'GPU'; }
+                    catch (e) { console.warn('GPU delegate failed, using CPU instead', e); vpLandmarker = await make('CPU'); vpDelegate = 'CPU'; }
                     return vpLandmarker;
                 })().catch(err => { vpLoading = null; throw err; });
             }
             return vpLoading;
         }
 
-        function vpDrawPoses(ctx, w, res) {
+        function vpDrawPoses(ctx, w, poses) {
             const du = new DrawingUtils(ctx);
             const lw = Math.max(2, w / 180);
-            res.landmarks.forEach((lm, i) => {
+            poses.forEach((lm, i) => {
                 const [line, dot] = VP_COLORS[i % VP_COLORS.length];
                 du.drawConnectors(lm, PoseLandmarker.POSE_CONNECTIONS, { color: line, lineWidth: lw });
                 du.drawLandmarks(lm, { color: dot, fillColor: dot, radius: lw * 0.9 });
@@ -992,6 +1081,9 @@
             const vw = vpVideo.videoWidth, vh = vpVideo.videoHeight;
             if (!vw || !vh) return;
             const bw = vpVideo.clientWidth, bh = vpVideo.clientHeight;
+            const key = [vw, vh, bw, bh, vpVideo.offsetLeft, vpVideo.offsetTop].join();
+            if (key === vpLayoutKey) return;                 // nothing moved: avoid forcing a re-layout every frame
+            vpLayoutKey = key;
             const scale = Math.min(bw / vw, bh / vh);
             const w = vw * scale, h = vh * scale;
             vpOverlay.style.width = w + 'px';
@@ -1011,11 +1103,17 @@
             if (!force && t === vpLastT) return;          // same frame as last time
             vpLastT = t;
             vpLayout();
+            const t0 = performance.now();
             let res;
             try { res = vpLandmarker.detectForVideo(vpVideo, vpNextTs()); }
             catch (err) { vpFail('Could not analyse this video: ', err); return; }
+            vpInferMs = vpInferMs * 0.9 + (performance.now() - t0) * 0.1;
+            // look ahead by: detection time + one screen refresh + the slider; in video time, so 0.5x speed works too
+            const rate = vpVideo.paused ? 0 : vpVideo.playbackRate;
+            const leadSec = (vpInferMs + 16 + vpLeadMs.file) / 1000 * rate;
+            const poses = vpExtrapolate(res.landmarks, t, leadSec);
             vpClear();
-            vpDrawPoses(vpCtx, vpOverlay.width, res);
+            vpDrawPoses(vpCtx, vpOverlay.width, poses);
             vpReport(res.landmarks.length);
         }
 
@@ -1036,7 +1134,7 @@
             vpLastT = -1; vpLastCount = -1;
             vpUpdateBtn();
             vpOverlay.hidden = false;
-            vpSetStatus('Skeleton on. Press play, or drag the timeline, to see it follow the dancer.');
+            vpSetStatus('Skeleton on. Press play, or drag the timeline, to see it follow the dancer.' + vpStartNote());
             vpLayout();
             vpDetect(true);                                  // draw the current frame even if paused
             vpLoop(++vpGen);
@@ -1046,6 +1144,9 @@
 
         /* Cover the player (#embedStage) exactly with the skeleton canvas */
         function vpLayoutCap(cw, ch) {
+            const key = [cw, ch, vpEmbedStage.offsetLeft, vpEmbedStage.offsetTop, vpEmbedStage.clientWidth, vpEmbedStage.clientHeight].join();
+            if (key === vpCapLayoutKey) return;              // nothing moved: avoid forcing a re-layout every frame
+            vpCapLayoutKey = key;
             vpCapOverlay.style.left = vpEmbedStage.offsetLeft + 'px';
             vpCapOverlay.style.top = vpEmbedStage.offsetTop + 'px';
             vpCapOverlay.style.width = vpEmbedStage.clientWidth + 'px';
@@ -1063,15 +1164,20 @@
                 if (vpViewCanvas.width !== cw || vpViewCanvas.height !== ch) { vpViewCanvas.width = cw; vpViewCanvas.height = ch; }
                 vpViewCtx.drawImage(vpCap, 0, 0, cw, ch);
             }
+            const t0 = performance.now();
             let res;
             try { res = vpLandmarker.detectForVideo(vpCap, vpNextTs()); }
             catch (err) { vpFail('Could not analyse the captured video: ', err); return; }
+            vpInferMs = vpInferMs * 0.9 + (performance.now() - t0) * 0.1;
+            // a captured tab arrives late too, so the slider adds extra look-ahead on top of the detection time
+            const leadSec = (vpInferMs + 16 + vpLeadMs.capture) / 1000;
+            const poses = vpExtrapolate(res.landmarks, t0 / 1000, leadSec);
             if (onVideo) {                                   // skeleton directly on the original player
                 vpLayoutCap(cw, ch);
                 vpCapCtx.clearRect(0, 0, vpCapOverlay.width, vpCapOverlay.height);
-                vpDrawPoses(vpCapCtx, cw, res);
+                vpDrawPoses(vpCapCtx, cw, poses);
             } else {
-                vpDrawPoses(vpViewCtx, cw, res);
+                vpDrawPoses(vpViewCtx, cw, poses);
             }
             vpReport(res.landmarks.length);
         }
@@ -1145,7 +1251,7 @@
             vpCapOverlay.hidden = (kind !== 'element');
             vpView.hidden = (kind !== 'region');
             vpSetStatus(kind === 'element'
-                ? 'Skeleton on. Press play: the skeleton is drawn right on the video.'
+                ? 'Skeleton on. Press play: the skeleton is drawn right on the video.' + vpStartNote()
                 : 'Skeleton on. Your browser is older than Chrome 132, so the skeleton is shown in the Pose view below (keep the video visible on screen). Update Chrome to draw it on the video itself.');
             vpLoop(++vpGen);
         }
@@ -1172,6 +1278,7 @@
             vpCap.srcObject = null;
             vpView.hidden = true;
             vpSource = 'none';
+            vpTrack = [];
             vpUpdateBtn();
             vpSetStatus(vpIdleHint());
         }
@@ -1186,7 +1293,7 @@
         });
 
         /* A paused video produces no frame callbacks, so redraw after seeking / loading */
-        vpVideo.addEventListener('seeked', () => vpDetect(true));
+        vpVideo.addEventListener('seeked', () => { vpTrack = []; vpDetect(true); });
         vpVideo.addEventListener('loadeddata', () => { vpLastT = -1; vpLayout(); vpDetect(true); });
         vpVideo.addEventListener('loadedmetadata', vpLayout);
         new ResizeObserver(() => { if (vpOn && vpSource === 'file') vpLayout(); }).observe(vpVideo);
@@ -1195,6 +1302,8 @@
         /* script.js tells us when the player switches between file / YouTube / TikTok / Instagram */
         document.addEventListener('muse:videomode', e => {
             vpMode = e.detail.mode;
+            vpTrack = [];
+            vpSyncSlider();
             // a skeleton started for the other kind of source no longer makes sense
             if (vpOn && ((vpSource === 'file' && vpMode !== 'file') || (vpSource === 'capture' && vpMode === 'file'))) {
                 vpTurnOff();
