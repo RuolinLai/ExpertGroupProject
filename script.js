@@ -217,6 +217,8 @@ function syncPlayerUI() {
     if (playerBar) playerBar.hidden = (mode === 'embed');
     if (clickShield) clickShield.hidden = (mode !== 'youtube');
     updatePlayIcon();
+    // let the MediaPipe code know whether we are showing a local file or a link
+    document.dispatchEvent(new CustomEvent('muse:videomode', { detail: { mode } }));
 }
 
 function isPlayingNow() {
@@ -464,6 +466,7 @@ linkForm?.addEventListener('submit', async e => {
 
 /* Leaving the Dance page stops the sound; coming back restores the embed */
 function suspendEmbed() {
+    document.dispatchEvent(new CustomEvent('muse:leave'));   // stops skeleton analysis / screen capture
     if (mode === 'youtube') { try { ytPlayer?.pauseVideo(); } catch (e) { } }
     if (mode === 'embed') {
         const f = embedStage.querySelector('iframe');

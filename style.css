@@ -1992,7 +1992,11 @@ header {
    MIRROR-SAFE PLAYER + PLAY FROM A LINK
    Only .video-stage is flipped; the control bar sits outside it.
    ========================================================= */
-.video-stage { transition: transform .3s ease; background: #000; }
+.video-stage { position: relative; transition: transform .3s ease; background: #000; }
+
+/* skeleton canvas sits on the picture; clicks pass through to the video */
+.pose-overlay { position: absolute; z-index: 1; pointer-events: none; }
+.pose-overlay[hidden] { display: none; }
 
 .embed-stage { width: 100%; background: #000; }
 .embed-stage[hidden] { display: none; }
@@ -2049,3 +2053,19 @@ header {
 
 /* disabled transport buttons (TikTok / Instagram can't be controlled from outside) */
 .dance-ctrl-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Pose view: captured link video + skeleton */
+.pose-view {
+  margin-top: 16px; border-radius: 20px; overflow: hidden; background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 0 40px rgba(196, 176, 255, 0.15);
+}
+.pose-view[hidden] { display: none; }
+.pose-view-head {
+  padding: 10px 16px; font-size: 0.8rem; letter-spacing: .5px;
+  color: rgba(255, 255, 255, 0.75); background: rgba(10, 8, 16, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.pose-view canvas { display: block; width: 100%; max-height: 62vh; object-fit: contain; background: #000; }
+
+/* receives the screen capture; kept off-screen so it never shows or gets captured */
+.cap-video { position: fixed; left: -9999px; top: 0; width: 320px; height: 180px; opacity: 0; pointer-events: none; }

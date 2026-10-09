@@ -260,6 +260,8 @@
                             </video>
                             <!-- Shows a YouTube / TikTok / Instagram video when a link is loaded -->
                             <div class="embed-stage wide" id="embedStage" hidden></div>
+                            <!-- MediaPipe skeleton drawn over the video (flips together with it) -->
+                            <canvas class="pose-overlay" id="poseOverlay" hidden></canvas>
                         </div>
 
                         <!-- Transparent layer over YouTube so its own (flippable) UI never shows -->
@@ -284,7 +286,16 @@
                         <button id="normalBtn" class="dance-ctrl-btn active-btn">Normal</button>
                         <button id="fastBtn" class="dance-ctrl-btn">1.5x Fast</button>
                         <button id="mirrorBtn" class="dance-ctrl-btn">Mirror Video</button>
+                        <button id="vidSkelBtn" class="dance-ctrl-btn">Skeleton: Off</button>
                     </div>
+                    <p class="link-status" id="vidPoseStatus">Turn on Skeleton to track the dancer in your uploaded video.</p>
+
+                    <!-- Skeleton for YouTube / TikTok / Instagram links (screen-capture of this tab) -->
+                    <div class="pose-view" id="poseView" hidden>
+                        <div class="pose-view-head">Pose view &middot; skeleton from the linked video</div>
+                        <canvas id="poseViewCanvas"></canvas>
+                    </div>
+                    <video id="capVideo" class="cap-video" autoplay muted playsinline></video>
 
 
                     <!-- Paste a link to learn from an online video -->
@@ -875,6 +886,274 @@
             skelBtn.textContent = 'Skeleton: ' + (showSkeleton ? 'On' : 'Off');
             skelBtn.classList.toggle('active-btn', showSkeleton);
         });
+
+        /* =========================================================
+           SKELETON ON THE PRACTICE VIDEO
+           - uploaded / local file : drawn directly over the <video>
+           - YouTube / TikTok / Instagram link : the browser captures this tab's
+             player area (Region Capture), MediaPipe analyses the captured frames
+             and the result is shown in the "Pose view" panel.
+           Uses its own PoseLandmarker so it never fights with the camera one.
+           ========================================================= */
+        const vpVideo = document.getElementById('danceVideo');
+        const vpOverlay = document.getElementById('poseOverlay');
+        const vpBtn = document.getElementById('vidSkelBtn');
+        const vpStatusEl = document.getElementById('vidPoseStatus');
+        const vpCtx = vpOverlay.getContext('2d');
+        const vpView = document.getElementById('poseView');
+        const vpViewCanvas = document.getElementById('poseViewCanvas');
+        const vpViewCtx = vpViewCanvas.getContext('2d');
+        const vpCap = document.getElementById('capVideo');
+        const vpEmbedStage = document.getElementById('embedStage');
+        const VP_HINT = 'Turn on Skeleton to track the dancer in your uploaded video.';
+        const VP_LINK_HINT = 'Skeleton for links: press Skeleton, then in the window your browser shows choose \u201cThis tab\u201d and Share. Keep the player visible on screen. Needs Chrome or Edge on a computer.';
+        const VP_COLORS = [['#c4b0ff', '#f8b8d8'], ['#8fe3d0', '#ffe08a']];   // line / dot colours per person
+        let vpLandmarker = null, vpLoading = null;
+        let vpOn = false, vpGen = 0, vpMode = 'file';
+        let vpSource = 'none';                 // 'file' | 'capture'
+        let vpStream = null;
+        let vpLastT = -1, vpLastTs = 0, vpLastCount = -1;
+
+        function vpSetStatus(msg, isError) {
+            vpStatusEl.textContent = msg;
+            vpStatusEl.classList.toggle('error', !!isError);
+        }
+        function vpIdleHint() { return vpMode === 'file' ? VP_HINT : VP_LINK_HINT; }
+
+        function vpUpdateBtn() {
+            vpBtn.textContent = 'Skeleton: ' + (vpOn ? 'On' : 'Off');
+            vpBtn.classList.toggle('active-btn', vpOn);
+        }
+
+        async function vpLoadModel() {
+            if (vpLandmarker) return vpLandmarker;
+            if (!vpLoading) {
+                vpLoading = (async () => {
+                    const fileset = await FilesetResolver.forVisionTasks(
+                        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+                    const make = delegate => PoseLandmarker.createFromOptions(fileset, {
+                        baseOptions: {
+                            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
+                            delegate
+                        },
+                        runningMode: "VIDEO",
+                        numPoses: 2          // change to 1 if you only ever have one dancer
+                    });
+                    try { vpLandmarker = await make('GPU'); }
+                    catch (e) { console.warn('GPU delegate failed, using CPU instead', e); vpLandmarker = await make('CPU'); }
+                    return vpLandmarker;
+                })().catch(err => { vpLoading = null; throw err; });
+            }
+            return vpLoading;
+        }
+
+        function vpDrawPoses(ctx, w, res) {
+            const du = new DrawingUtils(ctx);
+            const lw = Math.max(2, w / 180);
+            res.landmarks.forEach((lm, i) => {
+                const [line, dot] = VP_COLORS[i % VP_COLORS.length];
+                du.drawConnectors(lm, PoseLandmarker.POSE_CONNECTIONS, { color: line, lineWidth: lw });
+                du.drawLandmarks(lm, { color: dot, fillColor: dot, radius: lw * 0.9 });
+            });
+        }
+
+        function vpReport(count) {
+            if (count === vpLastCount) return;               // only touch the DOM when it changes
+            vpLastCount = count;
+            vpSetStatus(count
+                ? 'Tracking ' + count + (count === 1 ? ' dancer.' : ' dancers.')
+                : 'No person found in this frame. Make sure the whole body is visible.');
+        }
+
+        function vpNextTs() {
+            const ts = Math.max(performance.now(), vpLastTs + 1);   // must always increase
+            vpLastTs = ts;
+            return ts;
+        }
+
+        function vpFail(prefix, err) {
+            console.error(err);
+            vpTurnOff();
+            vpSetStatus(prefix + (err && err.message ? err.message : err), true);
+        }
+
+        /* ---------- A) local / uploaded file: skeleton directly on the <video> ---------- */
+
+        /* Put the canvas exactly on top of the picture (the <video> is letterboxed by object-fit: contain) */
+        function vpLayout() {
+            const vw = vpVideo.videoWidth, vh = vpVideo.videoHeight;
+            if (!vw || !vh) return;
+            const bw = vpVideo.clientWidth, bh = vpVideo.clientHeight;
+            const scale = Math.min(bw / vw, bh / vh);
+            const w = vw * scale, h = vh * scale;
+            vpOverlay.style.width = w + 'px';
+            vpOverlay.style.height = h + 'px';
+            vpOverlay.style.left = (vpVideo.offsetLeft + (bw - w) / 2) + 'px';
+            vpOverlay.style.top = (vpVideo.offsetTop + (bh - h) / 2) + 'px';
+            const cw = Math.min(vw, 960), ch = Math.round(cw * vh / vw);   // drawing resolution
+            if (vpOverlay.width !== cw || vpOverlay.height !== ch) { vpOverlay.width = cw; vpOverlay.height = ch; }
+        }
+
+        function vpClear() { vpCtx.clearRect(0, 0, vpOverlay.width, vpOverlay.height); }
+
+        function vpDetect(force) {
+            if (!vpOn || vpSource !== 'file' || !vpLandmarker || vpMode !== 'file') return;
+            if (vpVideo.readyState < 2 || !vpVideo.videoWidth) return;
+            const t = vpVideo.currentTime;
+            if (!force && t === vpLastT) return;          // same frame as last time
+            vpLastT = t;
+            vpLayout();
+            let res;
+            try { res = vpLandmarker.detectForVideo(vpVideo, vpNextTs()); }
+            catch (err) { vpFail('Could not analyse this video: ', err); return; }
+            vpClear();
+            vpDrawPoses(vpCtx, vpOverlay.width, res);
+            vpReport(res.landmarks.length);
+        }
+
+        async function vpStartFile() {
+            vpBtn.disabled = true;
+            vpSetStatus('Loading pose model...');
+            try {
+                await vpLoadModel();
+            } catch (err) {
+                console.error(err);
+                vpBtn.disabled = false;
+                vpSetStatus('Could not load the pose model: ' + (err.message || err) + ' (it needs an internet connection).', true);
+                return;
+            }
+            vpBtn.disabled = false;
+            if (vpMode !== 'file') return;                   // user switched to a link while loading
+            vpOn = true; vpSource = 'file';
+            vpLastT = -1; vpLastCount = -1;
+            vpUpdateBtn();
+            vpOverlay.hidden = false;
+            vpSetStatus('Skeleton on. Press play, or drag the timeline, to see it follow the dancer.');
+            vpLayout();
+            vpDetect(true);                                  // draw the current frame even if paused
+            vpLoop(++vpGen);
+        }
+
+        /* ---------- B) YouTube / TikTok / Instagram: capture the player area of this tab ---------- */
+
+        function vpDetectCap() {
+            if (!vpOn || vpSource !== 'capture' || !vpLandmarker) return;
+            const w0 = vpCap.videoWidth, h0 = vpCap.videoHeight;
+            if (!w0 || !h0 || vpCap.readyState < 2) return;
+            const cw = Math.min(w0, 960), ch = Math.round(cw * h0 / w0);
+            if (vpViewCanvas.width !== cw || vpViewCanvas.height !== ch) { vpViewCanvas.width = cw; vpViewCanvas.height = ch; }
+            vpViewCtx.drawImage(vpCap, 0, 0, cw, ch);       // the captured picture...
+            let res;
+            try { res = vpLandmarker.detectForVideo(vpCap, vpNextTs()); }
+            catch (err) { vpFail('Could not analyse the captured video: ', err); return; }
+            vpDrawPoses(vpViewCtx, cw, res);                // ...with the skeleton on top
+            vpReport(res.landmarks.length);
+        }
+
+        async function vpStartCapture() {
+            const canCapture = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia
+                                  && window.CropTarget && CropTarget.fromElement);
+            if (!canCapture) {
+                vpSetStatus('Skeleton for YouTube / TikTok / Instagram links needs Chrome or Edge on a computer (it uses screen capture of this tab). In other browsers, upload the video file instead.', true);
+                return;
+            }
+            vpBtn.disabled = true;
+            vpSetStatus('Choose \u201cThis tab\u201d in the sharing window and press Share...');
+            let stream = null;
+            try {
+                const cropTarget = await CropTarget.fromElement(vpEmbedStage);
+                stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { frameRate: { ideal: 30 } },
+                    audio: false,
+                    preferCurrentTab: true,
+                    selfBrowserSurface: 'include'
+                });
+                const track = stream.getVideoTracks()[0];
+                if (!track || typeof track.cropTo !== 'function') throw new Error('Please choose \u201cThis tab\u201d (not a window or the whole screen).');
+                await track.cropTo(cropTarget);              // keep only the player area
+                track.addEventListener('ended', () => { if (vpStream === stream) vpTurnOff(); });   // "Stop sharing" button
+            } catch (err) {
+                if (stream) stream.getTracks().forEach(t => t.stop());
+                vpBtn.disabled = false;
+                vpSetStatus(err && err.name === 'NotAllowedError'
+                    ? 'Sharing was cancelled, so the skeleton could not start.'
+                    : 'Could not capture the player: ' + (err.message || err) + ' Choose \u201cThis tab\u201d in the sharing window.', true);
+                return;
+            }
+            vpStream = stream;
+            vpCap.srcObject = stream;
+            vpCap.play().catch(() => {});
+
+            vpSetStatus('Loading pose model...');
+            try {
+                await vpLoadModel();
+            } catch (err) {
+                console.error(err);
+                vpBtn.disabled = false;
+                vpTurnOff();
+                vpSetStatus('Could not load the pose model: ' + (err.message || err) + ' (it needs an internet connection).', true);
+                return;
+            }
+            vpBtn.disabled = false;
+            if (vpMode === 'file' || vpStream !== stream) { vpTurnOff(); return; }   // switched to a file / stopped meanwhile
+            vpOn = true; vpSource = 'capture';
+            vpLastCount = -1;
+            vpUpdateBtn();
+            vpView.hidden = false;
+            vpSetStatus('Skeleton on. Press play on the video; keep the player visible on screen.');
+            vpLoop(++vpGen);
+        }
+
+        /* ---------- shared ---------- */
+
+        function vpLoop(gen) {
+            if (!vpOn || gen !== vpGen) return;
+            const el = vpSource === 'capture' ? vpCap : vpVideo;
+            const run = vpSource === 'capture' ? vpDetectCap : () => vpDetect(false);
+            const cb = () => { if (gen !== vpGen) return; run(); vpLoop(gen); };
+            if ('requestVideoFrameCallback' in el) el.requestVideoFrameCallback(cb);
+            else requestAnimationFrame(cb);
+        }
+
+        function vpTurnOff() {
+            vpOn = false;
+            vpGen++;
+            vpClear();
+            vpOverlay.hidden = true;
+            if (vpStream) { vpStream.getTracks().forEach(t => t.stop()); vpStream = null; }
+            vpCap.srcObject = null;
+            vpView.hidden = true;
+            vpSource = 'none';
+            vpUpdateBtn();
+            vpSetStatus(vpIdleHint());
+        }
+
+        vpBtn.addEventListener('click', () => {
+            if (vpOn) vpTurnOff();
+            else if (vpMode === 'file') vpStartFile();
+            else vpStartCapture();
+        });
+
+        /* A paused video produces no frame callbacks, so redraw after seeking / loading */
+        vpVideo.addEventListener('seeked', () => vpDetect(true));
+        vpVideo.addEventListener('loadeddata', () => { vpLastT = -1; vpLayout(); vpDetect(true); });
+        vpVideo.addEventListener('loadedmetadata', vpLayout);
+        new ResizeObserver(() => { if (vpOn && vpSource === 'file') vpLayout(); }).observe(vpVideo);
+        window.addEventListener('resize', () => { if (vpOn && vpSource === 'file') vpLayout(); });
+
+        /* script.js tells us when the player switches between file / YouTube / TikTok / Instagram */
+        document.addEventListener('muse:videomode', e => {
+            vpMode = e.detail.mode;
+            // a skeleton started for the other kind of source no longer makes sense
+            if (vpOn && ((vpSource === 'file' && vpMode !== 'file') || (vpSource === 'capture' && vpMode === 'file'))) {
+                vpTurnOff();
+            } else if (!vpOn) {
+                vpSetStatus(vpIdleHint());
+            }
+        });
+
+        /* Leaving the Dance page stops the analysis (and the screen capture) */
+        document.addEventListener('muse:leave', () => { if (vpOn) vpTurnOff(); });
     </script>
 
 
