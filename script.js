@@ -5,11 +5,14 @@ const MOVE = 22;     // max drift distance (px)
 const TILT = 12;     // max tilt (deg)
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+
 const state = [...cards].map(el => ({ el, x: 0, y: 0, rx: 0, ry: 0, tx: 0, ty: 0, trx: 0, try_: 0 }));
 let mouse = null;
 
+
 window.addEventListener('mousemove', e => { mouse = { x: e.clientX, y: e.clientY }; });
 window.addEventListener('mouseleave', () => { mouse = null; });
+
 
 function tick() {
   state.forEach(s => {
@@ -43,11 +46,13 @@ function tick() {
 }
 tick();
 
+
 // Scroll reveal for every .reveal element
 const io = new IntersectionObserver(entries => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
 }, { threshold: 0.15 });
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
 
 // Duplicate the review cards so the marquee loops seamlessly
 const track = document.getElementById('track');
@@ -58,6 +63,7 @@ if (track) {
     track.appendChild(clone);
   });
 }
+
 
 // Screenshot frames tilt slightly under the pointer
 document.querySelectorAll('.shot').forEach(el => {
@@ -71,6 +77,7 @@ document.querySelectorAll('.shot').forEach(el => {
   el.addEventListener('mouseleave', () => { el.style.setProperty('--tx', '0deg'); el.style.setProperty('--ty', '0deg'); });
 });
 
+
 // Decorations shift slightly with the mouse (depth = how much)
 const decos = document.querySelectorAll('.deco');
 window.addEventListener('mousemove', e => {
@@ -82,16 +89,19 @@ window.addEventListener('mousemove', e => {
   });
 });
 
+
 /* ================= PAGE SWITCHING & DANCE FEATURES ================= */
 const homeContainer = document.getElementById('home-page-container');
 const mainHero = document.querySelector('main.hero');
 const pageSections = document.querySelector('.page-sections');
 const danceContainer = document.getElementById('dance-page-container');
 
+
 const danceNavLink = document.getElementById('dance-nav-link');
 const danceCardBtn = document.querySelector('.card-float.f1 a');
 const homeNavLinks = document.querySelectorAll('.nav-link:not(#dance-nav-link)');
 const logoLink = document.querySelector('.nav-logo');
+
 
 // Function to switch to Dance view
 function openDanceView(e) {
@@ -106,11 +116,12 @@ function openDanceView(e) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+
 // Function to switch back to Home view while preserving exact original layout
 function openHomeView(e) {
     if (e) e.preventDefault();
     if (danceContainer) danceContainer.style.display = 'none';
-    
+   
     if (homeContainer) {
         homeContainer.style.display = '';
     } else {
@@ -120,13 +131,16 @@ function openHomeView(e) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+
 // Attach listeners for switching to Dance Page
 danceNavLink?.addEventListener('click', openDanceView);
 danceCardBtn?.addEventListener('click', openDanceView);
 
+
 // Attach listeners for switching back to Home Page
 homeNavLinks.forEach(link => link.addEventListener('click', openHomeView));
 logoLink?.addEventListener('click', openHomeView);
+
 
 /* Video Player Controls */
 const video = document.getElementById('danceVideo');
@@ -135,8 +149,10 @@ const normalBtn = document.getElementById('normalBtn');
 const fastBtn = document.getElementById('fastBtn');
 const mirrorBtn = document.getElementById('mirrorBtn');
 
+
 document.getElementById('playBtn')?.addEventListener('click', () => video?.play());
 document.getElementById('pauseBtn')?.addEventListener('click', () => video?.pause());
+
 
 function setRate(rate, btn) {
     if (video) video.playbackRate = rate;
@@ -144,9 +160,11 @@ function setRate(rate, btn) {
     btn?.classList.add('active-btn');
 }
 
+
 slowBtn?.addEventListener('click', () => setRate(0.5, slowBtn));
 normalBtn?.addEventListener('click', () => setRate(1.0, normalBtn));
 fastBtn?.addEventListener('click', () => setRate(1.5, fastBtn));
+
 
 mirrorBtn?.addEventListener('click', () => {
     if (video) {
@@ -156,6 +174,7 @@ mirrorBtn?.addEventListener('click', () => {
     }
 });
 
+
 /* Audio Metronome Logic */
 let audioCtx, timerId, isPlaying = false, bpm = 120, tapTimes = [];
 const bpmRange = document.getElementById('bpmRange');
@@ -163,14 +182,17 @@ const bpmVal = document.getElementById('bpmVal');
 const metroToggleBtn = document.getElementById('metroToggleBtn');
 const beatLight = document.getElementById('beatLight');
 
+
 bpmRange?.addEventListener('input', (e) => {
     bpm = e.target.value;
     if (bpmVal) bpmVal.textContent = bpm;
 });
 
+
 metroToggleBtn?.addEventListener('click', () => {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     isPlaying = !isPlaying;
+
 
     if (isPlaying) {
         metroToggleBtn.textContent = 'Stop Metronome';
@@ -187,8 +209,10 @@ metroToggleBtn?.addEventListener('click', () => {
     }
 });
 
+
 function runMetronome() {
     if (!isPlaying) return;
+
 
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -199,6 +223,7 @@ function runMetronome() {
     gain.connect(audioCtx.destination);
     osc.start();
     osc.stop(audioCtx.currentTime + 0.08);
+
 
     if (beatLight) {
         beatLight.style.background = 'var(--pink, #f8b8d8)';
@@ -211,18 +236,22 @@ function runMetronome() {
         }
     }, 100);
 
+
     timerId = setTimeout(runMetronome, (60 / bpm) * 1000);
 }
+
 
 document.getElementById('tapTempoBtn')?.addEventListener('click', () => {
     const now = Date.now();
     tapTimes.push(now);
     if (tapTimes.length > 4) tapTimes.shift();
 
+
     if (tapTimes.length > 1) {
         let diffs = [];
         for (let i = 1; i < tapTimes.length; i++) diffs.push(tapTimes[i] - tapTimes[i - 1]);
         const calcBpm = Math.round(60000 / (diffs.reduce((a, b) => a + b) / diffs.length));
+
 
         if (calcBpm >= 40 && calcBpm <= 220) {
             bpm = calcBpm;
@@ -232,11 +261,13 @@ document.getElementById('tapTempoBtn')?.addEventListener('click', () => {
     }
 });
 
+
 /* Rhythm Waveform Visualizer */
 const canvas = document.getElementById('rhythmCanvas');
 if (canvas) {
     const ctx = canvas.getContext('2d');
     let phase = 0;
+
 
     function drawWave() {
         canvas.width = canvas.offsetWidth;
@@ -245,6 +276,7 @@ if (canvas) {
         ctx.beginPath();
         ctx.strokeStyle = '#f8b8d8';
         ctx.lineWidth = 2.5;
+
 
         const amp = isPlaying ? 22 : 8;
         for (let x = 0; x < canvas.width; x++) {
@@ -259,11 +291,13 @@ if (canvas) {
     drawWave();
 }
 
+
 /* Upload your own dance video */
 const uploadInput = document.getElementById('videoUpload');
 const uploadName = document.getElementById('uploadName');
 const uploadZone = document.getElementById('uploadZone');
 let currentVideoURL = null;
+
 
 function loadUploadedVideo(file) {
     if (!file || !file.type.startsWith('video/')) {
@@ -278,6 +312,7 @@ function loadUploadedVideo(file) {
     if (uploadName) uploadName.textContent = 'Now learning: ' + file.name;
 }
 
+
 uploadInput?.addEventListener('change', e => loadUploadedVideo(e.target.files[0]));
 ['dragenter', 'dragover'].forEach(t => uploadZone?.addEventListener(t, e => { e.preventDefault(); uploadZone.classList.add('drag'); }));
 ['dragleave', 'drop'].forEach(t => uploadZone?.addEventListener(t, e => { e.preventDefault(); uploadZone.classList.remove('drag'); }));
@@ -286,70 +321,92 @@ uploadZone?.addEventListener('drop', e => loadUploadedVideo(e.dataTransfer.files
    GALLERY PAGE
    ========================================================= */
 
+
 const galleryContainer =
     document.getElementById('gallery-page-container');
+
 
 const galleryNavLink =
     document.getElementById('gallery-nav-link');
 
+
 const gallerySearch =
     document.getElementById('gallerySearch');
+
 
 const galleryFilters =
     document.querySelectorAll('.gallery-filter');
 
+
 const videoGallery =
     document.getElementById('videoGallery');
+
 
 const videoUpload =
     document.getElementById('videoUpload');
 
+
 const galleryEmpty =
     document.getElementById('galleryEmpty');
+
 
 const videoCount =
     document.getElementById('videoCount');
 
+
 const completedCount =
     document.getElementById('completedCount');
+
+
 
 
 /* =========================================================
    OPEN GALLERY
    ========================================================= */
 
+
 function openGalleryView(e) {
 
+
     if (e) e.preventDefault();
+
 
     if (mainHero) {
         mainHero.style.display = 'none';
     }
 
+
     if (pageSections) {
         pageSections.style.display = 'none';
     }
+
 
     if (danceContainer) {
         danceContainer.style.display = 'none';
     }
 
+
     if (galleryContainer) {
         galleryContainer.style.display = 'block';
     }
+
 
     window.scrollTo({
         top: 0,
         behavior: 'smooth'
     });
 
+
     updateGalleryStats();
 }
+
+
 
 
 /* =========================================================
    GALLERY NAVIGATION
    ========================================================= */
+
 
 galleryNavLink?.addEventListener(
     'click',
@@ -357,157 +414,220 @@ galleryNavLink?.addEventListener(
 );
 
 
+
+
 /* Update the existing home navigation links */
+
 
 homeNavLinks.forEach(link => {
 
+
     link.addEventListener('click', function(e) {
+
 
         if (this.id === 'gallery-nav-link') {
             return;
         }
 
+
         if (galleryContainer) {
             galleryContainer.style.display = 'none';
         }
 
+
         openHomeView(e);
 
+
     });
+
 
 });
 
 
+
+
 /* Logo returns home */
 
+
 logoLink?.addEventListener('click', function(e) {
+
 
     if (galleryContainer) {
         galleryContainer.style.display = 'none';
     }
 
+
     openHomeView(e);
 
+
 });
+
+
 
 
 /* =========================================================
    GALLERY FILTERS
    ========================================================= */
 
+
 let currentGalleryFilter = 'all';
+
 
 galleryFilters.forEach(filter => {
 
+
     filter.addEventListener('click', () => {
+
 
         galleryFilters.forEach(btn => {
             btn.classList.remove('active-filter');
         });
 
+
         filter.classList.add('active-filter');
+
 
         currentGalleryFilter =
             filter.dataset.filter;
 
+
         filterGallery();
+
 
     });
 
+
 });
+
+
 
 
 /* =========================================================
    SEARCH
    ========================================================= */
 
+
 gallerySearch?.addEventListener('input', () => {
     filterGallery();
 });
 
 
+
+
 function filterGallery() {
+
 
     const searchText =
         gallerySearch?.value.toLowerCase().trim() || '';
 
+
     const cards =
         document.querySelectorAll('.video-card');
 
+
     let visibleCards = 0;
 
+
     cards.forEach(card => {
+
 
         const category =
             card.dataset.category || '';
 
+
         const title =
             card.dataset.title?.toLowerCase() || '';
+
 
         const description =
             card.querySelector('.video-info > p')
                 ?.textContent.toLowerCase() || '';
+
 
         const matchesSearch =
             title.includes(searchText) ||
             description.includes(searchText) ||
             category.includes(searchText);
 
+
         let matchesFilter = true;
+
 
         if (currentGalleryFilter !== 'all') {
 
+
             if (currentGalleryFilter === 'favourite') {
+
 
                 matchesFilter =
                     card.querySelector('.favourite-btn')
                         ?.classList.contains('is-favourite');
 
+
             } else {
+
 
                 matchesFilter =
                     category === currentGalleryFilter;
             }
         }
 
+
         if (matchesSearch && matchesFilter) {
+
 
             card.classList.remove('hidden');
             visibleCards++;
 
+
         } else {
+
 
             card.classList.add('hidden');
 
+
         }
+
 
     });
 
 
+
+
     if (galleryEmpty) {
+
 
         galleryEmpty.classList.toggle(
             'visible',
             visibleCards === 0
         );
 
+
     }
 
+
 }
+
+
 
 
 /* =========================================================
    FAVOURITES
    ========================================================= */
 
+
 document.addEventListener('click', e => {
+
 
     const favourite =
         e.target.closest('.favourite-btn');
 
+
     if (!favourite) return;
 
+
     favourite.classList.toggle('is-favourite');
+
 
     if (favourite.classList.contains('is-favourite')) {
         favourite.textContent = '♥';
@@ -515,138 +635,192 @@ document.addEventListener('click', e => {
         favourite.textContent = '♡';
     }
 
+
     filterGallery();
 
+
 });
+
+
 
 
 /* =========================================================
    COMPLETE VIDEO
    ========================================================= */
 
+
 document.addEventListener('click', e => {
+
 
     const button =
         e.target.closest('.complete-video');
 
+
     if (!button) return;
+
 
     const card =
         button.closest('.video-card');
 
+
     if (!card) return;
+
 
     const status =
         card.querySelector('.video-status');
 
+
     const progress =
         card.querySelector('.progress-bar span');
+
 
     const percentage =
         card.querySelector('.progress-label strong');
 
+
     if (status) {
 
+
         status.textContent = 'Completed';
+
 
         status.classList.remove(
             'status-progress'
         );
 
+
         status.classList.add(
             'status-complete'
         );
 
+
     }
+
 
     if (progress) {
         progress.style.width = '100%';
     }
 
+
     if (percentage) {
         percentage.textContent = '100%';
     }
 
+
     button.textContent = 'Completed ✓';
     button.classList.add('completed');
 
+
     updateGalleryStats();
 
+
 });
+
+
 
 
 /* =========================================================
    DELETE VIDEO
    ========================================================= */
 
+
 document.addEventListener('click', e => {
+
 
     const button =
         e.target.closest('.delete-video');
 
+
     if (!button) return;
+
 
     const card =
         button.closest('.video-card');
 
+
     if (!card) return;
+
 
     card.style.opacity = '0';
     card.style.transform = 'scale(0.95)';
 
+
     setTimeout(() => {
 
+
         card.remove();
+
 
         updateGalleryStats();
         filterGallery();
 
+
     }, 300);
 
+
 });
+
+
 
 
 /* =========================================================
    VIDEO UPLOAD
    ========================================================= */
 
+
 videoUpload?.addEventListener('change', e => {
+
 
     const files =
         Array.from(e.target.files);
 
+
     files.forEach(file => {
+
 
         if (!file.type.startsWith('video/')) {
             return;
         }
 
+
         createVideoCard(file);
+
 
     });
 
+
     videoUpload.value = '';
 
+
     updateGalleryStats();
+
 
 });
 
 
+
+
 function createVideoCard(file) {
+
 
     const videoURL =
         URL.createObjectURL(file);
 
+
     const card =
         document.createElement('article');
 
+
     card.className = 'video-card';
 
+
     card.dataset.category = 'practice';
+
 
     card.dataset.title =
         file.name
             .replace(/\.[^/.]+$/, '');
+
 
     const today =
         new Date().toLocaleDateString(
@@ -658,9 +832,12 @@ function createVideoCard(file) {
             }
         );
 
+
     card.innerHTML = `
 
+
         <div class="video-preview">
+
 
             <video controls>
                 <source
@@ -668,108 +845,148 @@ function createVideoCard(file) {
                     type="${file.type}">
             </video>
 
+
             <button
                 class="favourite-btn"
                 aria-label="Favourite video">
                 ♡
             </button>
 
+
         </div>
+
 
         <div class="video-info">
 
+
             <div class="video-title-row">
+
 
                 <h3>
                     ${file.name.replace(/\.[^/.]+$/, '')}
                 </h3>
 
+
                 <span class="video-status status-progress">
                     In Progress
                 </span>
 
+
             </div>
+
 
             <p>
                 Newly added dance video.
             </p>
 
+
             <div class="video-meta">
+
 
                 <span>Practice</span>
                 <span>•</span>
                 <span>${today}</span>
 
+
             </div>
+
 
             <div class="video-progress">
 
+
                 <div class="progress-label">
+
 
                     <span>Progress</span>
                     <strong>0%</strong>
 
+
                 </div>
+
 
                 <div class="progress-bar">
 
+
                     <span style="width: 0%;"></span>
+
 
                 </div>
 
+
             </div>
 
+
             <div class="video-actions">
+
 
                 <button class="complete-video">
                     Mark Complete
                 </button>
 
+
                 <button class="delete-video">
                     Delete
                 </button>
 
+
             </div>
+
 
         </div>
     `;
 
+
     videoGallery.prepend(card);
+
 
     filterGallery();
 
+
 }
+
+
 
 
 /* =========================================================
    GALLERY STATISTICS
    ========================================================= */
 
+
 function updateGalleryStats() {
+
 
     const cards =
         document.querySelectorAll(
             '.video-card'
         );
 
+
     const completed =
         document.querySelectorAll(
             '.video-status.status-complete'
         );
+
 
     if (videoCount) {
         videoCount.textContent =
             cards.length;
     }
 
+
     if (completedCount) {
         completedCount.textContent =
             completed.length;
     }
 
+
 }
+
+
 
 
 /* Initial count */
 
+
 updateGalleryStats();
+
+
