@@ -284,9 +284,9 @@
                     <div class="ctrl-row">
                         <button id="playBtn" class="dance-ctrl-btn">Play</button>
                         <button id="pauseBtn" class="dance-ctrl-btn">Pause</button>
-                        <button id="slowBtn" class="dance-ctrl-btn">0.5x Slow</button>
-                        <button id="normalBtn" class="dance-ctrl-btn active-btn">Normal</button>
-                        <button id="fastBtn" class="dance-ctrl-btn">1.5x Fast</button>
+                        <label class="speed-box" for="speedInput">Speed
+                            <input type="number" id="speedInput" min="0.1" max="4" step="0.05" value="1" aria-label="Custom playback speed">x
+                        </label>
                         <button id="mirrorBtn" class="dance-ctrl-btn">Mirror Video</button>
                         <button id="vidSkelBtn" class="dance-ctrl-btn">Skeleton: Off</button>
                     </div>

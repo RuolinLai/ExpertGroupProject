@@ -1230,7 +1230,20 @@ header {
 
 
 .video-frame { position: relative; border-radius: 20px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 0 40px rgba(248,184,216,0.15); }
-.video-frame video { display: block; width: 100%; max-height: 62vh; min-height: 320px; object-fit: contain; background: #000; }
+/* The frame takes the video's shape (--vid-ar, set from script.js) and is as big as it can be while the
+   whole video + control bar still fits in the window below the sticky navbar (--nav-h, measured in
+   script.js): tall videos grow to that height, wide videos to the card width. */
+.video-frame {
+  --vid-ar: 16 / 9; --vid-min-h: 240px; --vid-min-w: 360px;   /* min width keeps every control-bar button visible */
+  --vid-max-h: calc(100vh - var(--nav-h, 80px) - 52px - 24px);   /* 52px = control bar */
+  container-type: inline-size;   /* lets the control bar react to the frame's width */
+  width: 100%; margin: 0 auto;
+  max-width: min(100%, max(var(--vid-min-w), calc(var(--vid-max-h) * var(--vid-ar))));
+  transition: max-width .3s ease;
+}
+@supports (height: 100dvh) { .video-frame { --vid-max-h: calc(100dvh - var(--nav-h, 80px) - 52px - 24px); } }   /* mobile: ignore the address bar */
+.video-frame.tall-embed { max-width: min(100%, 380px); }   /* TikTok / Instagram / Shorts: same width as .embed-stage.tall */
+.video-frame video { display: block; width: 100%; height: auto; aspect-ratio: var(--vid-ar); min-height: var(--vid-min-h); max-height: var(--vid-max-h); object-fit: contain; background: #000; }
 
 
 .ctrl-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
@@ -2026,15 +2039,17 @@ header {
 .pb-seek { flex: 1; min-width: 60px; accent-color: var(--purple, #c4b0ff); cursor: pointer; }
 .pb-vol { flex: none; width: 80px; accent-color: var(--pink, #f8b8d8); cursor: pointer; }
 @media (max-width: 600px) { .pb-vol { display: none; } .pb-time { min-width: 76px; } }
+/* narrow frame (tall video): drop the volume slider so Fullscreen always fits; mute still works */
+@container (max-width: 460px) { .pb-vol { display: none; } .pb-time { min-width: 76px; } .player-bar { gap: 8px; padding: 0 10px; } }
 
 /* Fullscreen is requested on .video-frame (not <video>) so the bar stays visible */
-.video-frame:fullscreen { display: flex; flex-direction: column; border-radius: 0; border: 0; }
+.video-frame:fullscreen { display: flex; flex-direction: column; border-radius: 0; border: 0; max-width: none; }
 .video-frame:fullscreen .video-stage { flex: 1; min-height: 0; display: flex; }
-.video-frame:fullscreen .video-stage video { max-height: none; height: 100%; flex: 1; }
+.video-frame:fullscreen .video-stage video { max-height: none; height: 100%; flex: 1; aspect-ratio: auto; }
 .video-frame:fullscreen .embed-stage { flex: 1; aspect-ratio: auto; height: 100%; max-width: none; max-height: none; }
-.video-frame:-webkit-full-screen { display: flex; flex-direction: column; border-radius: 0; border: 0; }
+.video-frame:-webkit-full-screen { display: flex; flex-direction: column; border-radius: 0; border: 0; max-width: none; }
 .video-frame:-webkit-full-screen .video-stage { flex: 1; min-height: 0; display: flex; }
-.video-frame:-webkit-full-screen .video-stage video { max-height: none; height: 100%; flex: 1; }
+.video-frame:-webkit-full-screen .video-stage video { max-height: none; height: 100%; flex: 1; aspect-ratio: auto; }
 .video-frame:-webkit-full-screen .embed-stage { flex: 1; aspect-ratio: auto; height: 100%; max-width: none; max-height: none; }
 
 /* link box */
@@ -2084,3 +2099,7 @@ header {
 .sync-row input[type="range"] { flex: 1; min-width: 120px; accent-color: var(--purple, #c4b0ff); cursor: pointer; }
 .sync-row #vpLeadVal { min-width: 52px; font-variant-numeric: tabular-nums; }
 .dance-ctrl-btn.small { padding: 6px 14px; font-size: 0.8rem; }
+.speed-box { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 14px; border-radius: 30px; font-size: 0.85rem; color: #fff; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.18); padding-right: 14px; }
+.speed-box input { width: 4.2em; padding: 4px 6px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(0, 0, 0, 0.35); color: #fff; font: inherit; text-align: center; }
+.speed-box input:focus { outline: none; border-color: var(--pink, #f8b8d8); box-shadow: 0 0 10px rgba(248, 184, 216, 0.4); }
+.speed-box input:disabled { opacity: .4; cursor: not-allowed; }

@@ -152,9 +152,6 @@ let ytPlayer = null;
 let currentRate = 1;
 let mirrored = false;
 const video = document.getElementById('danceVideo');
-const slowBtn = document.getElementById('slowBtn');
-const normalBtn = document.getElementById('normalBtn');
-const fastBtn = document.getElementById('fastBtn');
 const mirrorBtn = document.getElementById('mirrorBtn');
 const videoFrame = document.getElementById('videoFrame');
 const videoStage = document.getElementById('videoStage');
@@ -171,7 +168,7 @@ const linkForm = document.getElementById('linkForm');
 const linkInput = document.getElementById('videoLinkInput');
 const linkStatus = document.getElementById('linkStatus');
 const LINK_HINT = 'YouTube: play, pause, seek and speed all work. TikTok & Instagram: use their own player controls; Mirror still works.';
-const transportIds = ['playBtn', 'pauseBtn', 'slowBtn', 'normalBtn', 'fastBtn'];
+const transportIds = ['playBtn', 'pauseBtn', 'speedInput'];
 let pbMuted = false;
 let pbSeeking = false;
 let ytApiPromise = null;
@@ -185,16 +182,24 @@ document.getElementById('pauseBtn')?.addEventListener('click', () => {
     if (mode === 'youtube') ytPlayer?.pauseVideo(); else video?.pause();
 });
 
-function setRate(rate, btn) {
+/* Speed: type any number, applied on Enter or when the box loses focus */
+const speedInput = document.getElementById('speedInput');
+function setRate(rate) {
     if (video) video.playbackRate = rate;
     currentRate = rate;
     if (mode === 'youtube') ytPlayer?.setPlaybackRate?.(rate);
-    [slowBtn, normalBtn, fastBtn].forEach(b => b?.classList.remove('active-btn'));
-    btn?.classList.add('active-btn');
+    speedInput.value = rate;
 }
-slowBtn?.addEventListener('click', () => setRate(0.5, slowBtn));
-normalBtn?.addEventListener('click', () => setRate(1.0, normalBtn));
-fastBtn?.addEventListener('click', () => setRate(1.5, fastBtn));
+function applyCustomRate() {
+    let rate = parseFloat(speedInput.value);
+    if (!isFinite(rate)) { speedInput.value = currentRate; return; }
+    // YouTube only allows 0.25x - 2x; our own <video> player handles 0.1x - 4x
+    const [min, max] = mode === 'youtube' ? [0.25, 2] : [0.1, 4];
+    rate = Math.round(Math.min(max, Math.max(min, rate)) * 100) / 100;
+    setRate(rate);
+}
+speedInput?.addEventListener('change', applyCustomRate);
+speedInput?.addEventListener('keydown', e => { if (e.key === 'Enter') speedInput.blur(); });
 
 /* ---------- Mirror (picture only, never the controls) ---------- */
 function applyMirror() {
@@ -260,6 +265,24 @@ function togglePlay() {
 pbPlay?.addEventListener('click', togglePlay);
 clickShield?.addEventListener('click', togglePlay);
 video?.addEventListener('click', togglePlay);
+/* Keep --nav-h equal to the sticky navbar's height, so the video can fill the window below it */
+const siteHeader = document.querySelector('header');
+if (siteHeader) {
+    const setNavH = () => document.documentElement.style.setProperty('--nav-h', siteHeader.offsetHeight + 'px');
+    setNavH();
+    if ('ResizeObserver' in window) new ResizeObserver(setNavH).observe(siteHeader);
+    else addEventListener('resize', setNavH);
+}
+
+/* Shape the frame like the video (null = tall embed, which has its own fixed size) */
+function fitFrame(ratio) {
+    if (!videoFrame) return;
+    videoFrame.classList.toggle('tall-embed', ratio === null);
+    if (ratio) videoFrame.style.setProperty('--vid-ar', ratio);
+}
+video?.addEventListener('loadedmetadata', () => {
+    if (mode === 'file' && video.videoWidth) fitFrame(video.videoWidth / video.videoHeight);
+});
 ['play', 'pause', 'ended', 'loadedmetadata', 'timeupdate', 'durationchange']
     .forEach(ev => video?.addEventListener(ev, updateProgress));
 setInterval(updateProgress, 250);   // YouTube has no time events, so poll
@@ -349,6 +372,7 @@ function showEmbedMode(newMode, vertical) {
     if (video) video.style.display = 'none';
     embedStage.hidden = false;
     embedStage.className = 'embed-stage ' + (vertical ? 'tall' : 'wide');
+    fitFrame(vertical ? null : 16 / 9);
     setTransportEnabled(newMode === 'youtube');
     applyMirror();
     syncPlayerUI();
@@ -361,6 +385,7 @@ function showFileMode() {
     mode = 'file';
     if (embedStage) embedStage.hidden = true;
     if (video) video.style.display = '';
+    fitFrame(video?.videoWidth ? video.videoWidth / video.videoHeight : 16 / 9);
     setTransportEnabled(true);
     applyMirror();
     syncPlayerUI();
