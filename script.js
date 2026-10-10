@@ -274,11 +274,36 @@ if (siteHeader) {
     else addEventListener('resize', setNavH);
 }
 
+/* Camera box = same height as the video box, lined up with it, so you can watch both at once */
+const camFrame = document.getElementById('camFrame');
+function syncCamFrame() {
+    if (!videoFrame || !camFrame) return;
+    const shown = mode === 'file' ? videoFrame : embedStage;   // a tall embed is narrower/taller than the frame
+    const h = (mode === 'file' ? videoFrame.offsetHeight - 52 : shown.offsetHeight);   // 52px = control bar
+    camFrame.parentElement.style.setProperty('--cam-h', Math.max(240, h) + 'px');
+    const editor = videoFrame.closest('article'), cam = camFrame.closest('article');
+    const sideBySide = cam.getBoundingClientRect().left > editor.getBoundingClientRect().left + 10;
+    camFrame.style.marginTop = '';
+    if (sideBySide) {
+        const gap = (videoFrame.getBoundingClientRect().top - editor.getBoundingClientRect().top)
+                  - (camFrame.getBoundingClientRect().top - cam.getBoundingClientRect().top);
+        if (gap > 0) camFrame.style.marginTop = gap + 'px';
+    }
+}
+if (videoFrame && camFrame && 'ResizeObserver' in window) {
+    const ro = new ResizeObserver(syncCamFrame);
+    [videoFrame, embedStage, camFrame.closest('article')].forEach(el => el && ro.observe(el));
+}
+addEventListener('resize', syncCamFrame);
+
 /* Shape the frame like the video (null = tall embed, which has its own fixed size) */
+const danceTop = videoFrame?.closest('.dance-top');
 function fitFrame(ratio) {
-    if (!videoFrame) return;
+    if (!videoFrame || !danceTop) return;
     videoFrame.classList.toggle('tall-embed', ratio === null);
-    if (ratio) videoFrame.style.setProperty('--vid-ar', ratio);
+    danceTop.classList.toggle('tall-embed', ratio === null);
+    danceTop.classList.toggle('portrait', ratio === null || ratio < 1);
+    if (ratio) danceTop.style.setProperty('--vid-ar', ratio);
 }
 video?.addEventListener('loadedmetadata', () => {
     if (mode === 'file' && video.videoWidth) fitFrame(video.videoWidth / video.videoHeight);

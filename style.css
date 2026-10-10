@@ -1213,7 +1213,10 @@ header {
 #dance-page-container > section { max-width: 1400px !important; }
 
 
-.dance-top { display: grid; grid-template-columns: 1.6fr 1fr; gap: 28px; align-items: stretch; }
+.dance-top { display: grid; grid-template-columns: 1.3fr 1fr; gap: 28px; align-items: stretch; }
+/* tall video: the editor column is only as wide as the video (+ card padding), the camera gets the rest */
+.dance-top.portrait { grid-template-columns: minmax(460px, calc(var(--vid-max-h) * var(--vid-ar) + 74px)) 1fr; }
+.dance-top.portrait.tall-embed { grid-template-columns: 460px 1fr; }
 .dance-bottom { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; margin-top: 28px; }
 
 
@@ -1232,16 +1235,19 @@ header {
 .video-frame { position: relative; border-radius: 20px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 0 40px rgba(248,184,216,0.15); }
 /* The frame takes the video's shape (--vid-ar, set from script.js) and is as big as it can be while the
    whole video + control bar still fits in the window below the sticky navbar (--nav-h, measured in
-   script.js): tall videos grow to that height, wide videos to the card width. */
-.video-frame {
+   script.js): tall videos grow to that height, wide videos to the card width.
+   The variables live on .dance-top so the column widths can use them too. */
+.dance-top {
   --vid-ar: 16 / 9; --vid-min-h: 240px; --vid-min-w: 360px;   /* min width keeps every control-bar button visible */
   --vid-max-h: calc(100vh - var(--nav-h, 80px) - 52px - 24px);   /* 52px = control bar */
+}
+@supports (height: 100dvh) { .dance-top { --vid-max-h: calc(100dvh - var(--nav-h, 80px) - 52px - 24px); } }   /* mobile: ignore the address bar */
+.video-frame {
   container-type: inline-size;   /* lets the control bar react to the frame's width */
   width: 100%; margin: 0 auto;
   max-width: min(100%, max(var(--vid-min-w), calc(var(--vid-max-h) * var(--vid-ar))));
   transition: max-width .3s ease;
 }
-@supports (height: 100dvh) { .video-frame { --vid-max-h: calc(100dvh - var(--nav-h, 80px) - 52px - 24px); } }   /* mobile: ignore the address bar */
 .video-frame.tall-embed { max-width: min(100%, 380px); }   /* TikTok / Instagram / Shorts: same width as .embed-stage.tall */
 .video-frame video { display: block; width: 100%; height: auto; aspect-ratio: var(--vid-ar); min-height: var(--vid-min-h); max-height: var(--vid-max-h); object-fit: contain; background: #000; }
 
@@ -1287,11 +1293,18 @@ header {
 }
 .cam-frame.live .cam-badge { color: #1a1024; background: var(--pink); border-color: transparent; }
 .cam-status { margin-top: 14px; font-size: 0.82rem; color: rgba(255,255,255,0.55); line-height: 1.5; }
+
+/* Side by side: the camera box is as tall as the video box and starts at the same height (both set from
+   script.js), and the camera card stays on screen while you scroll the editor's controls. */
+.dance-top { align-items: start; }
+.dance-cam { position: sticky; top: calc(var(--nav-h, 80px) + 12px); }
+.dance-cam .cam-frame { flex: none; height: var(--cam-h, 440px); min-height: 240px; }
 .dance-ctrl-btn:disabled { opacity: .4; cursor: not-allowed; }
 
 
 @media (max-width: 1000px) {
-  .dance-top, .dance-bottom { grid-template-columns: 1fr; }
+  .dance-top, .dance-top.portrait, .dance-top.portrait.tall-embed, .dance-bottom { grid-template-columns: 1fr; }
+  .dance-cam { position: static; }
   .shot.dance-big { padding: 24px; }
 }
 .dance-ctrl-btn:hover,
@@ -2099,6 +2112,75 @@ header {
 .sync-row input[type="range"] { flex: 1; min-width: 120px; accent-color: var(--purple, #c4b0ff); cursor: pointer; }
 .sync-row #vpLeadVal { min-width: 52px; font-variant-numeric: tabular-nums; }
 .dance-ctrl-btn.small { padding: 6px 14px; font-size: 0.8rem; }
+
+/* AI Synchronization Analyzer: session report (filled in by the pose script in index.html) */
+.sync-panel { display: flex; align-items: center; gap: 20px; background: rgba(0,0,0,0.35); border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); padding: 20px; }
+.sync-ring {
+  --p: 0; flex: none; width: 110px; height: 110px; border-radius: 50%; display: grid; place-items: center;
+  background: conic-gradient(var(--pink, #f8b8d8) calc(var(--p) * 1%), rgba(255,255,255,0.1) 0);
+  box-shadow: 0 0 30px rgba(248, 184, 216, 0.3);
+}
+.sync-ring-inner { width: 84px; height: 84px; border-radius: 50%; background: #120e18; display: grid; place-items: center; font-weight: 700; font-size: 1.4rem; color: #fff; font-variant-numeric: tabular-nums; }
+.sync-summary { min-width: 0; }
+.sync-label { font-size: 1rem; color: #fff; font-weight: 600; margin: 0; }
+.sync-hint { font-size: 0.82rem; color: rgba(255,255,255,0.6); margin: 6px 0 0; }
+.sync-meta { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin: 6px 0 0; }
+.sync-stats { display: flex; gap: 10px; margin-top: 14px; }
+.sync-stat { flex: 1; background: rgba(255,255,255,0.06); padding: 12px 10px; border-radius: 14px; text-align: center; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
+.sync-stat span { display: block; color: #fff; font-weight: 600; font-size: 0.95rem; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.sync-h { margin: 22px 0 10px; font-size: 0.8rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--purple, #c4b0ff); }
+.sync-empty { margin: 0; font-size: 0.82rem; color: rgba(255,255,255,0.45); }
+
+.sync-chart { position: relative; height: 170px; background: rgba(0,0,0,0.25); border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); }
+.sync-chart canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+.sync-chart-empty { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.sync-chart-empty[hidden] { display: none; }
+.sync-tip {
+  position: absolute; top: 8px; width: 190px; padding: 8px 10px; border-radius: 10px; pointer-events: none;
+  background: rgba(18,14,24,0.95); border: 1px solid rgba(255,255,255,0.15); font-size: 0.75rem; line-height: 1.5; color: rgba(255,255,255,0.75);
+}
+.sync-tip b { color: #fff; font-size: 0.9rem; }
+
+.sync-parts { display: grid; gap: 8px; }
+.sync-part { display: grid; grid-template-columns: 88px 1fr 42px; align-items: center; gap: 10px; font-size: 0.82rem; color: rgba(255,255,255,0.75); }
+.sync-part-name { text-transform: capitalize; }
+.sync-part-track { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.sync-part-fill { display: block; height: 100%; border-radius: 4px; background: var(--purple, #c4b0ff); transition: width .4s ease; }
+.sync-part-val { text-align: right; color: #fff; font-variant-numeric: tabular-nums; }
+.sync-part.weak .sync-part-val::after { content: " \2190"; color: var(--pink, #f8b8d8); }
+.sync-part.weak .sync-part-name { color: #fff; font-weight: 600; }
+
+.sync-tips { margin: 0; padding-left: 18px; display: grid; gap: 8px; font-size: 0.85rem; line-height: 1.5; color: rgba(255,255,255,0.75); }
+.sync-tips b { color: #fff; }
+
+.sync-delta { margin: 0 0 10px; font-size: 0.82rem; color: rgba(255,255,255,0.7); }
+.sync-delta b { color: #fff; }
+.sync-cols { display: flex; align-items: flex-end; gap: 8px; height: 110px; }
+.sync-col { flex: 1; max-width: 48px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; }
+.sync-col-val { font-size: 0.72rem; color: rgba(255,255,255,0.8); font-variant-numeric: tabular-nums; }
+.sync-col-bar { width: 100%; max-height: calc(100% - 36px); border-radius: 4px 4px 0 0; background: var(--purple, #c4b0ff); }
+.sync-col:last-child .sync-col-bar { background: var(--pink, #f8b8d8); }
+.sync-col-date { font-size: 0.7rem; color: rgba(255,255,255,0.45); }
+.sync-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 18px; font-size: 0.8rem; color: rgba(255,255,255,0.6); }
+
+/* live mini panel on the camera (not mirrored: it sits outside the flipped video/canvas) */
+.sync-hud {
+  position: absolute; top: 12px; right: 12px; z-index: 3; width: 168px; padding: 10px 12px; border-radius: 14px;
+  background: rgba(10,8,16,0.72); border: 1px solid rgba(255,255,255,0.18); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  color: #fff; font-size: 0.72rem;
+}
+.sync-hud[hidden] { display: none; }
+.hud-top { display: flex; align-items: baseline; gap: 8px; }
+.hud-top b { font-size: 1.9rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.hud-top span { color: rgba(255,255,255,0.75); font-weight: 600; }
+.hud-bars { display: grid; grid-template-columns: 12px 1fr; align-items: center; gap: 4px 6px; margin-top: 8px; color: rgba(255,255,255,0.6); }
+.hud-bars i {
+  --v: 0; display: block; height: 5px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--pink, #f8b8d8), var(--purple, #c4b0ff)) 0 0 / calc(var(--v) * 100%) 100% no-repeat, rgba(255,255,255,0.12);
+  transition: background-size .3s ease;
+}
+.hud-hint { margin-top: 6px; color: rgba(255,255,255,0.8); min-height: 1.2em; }
+.sync-hud.waiting .hud-top b { color: rgba(255,255,255,0.5); }
 .speed-box { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 14px; border-radius: 30px; font-size: 0.85rem; color: #fff; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.18); padding-right: 14px; }
 .speed-box input { width: 4.2em; padding: 4px 6px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(0, 0, 0, 0.35); color: #fff; font: inherit; text-align: center; }
 .speed-box input:focus { outline: none; border-color: var(--pink, #f8b8d8); box-shadow: 0 0 10px rgba(248, 184, 216, 0.4); }

@@ -339,6 +339,16 @@
                             <p>Camera is off</p>
                         </div>
                         <span class="cam-badge" id="camBadge">OFF</span>
+                        <!-- live sync score, filled in by the analyzer below -->
+                        <div class="sync-hud waiting" id="syncHud" hidden>
+                            <div class="hud-top"><b id="hudScore">--</b><span id="hudLabel">Sync</span></div>
+                            <div class="hud-bars">
+                                <span>T</span><i id="hudTiming"></i>
+                                <span>A</span><i id="hudAlign"></i>
+                                <span>E</span><i id="hudEnergy"></i>
+                            </div>
+                            <div class="hud-hint" id="hudHint"></div>
+                        </div>
                     </div>
 
 
@@ -360,39 +370,49 @@
                 <article class="shot"
                     style="padding: 32px; background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(14px); border-radius: 24px;">
                     <h3 style="font-size: 1.35rem; margin-bottom: 8px; color: #fff;">✦ AI Synchronization Analyzer</h3>
-                    <p style="font-size: 0.9rem; color: rgba(255,255,255,0.65); margin-bottom: 22px;">Frame-by-frame
-                        beat synchronization, keypoint alignment, and rhythm precision metrics.</p>
+                    <p style="font-size: 0.9rem; color: rgba(255,255,255,0.65); margin-bottom: 22px;">Compares the
+                        practice-video skeleton with your camera skeleton. Live score on your camera, full report here.</p>
 
 
-                    <div
-                        style="background: rgba(0,0,0,0.35); border-radius: 18px; border: 2px dashed rgba(255,255,255,0.2); padding: 24px; text-align: center;">
-                        <div
-                            style="width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(var(--pink, #f8b8d8) 0% 92%, rgba(255,255,255,0.1) 92% 100%); display: grid; place-items: center; margin: 0 auto 14px; position: relative; box-shadow: 0 0 30px rgba(248, 184, 216, 0.35);">
-                            <div
-                                style="width: 92px; height: 92px; border-radius: 50%; background: #120e18; display: grid; place-items: center; font-weight: 700; font-size: 1.5rem; color: #fff;">
-                                92%</div>
+                    <div class="sync-panel">
+                        <div class="sync-ring" id="syncRing" style="--p: 0">
+                            <div class="sync-ring-inner" id="syncScore">--</div>
                         </div>
-                        <p style="font-size: 0.85rem; color: rgba(255,255,255,0.8); font-weight: 500; margin: 0;">High
-                            Synchronization & Crisp Beats</p>
+                        <div class="sync-summary">
+                            <p class="sync-label" id="syncLabel">No session yet</p>
+                            <p class="sync-hint" id="syncHint">Turn on Skeleton on the practice video and start your camera.</p>
+                            <p class="sync-meta" id="syncMeta"></p>
+                        </div>
                     </div>
 
+                    <div class="sync-stats">
+                        <div class="sync-stat">Timing <span id="syncTiming">--</span></div>
+                        <div class="sync-stat">Align <span id="syncAlign">--</span></div>
+                        <div class="sync-stat">Energy <span id="syncEnergy">--</span></div>
+                    </div>
 
-                    <div style="display: flex; gap: 10px; margin-top: 16px;">
-                        <div
-                            style="flex: 1; background: rgba(255,255,255,0.06); padding: 12px 10px; border-radius: 14px; text-align: center; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);">
-                            Timing <span
-                                style="display: block; color: var(--purple, #c4b0ff); font-weight: 600; font-size: 0.95rem; margin-top: 4px;">94.8%</span>
-                        </div>
-                        <div
-                            style="flex: 1; background: rgba(255,255,255,0.06); padding: 12px 10px; border-radius: 14px; text-align: center; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);">
-                            Align <span
-                                style="display: block; color: var(--purple, #c4b0ff); font-weight: 600; font-size: 0.95rem; margin-top: 4px;">91.2%</span>
-                        </div>
-                        <div
-                            style="flex: 1; background: rgba(255,255,255,0.06); padding: 12px 10px; border-radius: 14px; text-align: center; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);">
-                            Energy <span
-                                style="display: block; color: var(--purple, #c4b0ff); font-weight: 600; font-size: 0.95rem; margin-top: 4px;">89.5%</span>
-                        </div>
+                    <h4 class="sync-h">Score over time</h4>
+                    <div class="sync-chart">
+                        <canvas id="syncChart" aria-label="Overall sync score over the session"></canvas>
+                        <div class="sync-tip" id="syncTip" hidden></div>
+                        <p class="sync-empty sync-chart-empty" id="syncChartEmpty">Dance for a few seconds to see your timeline.</p>
+                    </div>
+
+                    <h4 class="sync-h">Body parts</h4>
+                    <div class="sync-parts" id="syncParts"></div>
+
+                    <h4 class="sync-h">How to improve</h4>
+                    <ul class="sync-tips" id="syncTips"></ul>
+
+                    <h4 class="sync-h">Progress</h4>
+                    <div class="sync-history" id="syncHistory"></div>
+
+                    <div class="sync-foot">
+                        <span id="syncSaveNote"></span>
+                        <span>
+                            <button type="button" class="dance-ctrl-btn small" id="syncSaveBtn">Save session</button>
+                            <button type="button" class="dance-ctrl-btn small" id="syncResetBtn">Reset</button>
+                        </span>
                     </div>
                 </article>
 
@@ -873,6 +893,7 @@
             if (camVideo.currentTime !== lastTime && landmarker) {
                 lastTime = camVideo.currentTime;
                 const res = landmarker.detectForVideo(camVideo, performance.now());
+                syncAddCam(res);
                 ctx.clearRect(0, 0, camCanvas.width, camCanvas.height);
                 if (res.landmarks.length) {
                     badge.textContent = 'TRACKING';
@@ -1112,6 +1133,7 @@
             const rate = vpVideo.paused ? 0 : vpVideo.playbackRate;
             const leadSec = (vpInferMs + 16 + vpLeadMs.file) / 1000 * rate;
             const poses = vpExtrapolate(res.landmarks, t, leadSec);
+            syncAddRef(res);
             vpClear();
             vpDrawPoses(vpCtx, vpOverlay.width, poses);
             vpReport(res.landmarks.length);
@@ -1172,6 +1194,7 @@
             // a captured tab arrives late too, so the slider adds extra look-ahead on top of the detection time
             const leadSec = (vpInferMs + 16 + vpLeadMs.capture) / 1000;
             const poses = vpExtrapolate(res.landmarks, t0 / 1000, leadSec);
+            syncAddRef(res);
             if (onVideo) {                                   // skeleton directly on the original player
                 vpLayoutCap(cw, ch);
                 vpCapCtx.clearRect(0, 0, vpCapOverlay.width, vpCapOverlay.height);
@@ -1291,6 +1314,396 @@
             else if (vpMode === 'file') vpStartFile();
             else vpStartCapture();
         });
+
+        /* =========================================================
+           AI SYNCHRONIZATION ANALYZER
+           Compares the practice-video skeleton with your camera skeleton, live.
+           A pose becomes the 3D direction of 9 body segments (world landmarks, so
+           how far you stand from the camera and your body size do not matter).
+           - Align  : how close your segment directions are to the dancer's
+           - Timing : how far behind the dancer you are, found by matching your pose
+                      against the dancer's poses from the last second
+           - Energy : how big your movements are compared with the dancer's
+           Mirror-style copying (your right arm = dancer's left arm) is detected automatically.
+           The live score is shown on the camera (#syncHud); the Analyzer card below
+           shows the report for the whole session.
+           ========================================================= */
+        const SYNC_SEGS = [                    // [body part, from, to]; 33 = mid shoulders, 34 = mid hips
+            ['left arm', 11, 13], ['left arm', 13, 15], ['right arm', 12, 14], ['right arm', 14, 16],
+            ['left leg', 23, 25], ['left leg', 25, 27], ['right leg', 24, 26], ['right leg', 26, 28],
+            ['upper body', 34, 33]
+        ];
+        const SYNC_PARTS = ['left arm', 'right arm', 'left leg', 'right leg', 'upper body'];
+        const SYNC_SWAP = [2, 3, 0, 1, 6, 7, 4, 5, 8];     // left <-> right partner of each segment
+        const SYNC_WINDOW = 1000;              // ms of dancer history searched for your timing
+        const $s = id => document.getElementById(id);
+        const syncEl = {
+            hud: $s('syncHud'), hudScore: $s('hudScore'), hudLabel: $s('hudLabel'), hudHint: $s('hudHint'),
+            hudT: $s('hudTiming'), hudA: $s('hudAlign'), hudE: $s('hudEnergy'),
+            ring: $s('syncRing'), score: $s('syncScore'), label: $s('syncLabel'), hint: $s('syncHint'), meta: $s('syncMeta'),
+            timing: $s('syncTiming'), align: $s('syncAlign'), energy: $s('syncEnergy'),
+            chart: $s('syncChart'), tip: $s('syncTip'), chartEmpty: $s('syncChartEmpty'),
+            parts: $s('syncParts'), tips: $s('syncTips'), history: $s('syncHistory'),
+            save: $s('syncSaveBtn'), reset: $s('syncResetBtn'), saveNote: $s('syncSaveNote')
+        };
+        let syncRefs = [];                     // [{t, f}] the dancer's recent poses
+        let syncRefSpeed = 0, syncCamSpeed = 0, syncPrevCam = null, syncLastCamT = 0;
+        let syncMirror = false, syncMirrorFit = [0, 0];
+        let syncShown = null;                  // smoothed live values {overall, align, timing, energy, lag}
+        let syncSegFit = SYNC_SEGS.map(() => 1);
+        let sess = syncNewSession();
+
+        function syncNewSession() {
+            return {
+                start: performance.now(), samples: [], lastSample: 0, n: 0,
+                sum: { overall: 0, align: 0, timing: 0, energy: 0 },
+                lagSum: 0, lagN: 0, refSpd: 0, camSpd: 0,
+                part: Object.fromEntries(SYNC_PARTS.map(p => [p, { sum: 0, n: 0 }]))
+            };
+        }
+
+        function syncFeatures(res) {
+            const w = res.worldLandmarks?.[0], lm = res.landmarks?.[0];
+            if (!w || !lm) return null;
+            const mid = (a, b) => ({ x: (w[a].x + w[b].x) / 2, y: (w[a].y + w[b].y) / 2, z: (w[a].z + w[b].z) / 2 });
+            const pts = w.slice();
+            pts[33] = mid(11, 12); pts[34] = mid(23, 24);
+            const seen = i => i >= 33 || (lm[i].visibility ?? 1) > 0.5;
+            const f = SYNC_SEGS.map(([, a, b]) => {
+                if (!seen(a) || !seen(b)) return null;
+                const x = pts[b].x - pts[a].x, y = pts[b].y - pts[a].y, z = pts[b].z - pts[a].z;
+                const len = Math.hypot(x, y, z);
+                return len > 1e-4 ? [x / len, y / len, z / len] : null;
+            });
+            return f.filter(Boolean).length >= 4 ? f : null;
+        }
+        const syncAngle = (u, v) => Math.acos(Math.max(-1, Math.min(1, u[0] * v[0] + u[1] * v[1] + u[2] * v[2]))) * 180 / Math.PI;
+
+        /* how well your pose matches the dancer's: 1 = same, 0 = 90 degrees off or worse */
+        function syncCompare(cam, ref, swap) {
+            let sum = 0, n = 0;
+            const per = cam.map((u, i) => {
+                let v = ref[swap ? SYNC_SWAP[i] : i];
+                if (!u || !v) return null;
+                if (swap) v = [-v[0], v[1], v[2]];
+                const s = Math.max(0, 1 - syncAngle(u, v) / 90);
+                sum += s; n++;
+                return s;
+            });
+            return n >= 4 ? { score: sum / n, per } : null;
+        }
+
+        /* average segment speed in degrees per second between two poses */
+        function syncSpeed(a, b, dt) {
+            let sum = 0, n = 0;
+            a.forEach((u, i) => { if (u && b[i]) { sum += syncAngle(u, b[i]); n++; } });
+            return n && dt > 0 ? sum / n / dt * 1000 : 0;
+        }
+
+        function syncAddRef(res) {
+            const f = syncFeatures(res);
+            if (!f) return;
+            const t = performance.now(), last = syncRefs[syncRefs.length - 1];
+            if (last) syncRefSpeed += (syncSpeed(f, last.f, t - last.t) - syncRefSpeed) * 0.15;
+            syncRefs.push({ t, f });
+            while (t - syncRefs[0].t > SYNC_WINDOW + 200) syncRefs.shift();
+        }
+
+        function syncAddCam(res) {
+            const f = syncFeatures(res);
+            if (!f) return;
+            const now = performance.now();
+            if (syncPrevCam) syncCamSpeed += (syncSpeed(f, syncPrevCam, now - syncLastCamT) - syncCamSpeed) * 0.15;
+            syncPrevCam = f; syncLastCamT = now;
+            if (!vpOn || !syncRefs.length) return;
+
+            // the dancer's poses from the last second (a paused video sends none, so use its last pose)
+            let cands = syncRefs.filter(r => now - r.t <= SYNC_WINDOW);
+            const paused = !cands.length;
+            if (paused) { cands = [syncRefs[syncRefs.length - 1]]; syncRefSpeed = 0; }
+            const scored = [false, true].map(swap => cands.map(r => ({ r, c: syncCompare(f, r.f, swap) })).filter(x => x.c));
+            const best = scored.map(list => list.reduce((a, x) => (!a || x.c.score > a.c.score ? x : a), null));
+            best.forEach((b, i) => { if (b) syncMirrorFit[i] += (b.c.score - syncMirrorFit[i]) * 0.05; });
+            // switch between normal / mirror matching only when the other is clearly better
+            if (syncMirrorFit[syncMirror ? 0 : 1] > syncMirrorFit[syncMirror ? 1 : 0] + 0.05) syncMirror = !syncMirror;
+            const side = syncMirror ? 1 : 0, b = best[side];
+            if (!b) return;
+            // when several moments fit about equally well, assume the most recent one
+            const close = scored[side].filter(x => x.c.score >= b.c.score - 0.02);
+            const lag = Math.max(0, now - close[close.length - 1].r.t);
+
+            const moving = syncRefSpeed >= 20;  // dancer standing still: nothing to time
+            const align = b.c.score;
+            const timing = moving ? Math.max(0, Math.min(1, 1 - (lag - 150) / 850))   // full marks up to 0.15s late, 0 at 1s
+                : (syncShown ? syncShown.timing : 1);
+            const hi = Math.max(syncRefSpeed, syncCamSpeed);
+            const energy = hi < 15 ? 1 : Math.min(syncRefSpeed, syncCamSpeed) / hi;
+            const overall = 0.6 * align + 0.25 * timing + 0.15 * energy;
+
+            const k = 0.08;                    // smoothing so the live numbers do not flicker
+            const cur = { overall, align, timing, energy, lag };
+            if (!syncShown) syncShown = cur;
+            else for (const key in cur) syncShown[key] += (cur[key] - syncShown[key]) * k;
+            b.c.per.forEach((s, i) => { if (s != null) syncSegFit[i] += (s - syncSegFit[i]) * k; });
+
+            if (paused) return;                // the session report only counts time the dancer is playing
+            sess.n++;
+            for (const key in sess.sum) sess.sum[key] += cur[key];
+            if (moving) { sess.lagSum += lag; sess.lagN++; }
+            sess.refSpd += syncRefSpeed; sess.camSpd += syncCamSpeed;
+            b.c.per.forEach((s, i) => { if (s != null) { const p = sess.part[SYNC_SEGS[i][0]]; p.sum += s; p.n++; } });
+            if (now - sess.lastSample >= 500) {   // one timeline point every half second
+                sess.lastSample = now;
+                sess.samples.push({
+                    s: (now - sess.start) / 1000, v: vpSource === 'file' ? vpVideo.currentTime : null,
+                    o: syncShown.overall, a: syncShown.align, t: syncShown.timing, e: syncShown.energy
+                });
+                if (sess.samples.length > 1200) sess.samples.shift();   // keep the last 10 minutes
+            }
+        }
+
+        const syncPct = v => Math.round(v * 100) + '%';
+        const syncLabelFor = o => o >= 0.85 ? 'Excellent sync!' : o >= 0.7 ? 'Good sync' : o >= 0.5 ? 'Getting there' : 'Out of sync';
+        const syncClock = sec => Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
+
+        function syncWaitMsg() {
+            if (!vpOn) return 'Turn on Skeleton on the practice video.';
+            if (!running) return 'Start your camera to compare.';
+            if (!syncRefs.length) return 'No dancer found in the practice video yet.';
+            if (performance.now() - syncLastCamT > 600) return 'Step back until your whole body is in the camera.';
+            return null;
+        }
+
+        /* ---------- live mini panel on the camera ---------- */
+        function syncRenderLive() {
+            syncEl.hud.hidden = !running;
+            if (!running) return;
+            const msg = syncWaitMsg();
+            syncEl.hud.classList.toggle('waiting', !!msg || !syncShown);
+            if (msg || !syncShown) {
+                syncEl.hudScore.textContent = '--';
+                syncEl.hudLabel.textContent = 'Sync';
+                syncEl.hudHint.textContent = msg || 'Move with the dancer.';
+                [syncEl.hudT, syncEl.hudA, syncEl.hudE].forEach(el => el.style.setProperty('--v', 0));
+                return;
+            }
+            const o = syncShown.overall;
+            syncEl.hudScore.textContent = syncPct(o);
+            syncEl.hudLabel.textContent = syncLabelFor(o);
+            syncEl.hudT.style.setProperty('--v', syncShown.timing);
+            syncEl.hudA.style.setProperty('--v', syncShown.align);
+            syncEl.hudE.style.setProperty('--v', syncShown.energy);
+            // point at the body part that matches worst right now
+            let worst = null, worstFit = 0.65;
+            SYNC_PARTS.forEach(name => {
+                const v = SYNC_SEGS.map((s, i) => s[0] === name ? syncSegFit[i] : null).filter(x => x != null);
+                const m = v.reduce((a, x) => a + x, 0) / v.length;
+                if (m < worstFit) { worstFit = m; worst = name; }
+            });
+            const lagS = syncShown.lag / 1000;
+            syncEl.hudHint.textContent = syncRefSpeed >= 20 && lagS > 0.25 ? lagS.toFixed(1) + 's behind'
+                : worst ? 'Check your ' + worst : 'Looking good';
+        }
+        setInterval(syncRenderLive, 200);
+
+        /* ---------- session report in the Analyzer card ---------- */
+        const SYNC_HISTORY_KEY = 'muse.syncHistory';
+        function syncHistory() {
+            try { return JSON.parse(localStorage.getItem(SYNC_HISTORY_KEY) || '[]'); } catch (e) { return []; }
+        }
+        function syncAvg() {
+            if (!sess.n) return null;
+            const a = {};
+            for (const key in sess.sum) a[key] = sess.sum[key] / sess.n;
+            a.lag = sess.lagN ? sess.lagSum / sess.lagN / 1000 : 0;
+            a.secs = (sess.samples.length ? sess.samples[sess.samples.length - 1].s : 0);
+            a.parts = SYNC_PARTS.map(name => ({ name, v: sess.part[name].n ? sess.part[name].sum / sess.part[name].n : null }));
+            return a;
+        }
+
+        function syncRenderReport() {
+            const a = syncAvg(), enough = a && sess.n >= 20;
+            syncEl.ring.style.setProperty('--p', enough ? Math.round(a.overall * 100) : 0);
+            syncEl.score.textContent = enough ? syncPct(a.overall) : '--';
+            syncEl.label.textContent = enough ? syncLabelFor(a.overall) + ' (session average)' : 'No session yet';
+            syncEl.hint.textContent = enough ? 'The live score is shown on your camera.' : (syncWaitMsg() || 'Dance along for a few seconds...');
+            syncEl.meta.textContent = enough
+                ? 'Danced ' + syncClock(a.secs) + (sess.lagN ? ' · on average ' + a.lag.toFixed(2) + 's behind' : '') + (syncMirror ? ' · mirror mode' : '')
+                : '';
+            syncEl.timing.textContent = enough ? syncPct(a.timing) : '--';
+            syncEl.align.textContent = enough ? syncPct(a.align) : '--';
+            syncEl.energy.textContent = enough ? syncPct(a.energy) : '--';
+            syncDrawChart();
+            syncRenderParts(enough ? a : null);
+            syncRenderTips(enough ? a : null);
+            syncRenderHistory(enough ? a : null);
+        }
+
+        /* body parts: one bar per part, weakest one marked */
+        function syncRenderParts(a) {
+            if (!a) { syncEl.parts.innerHTML = '<p class="sync-empty">No data yet.</p>'; return; }
+            const valid = a.parts.filter(p => p.v != null);
+            const weakest = valid.reduce((w, p) => (!w || p.v < w.v ? p : w), null);
+            syncEl.parts.innerHTML = a.parts.map(p => `
+                <div class="sync-part${p === weakest && p.v < 0.8 ? ' weak' : ''}" title="${p.name}: ${p.v == null ? 'not visible' : syncPct(p.v)}">
+                    <span class="sync-part-name">${p.name}</span>
+                    <span class="sync-part-track"><span class="sync-part-fill" style="width:${p.v == null ? 0 : Math.round(p.v * 100)}%"></span></span>
+                    <span class="sync-part-val">${p.v == null ? '–' : syncPct(p.v)}</span>
+                </div>`).join('');
+        }
+
+        /* the hardest stretch of an uploaded video (5 s windows of video time) */
+        function syncHardestPart() {
+            const buckets = {};
+            sess.samples.forEach(p => {
+                if (p.v == null) return;
+                const k = Math.floor(p.v / 5);
+                (buckets[k] ||= []).push(p.o);
+            });
+            let worst = null;
+            for (const [k, v] of Object.entries(buckets)) {
+                if (v.length < 4) continue;
+                const m = v.reduce((x, y) => x + y, 0) / v.length;
+                if (!worst || m < worst.m) worst = { from: k * 5, m };
+            }
+            return worst;
+        }
+
+        function syncRenderTips(a) {
+            const tips = [];
+            if (!a) {
+                tips.push('Turn on Skeleton on the practice video, start your camera and dance along for at least 10 seconds.');
+            } else {
+                const valid = a.parts.filter(p => p.v != null);
+                const weakest = valid.reduce((w, p) => (!w || p.v < w.v ? p : w), null);
+                if (weakest && weakest.v < 0.75)
+                    tips.push(`Your <b>${weakest.name}</b> matches the least (${syncPct(weakest.v)}). Watch only the dancer's ${weakest.name} for a few counts and copy its angle.`);
+                if (a.timing < 0.8 && a.lag > 0.25)
+                    tips.push(`You are about <b>${a.lag.toFixed(1)}s behind</b> on average. Learn the moves at 0.5x in the Speed box, then speed up, and try to start each move a little earlier.`);
+                const ref = sess.refSpd / sess.n, cam = sess.camSpd / sess.n;
+                if (a.energy < 0.75)
+                    tips.push(cam < ref
+                        ? 'Your moves are <b>smaller or softer</b> than the dancer\'s. Go bigger: stretch your arms fully and hit each move harder.'
+                        : 'You are <b>moving more</b> than the dancer. Keep the moves controlled and stop sharply where the dancer stops.');
+                const hard = syncHardestPart();
+                if (hard && hard.m < 0.75)
+                    tips.push(`Hardest part: <b>${syncClock(hard.from)}–${syncClock(hard.from + 5)}</b> of the video (${syncPct(hard.m)}). Drag the timeline there and loop it.`);
+                if (!tips.length)
+                    tips.push(a.overall >= 0.85
+                        ? 'Great session! For a challenge, try 1.25x in the Speed box or turn off Mirror.'
+                        : 'Solid work. Keep practising this section until the score stays above 85%.');
+            }
+            syncEl.tips.innerHTML = tips.map(t => '<li>' + t + '</li>').join('');
+        }
+
+        /* saved sessions: one column per session + change against the last one */
+        function syncRenderHistory(a) {
+            const hist = syncHistory();
+            if (!hist.length) {
+                syncEl.history.innerHTML = '<p class="sync-empty">Press “Save session” after practising to track your progress here.</p>';
+                return;
+            }
+            const last = hist[hist.length - 1];
+            let delta = '';
+            if (a) {
+                const d = Math.round((a.overall - last.avg) * 100);
+                delta = `<p class="sync-delta">This session ${syncPct(a.overall)} vs last saved ${syncPct(last.avg)}: <b>${d >= 0 ? '+' : ''}${d}</b></p>`;
+            }
+            syncEl.history.innerHTML = delta + '<div class="sync-cols">' + hist.slice(-8).map(h => {
+                const d = new Date(h.date);
+                return `<div class="sync-col" title="${d.toLocaleString()}: ${syncPct(h.avg)} (${syncClock(h.secs)} danced)">
+                    <span class="sync-col-val">${Math.round(h.avg * 100)}</span>
+                    <span class="sync-col-bar" style="height:${Math.max(4, Math.round(h.avg * 100))}%"></span>
+                    <span class="sync-col-date">${d.getMonth() + 1}/${d.getDate()}</span>
+                </div>`;
+            }).join('') + '</div>';
+        }
+
+        /* score over time: line chart on a canvas, with a crosshair tooltip */
+        let syncHover = null;
+        function syncDrawChart() {
+            const cv = syncEl.chart, pts = sess.samples;
+            syncEl.chartEmpty.hidden = pts.length >= 4;
+            const W = cv.clientWidth, H = cv.clientHeight, dpr = window.devicePixelRatio || 1;
+            if (!W || !H) return;
+            if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+            const c = cv.getContext('2d');
+            c.setTransform(dpr, 0, 0, dpr, 0, 0);
+            c.clearRect(0, 0, W, H);
+            const L = 34, R = 8, T = 8, B = 20, pw = W - L - R, ph = H - T - B;
+            // recessive grid + y labels
+            c.font = '11px system-ui, sans-serif'; c.textBaseline = 'middle'; c.textAlign = 'right';
+            [0, 50, 100].forEach(v => {
+                const y = T + ph * (1 - v / 100);
+                c.strokeStyle = 'rgba(255,255,255,0.08)'; c.lineWidth = 1;
+                c.beginPath(); c.moveTo(L, y); c.lineTo(W - R, y); c.stroke();
+                c.fillStyle = 'rgba(255,255,255,0.45)'; c.fillText(v + '%', L - 6, y);
+            });
+            if (pts.length < 4) { syncEl.chart.geom = null; return; }
+            const s0 = pts[0].s, s1 = pts[pts.length - 1].s, span = Math.max(1, s1 - s0);
+            const X = p => L + (p.s - s0) / span * pw, Y = v => T + ph * (1 - v);
+            // x labels: start and end of the timeline
+            c.textBaseline = 'top'; c.fillStyle = 'rgba(255,255,255,0.45)';
+            c.textAlign = 'left'; c.fillText(syncClock(s0), L, H - B + 5);
+            c.textAlign = 'right'; c.fillText(syncClock(s1), W - R, H - B + 5);
+            // area + line
+            c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(X(p), Y(p.o)) : c.moveTo(X(p), Y(p.o)));
+            c.lineTo(X(pts[pts.length - 1]), Y(0)); c.lineTo(X(pts[0]), Y(0)); c.closePath();
+            c.fillStyle = 'rgba(196,176,255,0.12)'; c.fill();
+            c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(X(p), Y(p.o)) : c.moveTo(X(p), Y(p.o)));
+            c.strokeStyle = '#c4b0ff'; c.lineWidth = 2; c.lineJoin = 'round'; c.stroke();
+            // session average as a dashed reference line
+            const avg = sess.sum.overall / sess.n;
+            c.setLineDash([4, 4]); c.strokeStyle = 'rgba(248,184,216,0.7)'; c.lineWidth = 1;
+            c.beginPath(); c.moveTo(L, Y(avg)); c.lineTo(W - R, Y(avg)); c.stroke(); c.setLineDash([]);
+            c.fillStyle = 'rgba(255,255,255,0.7)'; c.textAlign = 'right'; c.textBaseline = 'bottom';
+            c.fillText('avg ' + syncPct(avg), W - R, Y(avg) - 3);
+            // hover crosshair
+            if (syncHover != null && pts[syncHover]) {
+                const p = pts[syncHover], x = X(p), y = Y(p.o);
+                c.strokeStyle = 'rgba(255,255,255,0.35)'; c.beginPath(); c.moveTo(x, T); c.lineTo(x, T + ph); c.stroke();
+                c.fillStyle = '#c4b0ff'; c.strokeStyle = '#120e18'; c.lineWidth = 2;
+                c.beginPath(); c.arc(x, y, 5, 0, Math.PI * 2); c.fill(); c.stroke();
+            }
+            syncEl.chart.geom = { L, pw, s0, span };
+        }
+        syncEl.chart.addEventListener('mousemove', e => {
+            const g = syncEl.chart.geom, pts = sess.samples;
+            if (!g) return;
+            const r = syncEl.chart.getBoundingClientRect();
+            const s = g.s0 + (e.clientX - r.left - g.L) / g.pw * g.span;
+            let best = 0;
+            pts.forEach((p, i) => { if (Math.abs(p.s - s) < Math.abs(pts[best].s - s)) best = i; });
+            syncHover = best;
+            const p = pts[best];
+            syncEl.tip.hidden = false;
+            syncEl.tip.innerHTML = `<b>${syncPct(p.o)}</b> overall<br>Timing ${syncPct(p.t)} · Align ${syncPct(p.a)} · Energy ${syncPct(p.e)}<br>`
+                + (p.v != null ? 'video ' + syncClock(p.v) : 'at ' + syncClock(p.s));
+            const x = e.clientX - r.left;
+            syncEl.tip.style.left = Math.min(Math.max(0, x - 90), r.width - 190) + 'px';
+            syncDrawChart();
+        });
+        syncEl.chart.addEventListener('mouseleave', () => { syncHover = null; syncEl.tip.hidden = true; syncDrawChart(); });
+        setInterval(syncRenderReport, 1000);
+        addEventListener('resize', syncDrawChart);
+
+        syncEl.save.addEventListener('click', () => {
+            const a = syncAvg();
+            if (!a || sess.n < 20) { syncEl.saveNote.textContent = 'Dance a bit longer first.'; return; }
+            const hist = syncHistory();
+            hist.push({ date: Date.now(), avg: a.overall, align: a.align, timing: a.timing, energy: a.energy, secs: a.secs });
+            try { localStorage.setItem(SYNC_HISTORY_KEY, JSON.stringify(hist.slice(-20))); } catch (e) { }
+            syncEl.saveNote.textContent = 'Saved ' + syncPct(a.overall) + '. New session started.';
+            sess = syncNewSession();
+            syncRenderReport();
+        });
+        syncEl.reset.addEventListener('click', () => {
+            sess = syncNewSession();
+            syncShown = null; syncSegFit = SYNC_SEGS.map(() => 1); syncMirrorFit = [0, 0]; syncMirror = false;
+            syncEl.saveNote.textContent = '';
+            syncRenderReport();
+        });
+        syncRenderReport();
 
         /* A paused video produces no frame callbacks, so redraw after seeking / loading */
         vpVideo.addEventListener('seeked', () => { vpTrack = []; vpDetect(true); });
