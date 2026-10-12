@@ -90,56 +90,7 @@ window.addEventListener('mousemove', e => {
 });
 
 
-/* ================= PAGE SWITCHING & DANCE FEATURES ================= */
-const homeContainer = document.getElementById('home-page-container');
-const mainHero = document.querySelector('main.hero');
-const pageSections = document.querySelector('.page-sections');
-const danceContainer = document.getElementById('dance-page-container');
 
-
-const danceNavLink = document.getElementById('dance-nav-link');
-const danceCardBtn = document.querySelector('.card-float.f1 a');
-const homeNavLinks = document.querySelectorAll('.nav-link:not(#dance-nav-link)');
-const logoLink = document.querySelector('.nav-logo');
-
-
-// Function to switch to Dance view
-function openDanceView(e) {
-    if (e) e.preventDefault();
-    if (homeContainer) {
-        homeContainer.style.display = 'none';
-    } else {
-        if (mainHero) mainHero.style.display = 'none';
-        if (pageSections) pageSections.style.display = 'none';
-    }
-    if (danceContainer) danceContainer.style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-
-// Function to switch back to Home view while preserving exact original layout
-function openHomeView(e) {
-    if (e) e.preventDefault();
-    if (danceContainer) danceContainer.style.display = 'none';
-   
-    if (homeContainer) {
-        homeContainer.style.display = '';
-    } else {
-        if (mainHero) mainHero.style.display = '';
-        if (pageSections) pageSections.style.display = '';
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-
-// Attach listeners for switching to Dance Page
-danceNavLink?.addEventListener('click', openDanceView);
-danceCardBtn?.addEventListener('click', openDanceView);
-
-
-// Attach listeners for switching back to Home Page
-homeNavLinks.forEach(link => link.addEventListener('click', openHomeView));
-logoLink?.addEventListener('click', openHomeView);
 
 
 /* The Practice Video Editor (player bar, speed slider, Mirror, link
@@ -268,13 +219,13 @@ if (canvas) {
    ========================================================= */
 
 
-const galleryContainer =
-    document.getElementById('gallery-page-container');
 
 
-const galleryNavLink =
-    document.getElementById('gallery-nav-link');
 
+
+
+
+   
 
 const gallerySearch =
     document.getElementById('gallerySearch');
@@ -306,107 +257,10 @@ const completedCount =
 
 
 
-/* =========================================================
-   OPEN GALLERY
-   ========================================================= */
-
-
-function openGalleryView(e) {
-
-
-    if (e) e.preventDefault();
-
-
-    if (mainHero) {
-        mainHero.style.display = 'none';
-    }
-
-
-    if (pageSections) {
-        pageSections.style.display = 'none';
-    }
-
-
-    if (danceContainer) {
-        danceContainer.style.display = 'none';
-    }
-
-
-    if (galleryContainer) {
-        galleryContainer.style.display = 'block';
-    }
-
-
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-
-
-    updateGalleryStats();
-}
 
 
 
 
-/* =========================================================
-   GALLERY NAVIGATION
-   ========================================================= */
-
-
-galleryNavLink?.addEventListener(
-    'click',
-    openGalleryView
-);
-
-
-
-
-/* Update the existing home navigation links */
-
-
-homeNavLinks.forEach(link => {
-
-
-    link.addEventListener('click', function(e) {
-
-
-        if (this.id === 'gallery-nav-link') {
-            return;
-        }
-
-
-        if (galleryContainer) {
-            galleryContainer.style.display = 'none';
-        }
-
-
-        openHomeView(e);
-
-
-    });
-
-
-});
-
-
-
-
-/* Logo returns home */
-
-
-logoLink?.addEventListener('click', function(e) {
-
-
-    if (galleryContainer) {
-        galleryContainer.style.display = 'none';
-    }
-
-
-    openHomeView(e);
-
-
-});
 
 
 
