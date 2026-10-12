@@ -1277,6 +1277,29 @@ header {
 .dance-ctrl-btn:disabled { opacity: .4; cursor: not-allowed; }
 
 
+/* playback-speed slider: styled as one pill so it sits with the buttons */
+.speed-ctrl {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 7px 16px; border-radius: 30px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  font-size: 0.85rem; font-weight: 500; color: #fff;
+  transition: all 0.3s ease;
+}
+.speed-ctrl:hover { border-color: rgba(196,176,255,0.55); }
+.speed-ctrl label { cursor: pointer; white-space: nowrap; }
+.speed-ctrl input[type="range"] {
+  width: 110px; accent-color: var(--purple, #c4b0ff); cursor: pointer; vertical-align: middle;
+}
+.speed-val {
+  min-width: 48px; text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--purple, #c4b0ff); font-weight: 600;
+}
+.speed-ctrl[aria-disabled="true"] { opacity: .4; }
+.speed-ctrl[aria-disabled="true"] input[type="range"] { cursor: not-allowed; }
+
+
 @media (max-width: 1000px) {
   .dance-top, .dance-bottom { grid-template-columns: 1fr; }
   .shot.dance-big { padding: 24px; }
