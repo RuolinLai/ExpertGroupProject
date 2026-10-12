@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <title>Sign In | MUSE</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* =========================================
+           MUSE LOGIN PAGE
+           Uses the existing MUSE colour palette
+        ========================================= */
+
+        .auth-body {
+            --auth-pink: #f8b8d8;
+            --auth-purple: #c4b0ff;
+            --auth-blue: #a8d0ff;
+
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 40px 20px;
+            box-sizing: border-box;
+
+            background: #000;
+            color: #fff;
+
+            position: relative;
+            isolation: isolate;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           BACKGROUND GLOWING ORBS
+        ========================================= */
+
+        .auth-background {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .auth-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.35;
+        }
+
+        /* =========================================
+           GLASS LOGIN CARD
+        ========================================= */
+
+        .auth-page {
+            --mouse-x: 50%;
+            --mouse-y: 50%;
+
+            position: relative;
+            isolation: isolate;
+
+            width: 100%;
+            max-width: 440px;
+
+            padding: 38px;
+            box-sizing: border-box;
+
+            border-radius: 30px;
+            overflow: hidden;
+
+            color: #fff;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(255, 255, 255, 0.12),
+                    rgba(255, 255, 255, 0.035)
+                );
+
+            border: 1px solid rgba(255, 255, 255, 0.18);
+
+            -webkit-backdrop-filter: blur(18px) saturate(140%);
+            backdrop-filter: blur(18px) saturate(140%);
+
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.55),
+                0 0 40px rgba(196, 176, 255, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+
+            transition:
+                transform 0.35s ease,
+                border-color 0.35s ease,
+                box-shadow 0.35s ease;
+        }
+
+        /* Cursor-following spotlight */
+
+        .auth-page::before {
+            content: "";
+
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+
+            background: radial-gradient(
+                300px circle at var(--mouse-x) var(--mouse-y),
+                rgba(248, 184, 216, 0.22),
+                rgba(196, 176, 255, 0.09) 40%,
+                transparent 70%
+            );
+
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        /* Glass shine sweep */
+
+        .auth-page::after {
+            content: "";
+
+            position: absolute;
+            top: 0;
+            left: -120%;
+
+            width: 60%;
+            height: 100%;
+
+            background: linear-gradient(
+                100deg,
+                transparent,
+                rgba(255, 255, 255, 0.07),
+                transparent
+            );
+
+            transform: skewX(-20deg);
+            transition: left 0.9s ease;
+
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .auth-page:hover::after {
+            left: 140%;
+        }
+
+        .auth-page:hover {
+            transform: translateY(-4px);
+
+            border-color: rgba(196, 176, 255, 0.35);
+
+            box-shadow:
+                0 30px 70px rgba(0, 0, 0, 0.6),
+                0 0 45px rgba(196, 176, 255, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        /* =========================================
+           CENTERED TAGLINE
+           No separate MUSE heading
+        ========================================= */
+
+        .auth-heading {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-tagline {
+            margin: 0;
+
+            font-size: clamp(1.05rem, 4vw, 1.3rem);
+            font-weight: 500;
+
+            letter-spacing: 0.3px;
+            line-height: 1.7;
+
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .auth-tagline span {
+            background: linear-gradient(
+                110deg,
+                var(--auth-pink),
+                var(--auth-purple),
+                var(--auth-blue),
+                var(--auth-pink)
+            );
+
+            background-size: 300% 100%;
+
+            -webkit-background-clip: text;
+            background-clip: text;
+
+            color: transparent;
+
+            animation: shimmer 6s linear infinite;
+        }
+
+        /* =========================================
+           SIGN IN / CREATE ACCOUNT FORMS
+        ========================================= */
+
+        .auth-page .auth-form {
+            display: grid;
+            gap: 12px;
+
+            margin: 0;
+        }
+
+        .auth-page .auth-form h2 {
+            margin: 0 0 12px;
+
+            text-align: center;
+
+            font-size: 1.65rem;
+            font-weight: 600;
+        }
+
+        .auth-page .auth-form label {
+            margin-top: 4px;
+
+            font-size: 0.9rem;
+            font-weight: 500;
+
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* Glass input fields */
+
+        .auth-page .auth-form input {
+            width: 100%;
+            min-width: 0;
+
+            box-sizing: border-box;
+
+            padding: 13px 15px;
+
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.17);
+
+            background: rgba(255, 255, 255, 0.055);
+
+            color: #fff;
+            font: inherit;
+            font-size: 0.92rem;
+
+            outline: none;
+
+            transition:
+                border-color 0.3s ease,
+                background 0.3s ease,
+                box-shadow 0.3s ease;
+        }
+
+        .auth-page .auth-form input::placeholder {
+            color: rgba(255, 255, 255, 0.38);
+        }
+
+        .auth-page .auth-form input:hover {
+            border-color: rgba(196, 176, 255, 0.4);
+            background: rgba(255, 255, 255, 0.075);
+        }
+
+        .auth-page .auth-form input:focus {
+            border-color: var(--auth-purple);
+
+            background: rgba(255, 255, 255, 0.09);
+
+            box-shadow:
+                0 0 0 3px rgba(196, 176, 255, 0.12),
+                0 0 20px rgba(196, 176, 255, 0.07);
+        }
+
+        /* =========================================
+           PASTEL GRADIENT BUTTONS
+           Same colours as the home-page shimmer
+        ========================================= */
+
+        .auth-page .auth-button {
+            position: relative;
+
+            width: 100%;
+            margin-top: 12px;
+            padding: 13px 18px;
+
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+
+            background: linear-gradient(
+                110deg,
+                var(--auth-pink),
+                var(--auth-purple),
+                var(--auth-blue),
+                var(--auth-pink)
+            );
+
+            background-size: 300% 100%;
+
+            color: #1a1024;
+
+            font: inherit;
+            font-weight: 600;
+            font-size: 0.95rem;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 0 24px rgba(248, 184, 216, 0.15);
+
+            animation: shimmer 6s linear infinite;
+
+            transition:
+                transform 0.3s ease,
+                box-shadow 0.3s ease;
+        }
+
+        .auth-page .auth-button:hover {
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 10px 28px rgba(248, 184, 216, 0.22),
+                0 0 28px rgba(196, 176, 255, 0.2);
+        }
+
+        .auth-page .auth-button:active {
+            transform: translateY(-1px);
+        }
+
+        .auth-page .auth-button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+            transform: none;
+        }
+
+        /* =========================================
+           FORGOT PASSWORD + ACCOUNT SWITCH LINKS
+        ========================================= */
+
+        .auth-page .auth-reset,
+        .auth-page .auth-switch {
+            margin-top: 13px;
+
+            text-align: center;
+
+            font-size: 0.87rem;
+            line-height: 1.9;
+
+            color: rgba(255, 255, 255, 0.68);
+        }
+
+        .auth-page .auth-reset button,
+        .auth-page .auth-switch button {
+            padding: 0;
+            margin: 0;
+
+            border: none;
+            background: none;
+
+            font: inherit;
+            font-weight: 500;
+
+            color: transparent;
+
+            background-image: linear-gradient(
+                110deg,
+                var(--auth-pink),
+                var(--auth-purple),
+                var(--auth-blue),
+                var(--auth-pink)
+            );
+
+            background-size: 300% 100%;
+
+            -webkit-background-clip: text;
+            background-clip: text;
+
+            text-decoration: underline;
+            text-decoration-color: rgba(196, 176, 255, 0.7);
+            text-underline-offset: 4px;
+
+            cursor: pointer;
+
+            animation: shimmer 6s linear infinite;
+
+            transition: text-decoration-color 0.3s ease;
+        }
+
+        .auth-page .auth-reset button:hover,
+        .auth-page .auth-switch button:hover {
+            text-decoration-color: var(--auth-pink);
+        }
+
+        /* =========================================
+           AUTHENTICATION STATUS MESSAGES
+        ========================================= */
+
+        .auth-page .auth-message {
+            margin-top: 18px;
+
+            text-align: center;
+            font-size: 0.88rem;
+            line-height: 1.7;
+
+            overflow-wrap: anywhere;
+
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Signed-in heading */
+
+        .auth-page #signed-in-panel {
+            text-align: center;
+        }
+
+        .auth-page #signed-in-panel h2 {
+            margin-bottom: 14px;
+        }
+
+        .auth-page #welcome-message {
+            margin: 12px 0;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Return links */
+
+        .auth-page .auth-home-link,
+        .auth-page #signed-in-panel a {
+            display: block;
+
+            margin-top: 24px;
+
+            text-align: center;
+
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.87rem;
+
+            text-decoration: none;
+
+            transition: color 0.3s ease;
+        }
+
+        .auth-page .auth-home-link:hover,
+        .auth-page #signed-in-panel a:hover {
+            color: var(--auth-blue);
+        }
+
+        /* Hidden form states */
+
+        .auth-page [hidden] {
+            display: none !important;
+        }
+
+        /* =========================================
+           RESPONSIVE DESIGN
+        ========================================= */
+
+        @media (max-width: 480px) {
+            .auth-body {
+                padding: 24px 15px;
+            }
+
+            .auth-page {
+                padding: 29px 22px;
+                border-radius: 24px;
+            }
+
+            .auth-heading {
+                margin-bottom: 24px;
+            }
+        }
+
+        /* =========================================
+           ACCESSIBILITY
+        ========================================= */
+
+        @media (prefers-reduced-motion: reduce) {
+            .auth-page,
+            .auth-page *,
+            .auth-background * {
+                animation: none !important;
+                transition: none !important;
+            }
+
+            .auth-page:hover,
+            .auth-page .auth-button:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="auth-body">
+
+    <!-- Background effects -->
+
+    <div class="auth-background" aria-hidden="true">
+        <div class="auth-orb pink"></div>
+        <div class="auth-orb purple"></div>
+        <div class="auth-orb blue"></div>
+    </div>
+
+    <!-- Main authentication card -->
+
+    <main class="auth-page" id="auth-card">
+
+        <!-- Centered tagline -->
+
+        <header class="auth-heading">
+            <p class="auth-tagline">
+                Where movement meets <span>memory.</span>
+            </p>
+        </header>
+
+        <section id="auth-forms">
+
+            <!-- SIGN IN -->
+
+            <form id="sign-in-form" class="auth-form">
+
+                <h2>Sign In</h2>
+
+                <label for="sign-in-email">Email</label>
+
+                <input
+                    id="sign-in-email"
+                    type="email"
+                    autocomplete="email"
+                    placeholder="Enter your email"
+                    required
+                >
+
+                <label for="sign-in-password">Password</label>
+
+                <input
+                    id="sign-in-password"
+                    type="password"
+                    autocomplete="current-password"
+                    placeholder="Enter your password"
+                    required
+                >
+
+                <button class="auth-button" type="submit">
+                    Sign In
+                </button>
+
+                <div class="auth-reset">
+                    <button
+                        id="reset-password-button"
+                        type="button"
+                    >
+                        Forgot password?
+                    </button>
+                </div>
+
+                <p class="auth-switch">
+                    Don't have an account?
+                    <button id="show-sign-up" type="button">
+                        Create Account
+                    </button>
+                </p>
+
+            </form>
+
+            <!-- CREATE ACCOUNT -->
+
+            <form id="sign-up-form" class="auth-form" hidden>
+
+                <h2>Create Account</h2>
+
+                <label for="display-name">Display Name</label>
+
+                <input
+                    id="display-name"
+                    type="text"
+                    autocomplete="nickname"
+                    maxlength="50"
+                    placeholder="Choose a display name"
+                    required
+                >
+
+                <label for="sign-up-email">Email</label>
+
+                <input
+                    id="sign-up-email"
+                    type="email"
+                    autocomplete="email"
+                    placeholder="Enter your email"
+                    required
+                >
+
+                <label for="sign-up-password">Password</label>
+
+                <input
+                    id="sign-up-password"
+                    type="password"
+                    autocomplete="new-password"
+                    minlength="6"
+                    placeholder="Create a password"
+                    required
+                >
+
+                <label for="confirm-password">Confirm Password</label>
+
+                <input
+                    id="confirm-password"
+                    type="password"
+                    autocomplete="new-password"
+                    minlength="6"
+                    placeholder="Enter your password again"
+                    required
+                >
+
+                <button class="auth-button" type="submit">
+                    Create Account
+                </button>
+
+                <p class="auth-switch">
+                    Already have an account?
+                    <button id="show-sign-in" type="button">
+                        Sign In
+                    </button>
+                </p>
+
+            </form>
+
+        </section>
+
+        <!-- SIGNED-IN PANEL -->
+
+        <section id="signed-in-panel" hidden>
+
+            <h2>You're signed in!</h2>
+
+            <p id="welcome-message"></p>
+
+            <button
+                id="logout-button"
+                class="auth-button"
+                type="button"
+            >
+                Log Out
+            </button>
+
+            <a href="index.html">
+                Return to MUSE
+            </a>
+
+        </section>
+
+        <!-- Status and error messages -->
+
+        <p
+            id="auth-message"
+            class="auth-message"
+            role="status"
+            aria-live="polite"
+        ></p>
+
+        <a href="index.html" class="auth-home-link">
+            Back to Home
+        </a>
+
+    </main>
+
+    <!-- Existing Firebase authentication -->
+
+    <script type="module" src="firebase-auth.js"></script>
+
+    <!-- Cursor-following glass effect -->
+
+    <script>
+        const authCard = document.getElementById("auth-card");
+
+        authCard.addEventListener("pointermove", (event) => {
+            const rect = authCard.getBoundingClientRect();
+
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            authCard.style.setProperty("--mouse-x", `${x}px`);
+            authCard.style.setProperty("--mouse-y", `${y}px`);
+        });
+
+        authCard.addEventListener("pointerleave", () => {
+            authCard.style.setProperty("--mouse-x", "50%");
+            authCard.style.setProperty("--mouse-y", "50%");
+        });
+    </script>
+
+</body>
+</html>
