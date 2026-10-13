@@ -1147,5 +1147,44 @@ document.addEventListener('DOMContentLoaded', () => {
         if (authMessage) authMessage.textContent = "You have been logged out.";
     });
 });
+    // Handle Sign In
+    signInForm?.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const email = document.getElementById("sign-in-email")?.value.trim();
+        const password = document.getElementById("sign-in-password")?.value;
+
+        const savedUser = JSON.parse(localStorage.getItem("muse_user"));
+
+        if (savedUser && savedUser.email === email && savedUser.password === password) {
+            localStorage.setItem("muse_active_user", JSON.stringify(savedUser));
+            if (authForms) authForms.hidden = true;
+            if (signedInPanel) signedInPanel.hidden = false;
+            if (welcomeMessage) welcomeMessage.textContent = `Welcome back, ${savedUser.name}!`;
+            if (authMessage) authMessage.textContent = "";
+        } else {
+            if (authMessage) authMessage.textContent = "Invalid email or password (or no account found).";
+        }
+    });
+
+    // Handle Password Reset
+    resetPasswordBtn?.addEventListener("click", () => {
+        const email = document.getElementById("sign-in-email")?.value.trim();
+        if (!email) {
+            if (authMessage) authMessage.textContent = "Please enter your email above first.";
+            document.getElementById("sign-in-email")?.focus();
+            return;
+        }
+        if (authMessage) authMessage.textContent = `Password reset link sent to ${email} (simulation).`;
+    });
+
+    // Handle Log Out
+    logoutBtn?.addEventListener("click", () => {
+        localStorage.removeItem("muse_active_user");
+        if (signedInPanel) signedInPanel.hidden = true;
+        if (authForms) authForms.hidden = false;
+        signInForm.reset();
+        if (authMessage) authMessage.textContent = "You have been logged out.";
+    });
+});
 }
 
