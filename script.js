@@ -1047,5 +1047,105 @@ if (showSignInButton && signInForm && signUpForm) {
             authMessage.textContent = '';
         }
     });
+/* =========================================================
+   LOCAL EMAIL AUTHENTICATION & SESSION MANAGEMENT
+   ========================================================= */
+
+document.addEventListener('DOMContentLoaded', () => {
+    const signInForm = document.getElementById("sign-in-form");
+    const signUpForm = document.getElementById("sign-up-form");
+    const showSignUpBtn = document.getElementById("show-sign-up");
+    const showSignInBtn = document.getElementById("show-sign-in");
+    const resetPasswordBtn = document.getElementById("reset-password-button");
+    const logoutBtn = document.getElementById("logout-button");
+    const authMessage = document.getElementById("auth-message");
+    const welcomeMessage = document.getElementById("welcome-message");
+    const signedInPanel = document.getElementById("signed-in-panel");
+    const authForms = document.getElementById("auth-forms");
+
+    if (!signInForm || !signUpForm) return; // Exit if not on the login page
+
+    // Check if user is already logged in from a previous session
+    const activeUser = JSON.parse(localStorage.getItem("muse_active_user"));
+    if (activeUser) {
+        if (authForms) authForms.hidden = true;
+        if (signedInPanel) signedInPanel.hidden = false;
+        if (welcomeMessage) welcomeMessage.textContent = `Welcome back, ${activeUser.name}!`;
+    }
+
+    // Toggle between Sign In and Create Account forms
+    showSignUpBtn?.addEventListener("click", () => {
+        signInForm.hidden = true;
+        signUpForm.hidden = false;
+        if (authMessage) authMessage.textContent = "";
+    });
+
+    showSignInBtn?.addEventListener("click", () => {
+        signUpForm.hidden = true;
+        signInForm.hidden = false;
+        if (authMessage) authMessage.textContent = "";
+    });
+
+    // Handle Create Account (Sign Up)
+    signUpForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("display-name")?.value.trim();
+        const email = document.getElementById("sign-up-email")?.value.trim();
+        const password = document.getElementById("sign-up-password")?.value;
+        const confirmPassword = document.getElementById("confirm-password")?.value;
+
+        if (password !== confirmPassword) {
+            if (authMessage) authMessage.textContent = "Passwords do not match.";
+            return;
+        }
+
+        // Save user data locally
+        localStorage.setItem("muse_user", JSON.stringify({ name, email, password }));
+        
+        if (authMessage) authMessage.textContent = "Account created successfully! Please sign in.";
+        signUpForm.hidden = true;
+        signInForm.hidden = false;
+        signUpForm.reset();
+    });
+
+    // Handle Sign In
+    signInForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const email = document.getElementById("sign-in-email")?.value.trim();
+        const password = document.getElementById("sign-in-password")?.value;
+
+        const savedUser = JSON.parse(localStorage.getItem("muse_user"));
+
+        if (savedUser && savedUser.email === email && savedUser.password === password) {
+            localStorage.setItem("muse_active_user", JSON.stringify(savedUser));
+            if (authForms) authForms.hidden = true;
+            if (signedInPanel) signedInPanel.hidden = false;
+            if (welcomeMessage) welcomeMessage.textContent = `Welcome back, ${savedUser.name}!`;
+            if (authMessage) authMessage.textContent = "";
+        } else {
+            if (authMessage) authMessage.textContent = "Invalid email or password (or no account found).";
+        }
+    });
+
+    // Handle Password Reset
+    resetPasswordBtn?.addEventListener("click", () => {
+        const email = document.getElementById("sign-in-email")?.value.trim();
+        if (!email) {
+            if (authMessage) authMessage.textContent = "Please enter your email above first.";
+            document.getElementById("sign-in-email")?.focus();
+            return;
+        }
+        if (authMessage) authMessage.textContent = `Password reset link sent to ${email} (simulation).`;
+    });
+
+    // Handle Log Out
+    logoutBtn?.addEventListener("click", () => {
+        localStorage.removeItem("muse_active_user");
+        if (signedInPanel) signedInPanel.hidden = true;
+        if (authForms) authForms.hidden = false;
+        signInForm.reset();
+        if (authMessage) authMessage.textContent = "You have been logged out.";
+    });
+});
 }
 
