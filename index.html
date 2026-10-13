@@ -1470,6 +1470,12 @@
         const SYNC_PARTS = ['left arm', 'right arm', 'left leg', 'right leg', 'upper body'];
         const SYNC_SWAP = [2, 3, 0, 1, 6, 7, 4, 5, 8];     // left <-> right partner of each segment
         const SYNC_WINDOW = 1000;              // ms of dancer history searched for your timing
+        // how forgiving the score is (pose tracking is never exact, so a perfect copy still reads a little off)
+        const SYNC_ANGLE_OK = 25;              // degrees off a segment can be and still get full marks
+        const SYNC_ANGLE_ZERO = 100;           // degrees off where a segment gets 0
+        const SYNC_LAG_OK = 300;               // ms late that still gets full timing marks (covers camera + model delay)
+        const SYNC_ENERGY_OK = 0.7;            // speed ratio (yours vs dancer's) that still gets full energy marks
+        const SYNC_DEPTH_WEIGHT = 0.5;         // depth from one camera is the noisiest axis, so count it less
         const $s = id => document.getElementById(id);
         const syncEl = {
             hud: $s('syncHud'), hudScore: $s('hudScore'), hudLabel: $s('hudLabel'), hudHint: $s('hudHint'),
@@ -1505,7 +1511,7 @@
             const seen = i => i >= 33 || (lm[i].visibility ?? 1) > 0.5;
             const f = SYNC_SEGS.map(([, a, b]) => {
                 if (!seen(a) || !seen(b)) return null;
-                const x = pts[b].x - pts[a].x, y = pts[b].y - pts[a].y, z = pts[b].z - pts[a].z;
+                const x = pts[b].x - pts[a].x, y = pts[b].y - pts[a].y, z = (pts[b].z - pts[a].z) * SYNC_DEPTH_WEIGHT;
                 const len = Math.hypot(x, y, z);
                 return len > 1e-4 ? [x / len, y / len, z / len] : null;
             });
@@ -1513,14 +1519,15 @@
         }
         const syncAngle = (u, v) => Math.acos(Math.max(-1, Math.min(1, u[0] * v[0] + u[1] * v[1] + u[2] * v[2]))) * 180 / Math.PI;
 
-        /* how well your pose matches the dancer's: 1 = same, 0 = 90 degrees off or worse */
+        /* how well your pose matches the dancer's: 1 = within SYNC_ANGLE_OK degrees, 0 = SYNC_ANGLE_ZERO or worse */
         function syncCompare(cam, ref, swap) {
             let sum = 0, n = 0;
             const per = cam.map((u, i) => {
                 let v = ref[swap ? SYNC_SWAP[i] : i];
                 if (!u || !v) return null;
                 if (swap) v = [-v[0], v[1], v[2]];
-                const s = Math.max(0, 1 - syncAngle(u, v) / 90);
+                const off = syncAngle(u, v) - SYNC_ANGLE_OK;
+                const s = Math.max(0, Math.min(1, 1 - off / (SYNC_ANGLE_ZERO - SYNC_ANGLE_OK)));
                 sum += s; n++;
                 return s;
             });
@@ -1568,10 +1575,10 @@
 
             const moving = syncRefSpeed >= 20;  // dancer standing still: nothing to time
             const align = b.c.score;
-            const timing = moving ? Math.max(0, Math.min(1, 1 - (lag - 150) / 850))   // full marks up to 0.15s late, 0 at 1s
+            const timing = moving ? Math.max(0, Math.min(1, 1 - (lag - SYNC_LAG_OK) / (SYNC_WINDOW - SYNC_LAG_OK)))   // full marks up to 0.3s late, 0 at 1s
                 : (syncShown ? syncShown.timing : 1);
             const hi = Math.max(syncRefSpeed, syncCamSpeed);
-            const energy = hi < 15 ? 1 : Math.min(syncRefSpeed, syncCamSpeed) / hi;
+            const energy = hi < 15 ? 1 : Math.min(1, Math.min(syncRefSpeed, syncCamSpeed) / hi / SYNC_ENERGY_OK);
             const overall = 0.6 * align + 0.25 * timing + 0.15 * energy;
 
             const k = 0.08;                    // smoothing so the live numbers do not flicker
