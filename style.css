@@ -2328,6 +2328,13 @@ header {
   background: rgba(10,8,16,0.8); border: 1px solid var(--pink, #f8b8d8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
 .cam-fullbody[hidden] { display: none; }
+
+/* your uploaded recording in the camera box (shown as recorded, not flipped) */
+.rec-stage { position: absolute; inset: 0; z-index: 1; background: #0a0710; }
+.rec-stage[hidden] { display: none; }
+.cam-frame .rec-stage video,
+.cam-frame .rec-stage canvas { display: block; transform: none; object-fit: contain; }
+.cam-status.error { color: #ff9bb3; }
 .speed-box { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 14px; border-radius: 30px; font-size: 0.85rem; color: #fff; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.18); padding-right: 14px; }
 .speed-box input { width: 4.2em; padding: 4px 6px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(0, 0, 0, 0.35); color: #fff; font: inherit; text-align: center; }
 .speed-box input:focus { outline: none; border-color: var(--pink, #f8b8d8); box-shadow: 0 0 10px rgba(248, 184, 216, 0.4); }
