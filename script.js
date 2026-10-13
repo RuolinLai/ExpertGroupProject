@@ -999,6 +999,11 @@ window.MUSE.gallery = {
    INITIALIZE THE GALLERY
    ========================================================= */
 
+
+/* =========================================================
+   INITIALIZE THE GALLERY
+   ========================================================= */
+
 if (videoGallery) {
     if (galleryEmpty) {
         galleryEmpty.classList.remove('visible');
@@ -1006,40 +1011,41 @@ if (videoGallery) {
 
     renderSavedVideos().catch(error => {
         console.error('Could not load the MUSE gallery:', error);
-
-        if (galleryEmpty) {
-            galleryEmpty.classList.add('visible');
-
-            const heading = galleryEmpty.querySelector('h2');
-            const message = galleryEmpty.querySelector('p');
-
-            if (heading) heading.textContent = 'Gallery unavailable';
-
-            if (message) {
-                message.textContent =
-                    'Could not load saved videos. Open this page using VS Code Live Server and try again.';
-            }
-        }
     });
-    
-document.addEventListener("DOMContentLoaded", () => {
-    const signInForm = document.getElementById("sign-in-form");
-    const signUpForm = document.getElementById("sign-up-form");
+}
 
-    const showSignUpButton = document.getElementById("show-sign-up");
-    const showSignInButton = document.getElementById("show-sign-in");
 
-    // Show Create Account form
-    showSignUpButton.addEventListener("click", () => {
+/* =========================================================
+   LOGIN AND CREATE ACCOUNT FORM SWITCHING
+   ========================================================= */
+
+const signInForm = document.getElementById('sign-in-form');
+const signUpForm = document.getElementById('sign-up-form');
+
+const showSignUpButton = document.getElementById('show-sign-up');
+const showSignInButton = document.getElementById('show-sign-in');
+
+const authMessage = document.getElementById('auth-message');
+
+if (showSignUpButton && signInForm && signUpForm) {
+    showSignUpButton.addEventListener('click', () => {
         signInForm.hidden = true;
         signUpForm.hidden = false;
-    });
 
-    // Show Sign In form
-    showSignInButton.addEventListener("click", () => {
+        if (authMessage) {
+            authMessage.textContent = '';
+        }
+    });
+}
+
+if (showSignInButton && signInForm && signUpForm) {
+    showSignInButton.addEventListener('click', () => {
         signUpForm.hidden = true;
         signInForm.hidden = false;
-    });
-});
 
+        if (authMessage) {
+            authMessage.textContent = '';
+        }
+    });
 }
+
