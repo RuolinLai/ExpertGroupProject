@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -22,10 +22,9 @@
         <div class="auth-orb blue"></div>
     </div>
 
-    <!-- Main login card -->
+    <!-- Main authentication card -->
     <main class="auth-page" id="auth-card">
 
-        <!-- MUSE tagline -->
         <header class="auth-heading">
             <p class="auth-tagline">
                 Where movement meets <span>memory.</span>
@@ -34,7 +33,7 @@
 
         <section id="auth-forms">
 
-            <!-- SIGN IN FORM -->
+            <!-- Sign In -->
             <form id="sign-in-form" class="auth-form">
 
                 <h2>Sign In</h2>
@@ -42,8 +41,9 @@
                 <label for="sign-in-email">Email</label>
                 <input
                     id="sign-in-email"
+                    name="email"
                     type="email"
-                    autocomplete="email"
+                    autocomplete="username"
                     placeholder="Enter your email"
                     required
                 >
@@ -51,6 +51,7 @@
                 <label for="sign-in-password">Password</label>
                 <input
                     id="sign-in-password"
+                    name="password"
                     type="password"
                     autocomplete="current-password"
                     placeholder="Enter your password"
@@ -76,7 +77,7 @@
 
             </form>
 
-            <!-- CREATE ACCOUNT FORM -->
+            <!-- Create Account -->
             <form id="sign-up-form" class="auth-form" hidden>
 
                 <h2>Create Account</h2>
@@ -84,6 +85,7 @@
                 <label for="display-name">Display Name</label>
                 <input
                     id="display-name"
+                    name="displayName"
                     type="text"
                     autocomplete="nickname"
                     maxlength="50"
@@ -94,6 +96,7 @@
                 <label for="sign-up-email">Email</label>
                 <input
                     id="sign-up-email"
+                    name="email"
                     type="email"
                     autocomplete="email"
                     placeholder="Enter your email"
@@ -103,6 +106,7 @@
                 <label for="sign-up-password">Password</label>
                 <input
                     id="sign-up-password"
+                    name="password"
                     type="password"
                     autocomplete="new-password"
                     minlength="8"
@@ -113,6 +117,7 @@
                 <label for="confirm-password">Confirm Password</label>
                 <input
                     id="confirm-password"
+                    name="confirmPassword"
                     type="password"
                     autocomplete="new-password"
                     minlength="8"
@@ -135,7 +140,7 @@
 
         </section>
 
-        <!-- SIGNED-IN PANEL -->
+        <!-- Signed-in panel -->
         <section id="signed-in-panel" hidden>
 
             <h2>You're signed in!</h2>
@@ -156,7 +161,7 @@
 
         </section>
 
-        <!-- Status messages -->
+        <!-- Authentication status messages -->
         <p
             id="auth-message"
             class="auth-message"
@@ -164,7 +169,7 @@
             aria-live="polite"
         ></p>
 
-        <!-- Return to homepage -->
+        <!-- Homepage link -->
         <a href="index.html" class="auth-home-link">
             Back to Home
         </a>
@@ -173,3 +178,4 @@
 
 </body>
 </html>
+```
