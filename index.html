@@ -284,6 +284,7 @@
                     <div class="ctrl-row">
                         <button id="playBtn" class="dance-ctrl-btn">Play</button>
                         <button id="pauseBtn" class="dance-ctrl-btn">Pause</button>
+                        <button id="replayBtn" class="dance-ctrl-btn" hidden title="Start the TikTok / Instagram video again">Replay</button>
                         <label class="speed-box" for="speedInput">Speed
                             <input type="number" id="speedInput" min="0.1" max="4" step="0.05" value="1" aria-label="Custom playback speed">x
                         </label>
@@ -845,6 +846,7 @@
                 runningMode: "VIDEO",
                 numPoses: 1
             });
+            try { vpWarmUp(landmarker); } catch (e) { console.warn('Pose model warm-up failed', e); }
         }
 
 
@@ -957,6 +959,7 @@
         let vpTrack = [];                      // previous detection per person (used to estimate speed)
         let vpLeadMs = { file: 0, capture: 80 };   // extra look-ahead, adjustable with the slider
         let vpLayoutKey = '', vpCapLayoutKey = '';
+        let vpViewPoses = null;                // last skeleton shown in the Pose view
         const vpLeadSlider = document.getElementById('vpLead');
         const vpLeadVal = document.getElementById('vpLeadVal');
         const vpPosesBtn = document.getElementById('vpPosesBtn');
@@ -980,6 +983,7 @@
             vpPoses = vpPoses === 1 ? 2 : 1;
             vpPosesBtn.textContent = 'Dancers: ' + vpPoses;
             vpTrack = [];
+            if (vpWorker) vpWorker.postMessage({ type: 'poses', numPoses: vpPoses });
             if (vpLandmarker) { try { await vpLandmarker.setOptions({ numPoses: vpPoses }); } catch (e) { console.warn(e); } }
         });
         function vpStartNote() {
@@ -1043,26 +1047,153 @@
             vpSyncSlider();
         }
 
+        /* The model only looks at a ~256px picture, so give it a small copy of the frame instead of the
+           full 1080p / 4K video: far less to send to the GPU every frame, so playback stays smooth. */
+        const VP_INPUT = 512;
+        const vpSmall = document.createElement('canvas');
+        const vpSmallCtx = vpSmall.getContext('2d');
+        function vpShrink(src, w, h) {
+            const s = Math.min(1, VP_INPUT / Math.max(w, h));
+            const cw = Math.round(w * s), ch = Math.round(h * s);
+            if (vpSmall.width !== cw || vpSmall.height !== ch) { vpSmall.width = cw; vpSmall.height = ch; }
+            vpSmallCtx.drawImage(src, 0, 0, cw, ch);
+            return vpSmall;
+        }
+
+        /* The first detections compile the GPU shaders and can freeze the page for a second.
+           Do that once right after loading, on a blank picture, instead of during playback. */
+        function vpWarmUp(lm) {
+            const c = document.createElement('canvas');
+            c.width = VP_INPUT; c.height = VP_INPUT;
+            c.getContext('2d').fillRect(0, 0, c.width, c.height);
+            for (let i = 0; i < 3; i++) lm.detectForVideo(c, vpNextTs());
+        }
+
+        const VP_MP = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+        const VP_MODEL = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+
+        /* The model runs in a background thread (Web Worker). On the page itself every detection made
+           the video wait for it, so playback stuttered while the skeleton was on.
+           If the worker can't start, the model runs on the page as before. */
+        const VP_WORKER_SRC = `
+            var exports = {};
+            // the CDN sends .cjs files as "application/node", which importScripts refuses, so load it as text
+            const lib = fetch('${VP_MP}/vision_bundle.cjs').then(r => r.text())
+                .then(code => importScripts(URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))));
+            let lm = null;
+            onmessage = async e => {
+                const m = e.data;
+                if (m.type === 'init') {
+                    try {
+                        await lib;
+                        const fileset = await exports.FilesetResolver.forVisionTasks('${VP_MP}/wasm');
+                        const make = delegate => exports.PoseLandmarker.createFromOptions(fileset, {
+                            baseOptions: { modelAssetPath: '${VP_MODEL}', delegate },
+                            runningMode: 'VIDEO', numPoses: m.numPoses
+                        });
+                        let delegate = 'GPU';
+                        try { lm = await make('GPU'); } catch (err) { delegate = 'CPU'; lm = await make('CPU'); }
+                        const c = new OffscreenCanvas(m.size, m.size);      // warm-up, see vpWarmUp
+                        c.getContext('2d').fillRect(0, 0, m.size, m.size);
+                        for (let i = 0; i < 3; i++) lm.detectForVideo(c, m.ts + i);
+                        postMessage({ type: 'ready', delegate });
+                    } catch (err) { postMessage({ type: 'error', message: String(err && err.message || err) }); }
+                } else if (m.type === 'poses') {
+                    if (lm) await lm.setOptions({ numPoses: m.numPoses });
+                } else if (m.type === 'frame') {
+                    let res = null, error = null;
+                    try { res = lm.detectForVideo(m.bitmap, m.ts); } catch (err) { error = String(err && err.message || err); }
+                    m.bitmap.close();
+                    postMessage({ type: 'result', error,
+                        landmarks: res ? res.landmarks : [], worldLandmarks: res ? res.worldLandmarks : [] });
+                }
+            };`;
+        let vpWorker = null, vpJob = null, vpWanted = false;   // vpJob = the frame the worker is busy with
+
+        function vpStartWorker() {
+            return new Promise((resolve, reject) => {
+                let w;
+                try { w = new Worker(URL.createObjectURL(new Blob([VP_WORKER_SRC], { type: 'text/javascript' }))); }
+                catch (e) { reject(e); return; }
+                const ts = vpNextTs();
+                vpLastTs = ts + 3;                           // the warm-up uses ts .. ts+2
+                w.onmessage = e => {
+                    const m = e.data;
+                    if (m.type === 'ready') {
+                        vpDelegate = m.delegate;
+                        w.onmessage = ev => vpOnResult(ev.data);
+                        w.onerror = ev => {                  // crashed mid-way: report it instead of freezing the skeleton
+                            ev.preventDefault();
+                            const job = vpJob; vpJob = null;
+                            if (job && job.gen === vpGen && vpOn) job.onError(new Error(ev.message || 'pose worker stopped'));
+                        };
+                        resolve(w);
+                    }
+                    else if (m.type === 'error') { w.terminate(); reject(new Error(m.message)); }
+                };
+                w.onerror = e => { e.preventDefault(); w.terminate(); reject(new Error(e.message || 'worker failed')); };
+                w.postMessage({ type: 'init', numPoses: vpPoses, size: VP_INPUT, ts });
+            });
+        }
+
         async function vpLoadModel() {
-            if (vpLandmarker) return vpLandmarker;
+            if (vpWorker || vpLandmarker) return;
             if (!vpLoading) {
                 vpLoading = (async () => {
-                    const fileset = await FilesetResolver.forVisionTasks(
-                        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+                    try { vpWorker = await vpStartWorker(); return; }
+                    catch (e) { console.warn('Pose worker unavailable, running the model on the page instead', e); }
+                    const fileset = await FilesetResolver.forVisionTasks(VP_MP + "/wasm");
                     const make = delegate => PoseLandmarker.createFromOptions(fileset, {
-                        baseOptions: {
-                            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
-                            delegate
-                        },
+                        baseOptions: { modelAssetPath: VP_MODEL, delegate },
                         runningMode: "VIDEO",
                         numPoses: vpPoses     // 1 is faster; use the Dancers button for 2
                     });
                     try { vpLandmarker = await make('GPU'); vpDelegate = 'GPU'; }
                     catch (e) { console.warn('GPU delegate failed, using CPU instead', e); vpLandmarker = await make('CPU'); vpDelegate = 'CPU'; }
-                    return vpLandmarker;
+                    try { vpWarmUp(vpLandmarker); } catch (e) { console.warn('Pose model warm-up failed', e); }
                 })().catch(err => { vpLoading = null; throw err; });
             }
             return vpLoading;
+        }
+        const vpReady = () => !!(vpWorker || vpLandmarker);
+
+        /* Detect the pose in one frame, then call show(res). With the worker the result arrives later;
+           while it is busy, newer frames are skipped and the latest one is analysed next. */
+        function vpRun(src, w, h, show, onError) {
+            if (!vpWorker) {
+                const t0 = performance.now();
+                let res;
+                try { res = vpLandmarker.detectForVideo(vpShrink(src, w, h), vpNextTs()); }
+                catch (err) { onError(err); return; }
+                vpInferMs = vpInferMs * 0.9 + Math.min(100, performance.now() - t0) * 0.1;   // one slow frame must not skew it
+                show(res);
+                return;
+            }
+            if (vpJob) { vpWanted = true; return; }
+            const s = Math.min(1, VP_INPUT / Math.max(w, h));
+            const size = { resizeWidth: Math.round(w * s), resizeHeight: Math.round(h * s), resizeQuality: 'low' };
+            const job = vpJob = { show, onError, gen: vpGen, sent: performance.now() };
+            createImageBitmap(src, size)
+                .catch(() => createImageBitmap(vpShrink(src, w, h)))
+                .then(bitmap => {
+                    if (vpJob !== job) { bitmap.close(); return; }
+                    vpWorker.postMessage({ type: 'frame', bitmap, ts: vpNextTs() }, [bitmap]);
+                })
+                .catch(err => { if (vpJob === job) { vpJob = null; onError(err); } });
+        }
+
+        function vpOnResult(m) {
+            const job = vpJob;
+            vpJob = null;
+            if (!job || job.gen !== vpGen || !vpOn) { vpWanted = false; return; }
+            if (m.error) { job.onError(new Error(m.error)); return; }
+            // time from grabbing the frame to having its result (the picture has moved on by this much)
+            vpInferMs = vpInferMs * 0.9 + Math.min(100, performance.now() - job.sent) * 0.1;
+            job.show(m);
+            if (vpWanted) {                                  // a newer frame came in meanwhile: analyse it now
+                vpWanted = false;
+                if (vpSource === 'capture') vpDetectCap(); else vpDetect(false);
+            }
         }
 
         function vpDrawPoses(ctx, w, poses) {
@@ -1118,25 +1249,24 @@
         function vpClear() { vpCtx.clearRect(0, 0, vpOverlay.width, vpOverlay.height); }
 
         function vpDetect(force) {
-            if (!vpOn || vpSource !== 'file' || !vpLandmarker || vpMode !== 'file') return;
+            if (!vpOn || vpSource !== 'file' || !vpReady() || vpMode !== 'file') return;
             if (vpVideo.readyState < 2 || !vpVideo.videoWidth) return;
             const t = vpVideo.currentTime;
             if (!force && t === vpLastT) return;          // same frame as last time
+            if (vpJob) { vpWanted = true; return; }       // worker still busy: analyse the newest frame when it is done
             vpLastT = t;
             vpLayout();
-            const t0 = performance.now();
-            let res;
-            try { res = vpLandmarker.detectForVideo(vpVideo, vpNextTs()); }
-            catch (err) { vpFail('Could not analyse this video: ', err); return; }
-            vpInferMs = vpInferMs * 0.9 + (performance.now() - t0) * 0.1;
-            // look ahead by: detection time + one screen refresh + the slider; in video time, so 0.5x speed works too
-            const rate = vpVideo.paused ? 0 : vpVideo.playbackRate;
-            const leadSec = (vpInferMs + 16 + vpLeadMs.file) / 1000 * rate;
-            const poses = vpExtrapolate(res.landmarks, t, leadSec);
-            syncAddRef(res);
-            vpClear();
-            vpDrawPoses(vpCtx, vpOverlay.width, poses);
-            vpReport(res.landmarks.length);
+            vpRun(vpVideo, vpVideo.videoWidth, vpVideo.videoHeight, res => {
+                if (vpSource !== 'file') return;
+                // look ahead by: detection time + one screen refresh + the slider; in video time, so 0.5x speed works too
+                const rate = vpVideo.paused ? 0 : vpVideo.playbackRate;
+                const leadSec = (vpInferMs + 16 + vpLeadMs.file) / 1000 * rate;
+                const poses = vpExtrapolate(res.landmarks, t, leadSec);
+                syncAddRef(res);
+                vpClear();
+                vpDrawPoses(vpCtx, vpOverlay.width, poses);
+                vpReport(res.landmarks.length);
+            }, err => vpFail('Could not analyse this video: ', err));
         }
 
         async function vpStartFile() {
@@ -1177,7 +1307,7 @@
         }
 
         function vpDetectCap() {
-            if (!vpOn || vpSource !== 'capture' || !vpLandmarker) return;
+            if (!vpOn || vpSource !== 'capture' || !vpReady()) return;
             const w0 = vpCap.videoWidth, h0 = vpCap.videoHeight;
             if (!w0 || !h0 || vpCap.readyState < 2) return;
             const cw = Math.min(w0, 960), ch = Math.round(cw * h0 / w0);
@@ -1185,24 +1315,27 @@
             if (!onVideo) {                                  // fallback: show the captured picture in the Pose view
                 if (vpViewCanvas.width !== cw || vpViewCanvas.height !== ch) { vpViewCanvas.width = cw; vpViewCanvas.height = ch; }
                 vpViewCtx.drawImage(vpCap, 0, 0, cw, ch);
+                if (vpViewPoses) vpDrawPoses(vpViewCtx, cw, vpViewPoses);   // keep the last skeleton on the new picture
             }
+            if (vpJob) { vpWanted = true; return; }
             const t0 = performance.now();
-            let res;
-            try { res = vpLandmarker.detectForVideo(vpCap, vpNextTs()); }
-            catch (err) { vpFail('Could not analyse the captured video: ', err); return; }
-            vpInferMs = vpInferMs * 0.9 + (performance.now() - t0) * 0.1;
-            // a captured tab arrives late too, so the slider adds extra look-ahead on top of the detection time
-            const leadSec = (vpInferMs + 16 + vpLeadMs.capture) / 1000;
-            const poses = vpExtrapolate(res.landmarks, t0 / 1000, leadSec);
-            syncAddRef(res);
-            if (onVideo) {                                   // skeleton directly on the original player
-                vpLayoutCap(cw, ch);
-                vpCapCtx.clearRect(0, 0, vpCapOverlay.width, vpCapOverlay.height);
-                vpDrawPoses(vpCapCtx, cw, poses);
-            } else {
-                vpDrawPoses(vpViewCtx, cw, poses);
-            }
-            vpReport(res.landmarks.length);
+            vpRun(vpCap, w0, h0, res => {
+                if (vpSource !== 'capture') return;
+                // a captured tab arrives late too, so the slider adds extra look-ahead on top of the detection time
+                const leadSec = (vpInferMs + 16 + vpLeadMs.capture) / 1000;
+                const poses = vpExtrapolate(res.landmarks, t0 / 1000, leadSec);
+                syncAddRef(res);
+                if (onVideo) {                               // skeleton directly on the original player
+                    vpLayoutCap(cw, ch);
+                    vpCapCtx.clearRect(0, 0, vpCapOverlay.width, vpCapOverlay.height);
+                    vpDrawPoses(vpCapCtx, cw, poses);
+                } else {
+                    vpViewPoses = poses;
+                    vpViewCtx.drawImage(vpCap, 0, 0, cw, ch);    // the newest picture, without the old skeleton
+                    vpDrawPoses(vpViewCtx, cw, poses);
+                }
+                vpReport(res.landmarks.length);
+            }, err => vpFail('Could not analyse the captured video: ', err));
         }
 
         async function vpStartCapture() {
@@ -1302,6 +1435,7 @@
             vpView.hidden = true;
             vpSource = 'none';
             vpTrack = [];
+            vpViewPoses = null;
             vpUpdateBtn();
             vpSetStatus(vpIdleHint());
         }

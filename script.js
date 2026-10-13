@@ -182,6 +182,14 @@ document.getElementById('pauseBtn')?.addEventListener('click', () => {
     if (mode === 'youtube') ytPlayer?.pauseVideo(); else video?.pause();
 });
 
+/* Replay (TikTok / Instagram): Instagram only plays a reel once ("Watch again on Instagram"),
+   and its player can't be controlled from our page, so reload the embed to start it over */
+const replayBtn = document.getElementById('replayBtn');
+replayBtn?.addEventListener('click', () => {
+    const f = embedStage?.querySelector('iframe');
+    if (f && f.src !== 'about:blank') { const src = f.src; f.src = 'about:blank'; f.src = src; }
+});
+
 /* Speed: type any number, applied on Enter or when the box loses focus */
 const speedInput = document.getElementById('speedInput');
 function setRate(rate) {
@@ -220,6 +228,7 @@ function fmtTime(sec) {
 
 function syncPlayerUI() {
     if (playerBar) playerBar.hidden = (mode === 'embed');
+    if (replayBtn) replayBtn.hidden = (mode !== 'embed');
     if (clickShield) clickShield.hidden = (mode !== 'youtube');
     updatePlayIcon();
     // let the MediaPipe code know whether we are showing a local file or a link
@@ -486,6 +495,22 @@ function loadIframe(src) {
     showEmbedMode('embed', true);
 }
 
+/* The TikTok player tells us (postMessage) when a video can't be played; without this a failure is just a black box */
+window.addEventListener('message', e => {
+    let host = '';
+    try { host = new URL(e.origin).hostname; } catch { return; }
+    if (!/(^|\.)tiktok\.com$/.test(host)) return;
+    let d = e.data;
+    if (typeof d === 'string') { try { d = JSON.parse(d); } catch { return; } }
+    if (!d || !d['x-tiktok-player']) return;
+    if (d.type === 'onPlayerError') {
+        const code = d.value && d.value.errorCode;
+        setLinkStatus(code === 1001 ? 'TikTok can’t find this video (it may be deleted or private).'
+            : code === 3002 ? 'Press play in the TikTok player to start the video.'
+            : 'TikTok could not play this video (error ' + (code || '?') + '). Try again or try another video.', code !== 3002);
+    }
+});
+
 linkForm?.addEventListener('submit', async e => {
     e.preventDefault();
     const raw = linkInput.value.trim();
@@ -501,13 +526,14 @@ linkForm?.addEventListener('submit', async e => {
             await loadYouTube(info.id, info.vertical);
             setLinkStatus('Now learning from YouTube. ' + LINK_HINT, false);
         } else if (info.type === 'tiktok') {
-            loadIframe('https://www.tiktok.com/embed/v2/' + info.id);
-            setLinkStatus('Now learning from TikTok. Use the player\u2019s own controls; Mirror still works.', false);
+            // TikTok's current embed player (the old /embed/v2/ page often stays black); loop=1 replays it
+            loadIframe('https://www.tiktok.com/player/v1/' + info.id + '?loop=1&rel=0&music_info=0&description=0');
+            setLinkStatus('Now learning from TikTok. It loops by itself; use the player\u2019s own controls. Mirror still works.', false);
         } else if (info.type === 'tiktok-short') {
             setLinkStatus('Short TikTok links (vm.tiktok.com) can\u2019t be read. Open it in your browser and copy the full link that contains /video/.', true);
         } else if (info.type === 'instagram') {
             loadIframe('https://www.instagram.com/' + info.kind + '/' + info.id + '/embed');
-            setLinkStatus('Now learning from Instagram. Use the player\u2019s own controls; Mirror still works.', false);
+            setLinkStatus('Now learning from Instagram. Use the player\u2019s own controls; when it ends, press Replay to watch it again here. Mirror still works.', false);
         }
     } catch (err) {
         setLinkStatus(err.message || 'Could not load that video.', true);
@@ -632,9 +658,14 @@ if (canvas) {
     let phase = 0;
 
 
+    // read the size only when it changes: reading offsetWidth and resetting the canvas every frame slowed the whole page
+    let waveW = 0, waveH = 0;
+    if ('ResizeObserver' in window) new ResizeObserver(() => { waveW = canvas.offsetWidth; waveH = canvas.offsetHeight; }).observe(canvas);
+    else { const r = () => { waveW = canvas.offsetWidth; waveH = canvas.offsetHeight; }; r(); addEventListener('resize', r); }
+
     function drawWave() {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
+        if (!waveW || !waveH) { requestAnimationFrame(drawWave); return; }   // page hidden: nothing to draw
+        if (canvas.width !== waveW || canvas.height !== waveH) { canvas.width = waveW; canvas.height = waveH; }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath();
         ctx.strokeStyle = '#f8b8d8';
