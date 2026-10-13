@@ -560,6 +560,7 @@
         vpSource = 'none';
         vpTrack = [];
         vpViewPoses = null;
+        syncResetFraming();
         vpUpdateBtn();
         vpSetStatus(vpIdleHint());
     }
@@ -619,6 +620,29 @@
     let syncSegFit = SYNC_SEGS.map(() => 1);
     let sess = syncNewSession();
 
+    /* Full-body or half-body video? Each dancer pose counts as full body when the knees and ankles are
+       in the picture. Over the last ~150 poses, if most are full body the video is a full-body dance and
+       you have to be fully in the camera too before anything is scored. */
+    const FRAME_LEGS = [25, 26, 27, 28];   // knees + ankles
+    const FRAME_HISTORY = 150, FRAME_MIN = 15;
+    let syncRefFrames = [];                // true / false per dancer pose: whole body visible?
+    let syncCamFull = 0;                   // smoothed 0..1: is your whole body in the camera?
+    let syncCamFullOk = false;
+    const syncFullBanner = $s('camFullBody');
+
+    function syncIsFullBody(lm) {
+        if (!lm) return false;
+        const inPic = p => (p.visibility ?? 1) > 0.5 && p.x > -0.02 && p.x < 1.02 && p.y > -0.02 && p.y < 1.02;
+        return FRAME_LEGS.filter(i => lm[i] && inPic(lm[i])).length >= 3;   // one leg may be hidden behind the other
+    }
+    function syncRefIsFullBody() {
+        if (syncRefFrames.length < FRAME_MIN) return false;   // not sure yet: don't block
+        return syncRefFrames.filter(Boolean).length / syncRefFrames.length >= 0.5;
+    }
+    function syncResetFraming() { syncRefFrames = []; }
+    /* full-body video but you are not fully in the camera: no scoring */
+    const syncNeedFullBody = () => syncRefIsFullBody() && !syncCamFullOk;
+
     function syncNewSession() {
         return {
             start: performance.now(), samples: [], lastSample: 0, n: 0,
@@ -668,6 +692,10 @@
     }
 
     function syncAddRef(res) {
+        if (res.landmarks?.[0]) {
+            syncRefFrames.push(syncIsFullBody(res.landmarks[0]));
+            if (syncRefFrames.length > FRAME_HISTORY) syncRefFrames.shift();
+        }
         const f = syncFeatures(res);
         if (!f) return;
         const t = performance.now(), last = syncRefs[syncRefs.length - 1];
@@ -677,12 +705,16 @@
     }
 
     function syncAddCam(res) {
+        // smoothed, with a gap between on / off so one bad frame does not flip it
+        syncCamFull += ((syncIsFullBody(res.landmarks?.[0]) ? 1 : 0) - syncCamFull) * 0.2;
+        if (syncCamFullOk ? syncCamFull < 0.3 : syncCamFull > 0.7) syncCamFullOk = !syncCamFullOk;
         const f = syncFeatures(res);
         if (!f) return;
         const now = performance.now();
         if (syncPrevCam) syncCamSpeed += (syncSpeed(f, syncPrevCam, now - syncLastCamT) - syncCamSpeed) * 0.15;
         syncPrevCam = f; syncLastCamT = now;
         if (!vpOn || !syncRefs.length) return;
+        if (syncNeedFullBody()) return;    // full-body video: wait until your whole body is in the camera
 
         // the dancer's poses from the last second (a paused video sends none, so use its last pose)
         let cands = syncRefs.filter(r => now - r.t <= SYNC_WINDOW);
@@ -737,12 +769,14 @@
         if (!vpOn) return vpMode === 'file' ? 'Upload a practice video to compare with.' : 'Press Skeleton on the practice video and share this tab to compare.';
         if (!camRunning()) return 'Start your camera to compare.';
         if (!syncRefs.length) return 'No dancer found in the practice video yet.';
+        if (syncNeedFullBody()) return 'Full-body video: step back so your whole body, feet included, is in the camera.';
         if (performance.now() - syncLastCamT > 600) return 'Step back until your whole body is in the camera.';
         return null;
     }
 
     /* ---------- live mini panel on the camera ---------- */
     function syncRenderLive() {
+        syncFullBanner.hidden = !(camRunning() && vpOn && syncRefs.length && syncNeedFullBody());
         syncEl.hud.hidden = !camRunning();
         if (!camRunning()) return;
         const msg = syncWaitMsg();
@@ -975,7 +1009,7 @@
     /* A paused video produces no frame callbacks, so redraw after seeking / loading */
     vpVideo.addEventListener('seeked', () => { vpTrack = []; vpDetect(true); });
     vpVideo.addEventListener('loadeddata', () => {
-        vpLastT = -1; vpLayout(); vpDetect(true);
+        vpLastT = -1; syncResetFraming(); vpLayout(); vpDetect(true);
         vpStartFile();                                   // a video is here: start tracking in the background
     });
     vpVideo.addEventListener('loadedmetadata', vpLayout);

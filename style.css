@@ -2322,6 +2322,12 @@ header {
 }
 .hud-hint { margin-top: 6px; color: rgba(255,255,255,0.8); min-height: 1.2em; }
 .sync-hud.waiting .hud-top b { color: rgba(255,255,255,0.5); }
+.cam-fullbody {
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 3; width: min(86%, 420px);
+  padding: 10px 14px; border-radius: 14px; text-align: center; font-size: 0.85rem; font-weight: 600; color: #fff;
+  background: rgba(10,8,16,0.8); border: 1px solid var(--pink, #f8b8d8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.cam-fullbody[hidden] { display: none; }
 .speed-box { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 14px; border-radius: 30px; font-size: 0.85rem; color: #fff; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.18); padding-right: 14px; }
 .speed-box input { width: 4.2em; padding: 4px 6px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(0, 0, 0, 0.35); color: #fff; font: inherit; text-align: center; }
 .speed-box input:focus { outline: none; border-color: var(--pink, #f8b8d8); box-shadow: 0 0 10px rgba(248, 184, 216, 0.4); }
