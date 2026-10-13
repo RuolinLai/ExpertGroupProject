@@ -47,11 +47,13 @@
     const vpCapOverlay = document.getElementById('poseCapOverlay');
     const vpCapCtx = vpCapOverlay.getContext('2d');
     let vpCapKind = 'element';             // 'element' = skeleton on the video, 'region' = separate Pose view
-    const VP_HINT = 'Turn on Skeleton to track the dancer in your uploaded video.';
-    const VP_LINK_HINT = 'Skeleton for links: press Skeleton, then in the window your browser shows choose \u201cThis tab\u201d and Share. The skeleton is drawn right on the video. Needs Chrome or Edge 132+ on a computer.';
+    const VP_HINT = 'Upload a dance video: the dancer is tracked automatically. Skeleton On / Off only shows or hides it.';
+    const VP_LINK_HINT = 'Links: press Skeleton once, then choose \u201cThis tab\u201d and Share in the window your browser shows (browsers only allow this after a click). Needs Chrome or Edge 132+ on a computer.';
     const VP_COLORS = [['#c4b0ff', '#f8b8d8'], ['#8fe3d0', '#ffe08a']];   // line / dot colours per person
     let vpLandmarker = null, vpLoading = null;
-    let vpOn = false, vpGen = 0, vpMode = 'file';
+    let vpOn = false, vpGen = 0, vpMode = 'file';   // vpOn = tracking the dancer (runs in the background)
+    let vpShow = false;                    // draw the skeleton on screen? (the Skeleton button)
+    let vpStarting = false;
     let vpSource = 'none';                 // 'file' | 'capture'
     let vpStream = null;
     let vpLastT = -1, vpLastTs = 0, vpLastCount = -1;
@@ -146,8 +148,8 @@
     function vpIdleHint() { return vpMode === 'file' ? VP_HINT : VP_LINK_HINT; }
 
     function vpUpdateBtn() {
-        vpBtn.textContent = 'Skeleton: ' + (vpOn ? 'On' : 'Off');
-        vpBtn.classList.toggle('active-btn', vpOn);
+        vpBtn.textContent = 'Skeleton: ' + (vpShow ? 'On' : 'Off');
+        vpBtn.classList.toggle('active-btn', vpShow);
         vpSyncSlider();
     }
 
@@ -368,29 +370,32 @@
             const poses = vpExtrapolate(res.landmarks, t, leadSec);
             syncAddRef(res);
             vpClear();
-            vpDrawPoses(vpCtx, vpOverlay.width, poses);
+            if (vpShow) vpDrawPoses(vpCtx, vpOverlay.width, poses);
             vpReport(res.landmarks.length);
         }, err => vpFail('Could not analyse this video: ', err));
     }
 
+    /* Starts by itself as soon as a video is loaded; the Skeleton button only shows / hides the drawing */
     async function vpStartFile() {
-        vpBtn.disabled = true;
+        if (vpOn || vpStarting || vpMode !== 'file') return;
+        if (vpVideo.readyState < 2 || !vpVideo.videoWidth) return;   // no video yet
+        vpStarting = true;
         vpSetStatus('Loading pose model...');
         try {
             await vpLoadModel();
         } catch (err) {
             console.error(err);
-            vpBtn.disabled = false;
-            vpSetStatus('Could not load the pose model: ' + (err.message || err) + ' (it needs an internet connection).', true);
+            vpSetStatus('Could not load the pose model: ' + (err.message || err) + ' (it needs an internet connection). Press Skeleton to try again.', true);
             return;
+        } finally {
+            vpStarting = false;
         }
-        vpBtn.disabled = false;
-        if (vpMode !== 'file') return;                   // user switched to a link while loading
+        if (vpMode !== 'file' || vpOn) return;           // user switched to a link while loading
         vpOn = true; vpSource = 'file';
         vpLastT = -1; vpLastCount = -1;
         vpUpdateBtn();
-        vpOverlay.hidden = false;
-        vpSetStatus('Skeleton on. Press play, or drag the timeline, to see it follow the dancer.' + vpStartNote());
+        vpOverlay.hidden = !vpShow;
+        vpSetStatus('Tracking the dancer in the background. Skeleton On shows it on the video.' + vpStartNote());
         vpLayout();
         vpDetect(true);                                  // draw the current frame even if paused
         vpLoop(++vpGen);
@@ -416,7 +421,7 @@
         if (!w0 || !h0 || vpCap.readyState < 2) return;
         const cw = Math.min(w0, 960), ch = Math.round(cw * h0 / w0);
         const onVideo = (vpCapKind === 'element');
-        if (!onVideo) {                                  // fallback: show the captured picture in the Pose view
+        if (!onVideo && vpShow) {                        // fallback: show the captured picture in the Pose view
             if (vpViewCanvas.width !== cw || vpViewCanvas.height !== ch) { vpViewCanvas.width = cw; vpViewCanvas.height = ch; }
             vpViewCtx.drawImage(vpCap, 0, 0, cw, ch);
             if (vpViewPoses) vpDrawPoses(vpViewCtx, cw, vpViewPoses);   // keep the last skeleton on the new picture
@@ -429,12 +434,14 @@
             const leadSec = (vpInferMs + 16 + vpLeadMs.capture) / 1000;
             const poses = vpExtrapolate(res.landmarks, t0 / 1000, leadSec);
             syncAddRef(res);
-            if (onVideo) {                               // skeleton directly on the original player
+            vpViewPoses = poses;
+            if (!vpShow) {
+                // tracked for the analyzer, nothing drawn
+            } else if (onVideo) {                        // skeleton directly on the original player
                 vpLayoutCap(cw, ch);
                 vpCapCtx.clearRect(0, 0, vpCapOverlay.width, vpCapOverlay.height);
                 vpDrawPoses(vpCapCtx, cw, poses);
             } else {
-                vpViewPoses = poses;
                 vpViewCtx.drawImage(vpCap, 0, 0, cw, ch);    // the newest picture, without the old skeleton
                 vpDrawPoses(vpViewCtx, cw, poses);
             }
@@ -507,13 +514,26 @@
         if (vpMode === 'file' || vpStream !== stream) { vpTurnOff(); return; }   // switched to a file / stopped meanwhile
         vpOn = true; vpSource = 'capture';
         vpLastCount = -1;
-        vpUpdateBtn();
-        vpCapOverlay.hidden = (kind !== 'element');
-        vpView.hidden = (kind !== 'region');
+        vpShow = true;                                   // the click that started the capture was "show me"
+        vpApplyShow();
         vpSetStatus(kind === 'element'
-            ? 'Skeleton on. Press play: the skeleton is drawn right on the video.' + vpStartNote()
-            : 'Skeleton on. Your browser is older than Chrome 132, so the skeleton is shown in the Pose view below (keep the video visible on screen). Update Chrome to draw it on the video itself.');
+            ? 'Tracking the linked video. Press play: the skeleton is drawn right on the video (Skeleton Off hides it, tracking keeps going).' + vpStartNote()
+            : 'Tracking the linked video. Your browser is older than Chrome 132, so the skeleton is shown in the Pose view below (keep the video visible on screen). Update Chrome to draw it on the video itself.');
         vpLoop(++vpGen);
+    }
+
+    /* Show or hide the drawing; tracking (and the analyzer) keeps running either way */
+    function vpApplyShow() {
+        vpUpdateBtn();
+        vpOverlay.hidden = !(vpShow && vpSource === 'file');
+        vpCapOverlay.hidden = !(vpShow && vpSource === 'capture' && vpCapKind === 'element');
+        vpView.hidden = !(vpShow && vpSource === 'capture' && vpCapKind === 'region');
+        if (!vpShow) {
+            vpClear();
+            vpCapCtx.clearRect(0, 0, vpCapOverlay.width, vpCapOverlay.height);
+        } else if (vpSource === 'file') {
+            vpDetect(true);                              // draw the current frame right away, even if paused
+        }
     }
 
     /* ---------- shared ---------- */
@@ -548,9 +568,11 @@
         console.info('[MUSE skeleton] click | mode:', vpMode, '| on:', vpOn,
             '| screen capture API:', !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia),
             '| CropTarget:', !!window.CropTarget);
-        if (vpOn) vpTurnOff();
-        else if (vpMode === 'file') vpStartFile();
-        else vpStartCapture();
+        // a link can only be tracked after the user shares the tab, and that needs this click
+        if (vpMode !== 'file' && !vpOn) { vpStartCapture(); return; }
+        vpShow = !vpShow;
+        vpApplyShow();
+        if (vpMode === 'file' && !vpOn) vpStartFile();   // e.g. the model failed to load earlier: try again
     });
 
     /* =========================================================
@@ -712,7 +734,7 @@
     const syncClock = sec => Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
 
     function syncWaitMsg() {
-        if (!vpOn) return 'Turn on Skeleton on the practice video.';
+        if (!vpOn) return vpMode === 'file' ? 'Upload a practice video to compare with.' : 'Press Skeleton on the practice video and share this tab to compare.';
         if (!camRunning()) return 'Start your camera to compare.';
         if (!syncRefs.length) return 'No dancer found in the practice video yet.';
         if (performance.now() - syncLastCamT > 600) return 'Step back until your whole body is in the camera.';
@@ -817,7 +839,7 @@
     function syncRenderTips(a) {
         const tips = [];
         if (!a) {
-            tips.push('Turn on Skeleton on the practice video, start your camera and dance along for at least 10 seconds.');
+            tips.push('Upload a practice video (for a link, press Skeleton and share this tab), start your camera and dance along for at least 10 seconds.');
         } else {
             const valid = a.parts.filter(p => p.v != null);
             const weakest = valid.reduce((w, p) => (!w || p.v < w.v ? p : w), null);
@@ -952,7 +974,10 @@
 
     /* A paused video produces no frame callbacks, so redraw after seeking / loading */
     vpVideo.addEventListener('seeked', () => { vpTrack = []; vpDetect(true); });
-    vpVideo.addEventListener('loadeddata', () => { vpLastT = -1; vpLayout(); vpDetect(true); });
+    vpVideo.addEventListener('loadeddata', () => {
+        vpLastT = -1; vpLayout(); vpDetect(true);
+        vpStartFile();                                   // a video is here: start tracking in the background
+    });
     vpVideo.addEventListener('loadedmetadata', vpLayout);
     new ResizeObserver(() => { if (vpOn && vpSource === 'file') vpLayout(); }).observe(vpVideo);
     window.addEventListener('resize', () => { if (vpOn && vpSource === 'file') vpLayout(); });
@@ -965,8 +990,10 @@
         // a skeleton started for the other kind of source no longer makes sense
         if (vpOn && ((vpSource === 'file' && vpMode !== 'file') || (vpSource === 'capture' && vpMode === 'file'))) {
             vpTurnOff();
-        } else if (!vpOn) {
+        }
+        if (!vpOn) {
             vpSetStatus(vpIdleHint());
+            vpStartFile();                               // back on a loaded file: track it again (no-op otherwise)
         }
     });
 
@@ -976,4 +1003,8 @@
     /* camera.js calls this with every new camera pose */
     window.MUSE = window.MUSE || {};
     window.MUSE.sync = { addCam: syncAddCam };
+
+    /* this script loads after the page, so a video may already be waiting */
+    vpUpdateBtn();
+    vpStartFile();
 })();
