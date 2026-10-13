@@ -13,14 +13,14 @@ import {
 
 // Keep the real configuration generated for your MUSE project.
 // Your web app's Firebase configuration
-  const firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyDW86i3G7eLzX6SbxIk-11rdHMzJYZp4S8",
     authDomain: "muse-ae3dc.firebaseapp.com",
     projectId: "muse-ae3dc",
     storageBucket: "muse-ae3dc.firebasestorage.app",
     messagingSenderId: "286418803489",
     appId: "1:286418803489:web:4472ee6365bffb96c0bc60"
-  };
+};
 
 // Connect MUSE to Firebase.
 const app = initializeApp(firebaseConfig);

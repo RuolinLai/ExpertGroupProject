@@ -382,12 +382,10 @@ header {
 
 @keyframes float {
 
-
   0%,
   100% {
     transform: translateY(0);
   }
-
 
   50% {
     transform: translateY(-16px);
@@ -397,12 +395,10 @@ header {
 
 @keyframes pulse {
 
-
   0%,
   100% {
     box-shadow: 0 0 22px rgba(248, 184, 216, 0.4);
   }
-
 
   50% {
     box-shadow: 0 0 40px rgba(196, 176, 255, 0.7);
@@ -412,12 +408,10 @@ header {
 
 @keyframes drift1 {
 
-
   0%,
   100% {
     transform: translate(0, 0);
   }
-
 
   50% {
     transform: translate(80px, 60px);
@@ -427,12 +421,10 @@ header {
 
 @keyframes drift2 {
 
-
   0%,
   100% {
     transform: translate(0, 0);
   }
-
 
   50% {
     transform: translate(-90px, -50px);
@@ -460,7 +452,6 @@ header {
 
 
 @media (prefers-reduced-motion: reduce) {
-
 
   *,
   *::before,
@@ -863,12 +854,10 @@ header {
 
 @keyframes gradMove {
 
-
   0%,
   100% {
     background-position: 0% 50%;
   }
-
 
   50% {
     background-position: 100% 50%;
@@ -877,10 +866,10 @@ header {
 
 
 @keyframes ring {
+
   0% {
     box-shadow: 0 0 0 0 rgba(248, 184, 216, 0.6);
   }
-
 
   100% {
     box-shadow: 0 0 0 28px rgba(248, 184, 216, 0);
@@ -896,18 +885,14 @@ header {
 
 
 @media (max-width: 800px) {
-
-
   .shots,
   .about {
     grid-template-columns: 1fr;
   }
 
-
   .shot.big .media-slot {
     aspect-ratio: 16 / 10;
   }
-
 
   .review {
     width: 280px;
@@ -1563,13 +1548,9 @@ header {
 .gallery-stat strong {
   display: block;
   font-size: 1.7rem;
-
-
   background: linear-gradient(135deg,
       var(--pink),
       var(--purple));
-
-
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -1598,23 +1579,13 @@ header {
   flex: 1;
   min-width: 230px;
   max-width: 380px;
-
-
   display: flex;
   align-items: center;
   gap: 10px;
-
-
   padding: 12px 17px;
-
-
   border-radius: 30px;
-
-
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.13);
-
-
   transition: 0.3s ease;
 }
 
@@ -1659,15 +1630,9 @@ header {
 .gallery-filter {
   padding: 9px 16px;
   border-radius: 30px;
-
-
   color: rgba(255, 255, 255, 0.65);
-
-
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
-
-
   transition: 0.3s ease;
 }
 
@@ -1678,8 +1643,6 @@ header {
   background: linear-gradient(90deg,
       var(--pink),
       var(--purple));
-
-
   border-color: transparent;
 }
 
@@ -1691,26 +1654,14 @@ header {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-
   padding: 10px 20px;
-
-
   border-radius: 30px;
-
-
   color: #1a1024;
   font-weight: 600;
-
-
   background: linear-gradient(90deg,
       var(--pink),
       var(--purple));
-
-
   cursor: pointer;
-
-
   transition: 0.3s ease;
 }
 
@@ -1735,33 +1686,17 @@ header {
 .video-card {
   display: inline-block;
   width: 100%;
-
-
   margin: 0 0 24px;
-
-
   break-inside: avoid;
-
-
   border-radius: 24px;
   overflow: hidden;
-
-
   background: linear-gradient(145deg,
       rgba(255, 255, 255, 0.12),
       rgba(255, 255, 255, 0.035));
-
-
   border: 1px solid rgba(255, 255, 255, 0.14);
-
-
   backdrop-filter: blur(14px);
-
-
   box-shadow:
     0 20px 50px rgba(0, 0, 0, 0.45);
-
-
   transition:
     transform .4s ease,
     box-shadow .4s ease,
@@ -1853,8 +1788,6 @@ header {
 
 .favourite-btn.is-favourite {
   color: #1a1024;
-
-
   background: linear-gradient(135deg,
       var(--pink),
       var(--purple));
@@ -1885,11 +1818,7 @@ header {
 
 .video-info>p {
   margin-top: 8px;
-
-
   color: rgba(255, 255, 255, 0.58);
-
-
   font-size: 0.82rem;
   line-height: 1.6;
 }
@@ -1900,14 +1829,8 @@ header {
 
 .video-status {
   flex-shrink: 0;
-
-
   padding: 5px 9px;
-
-
   border-radius: 20px;
-
-
   font-size: 0.65rem;
   font-weight: 600;
 }
@@ -1933,14 +1856,8 @@ header {
 .video-meta {
   display: flex;
   gap: 8px;
-
-
   margin-top: 15px;
-
-
   color: rgba(255, 255, 255, 0.42);
-
-
   font-size: 0.7rem;
 }
 
@@ -1956,11 +1873,7 @@ header {
 .progress-label {
   display: flex;
   justify-content: space-between;
-
-
   margin-bottom: 7px;
-
-
   font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.5);
 }
@@ -1974,11 +1887,7 @@ header {
 .progress-bar {
   height: 5px;
   overflow: hidden;
-
-
   border-radius: 10px;
-
-
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -1986,11 +1895,7 @@ header {
 .progress-bar span {
   display: block;
   height: 100%;
-
-
   border-radius: inherit;
-
-
   background: linear-gradient(90deg,
       var(--pink),
       var(--purple));
@@ -2003,31 +1908,17 @@ header {
 .video-actions {
   display: flex;
   gap: 8px;
-
-
   margin-top: 18px;
 }
 
 
 .video-actions button {
   padding: 8px 13px;
-
-
   border-radius: 20px;
-
-
   font-size: 0.7rem;
-
-
   color: rgba(255, 255, 255, 0.7);
-
-
   background: rgba(255, 255, 255, 0.06);
-
-
   border: 1px solid rgba(255, 255, 255, 0.1);
-
-
   transition: 0.3s ease;
 }
 
@@ -2039,7 +1930,6 @@ header {
   background: linear-gradient(90deg,
       var(--pink),
       var(--purple));
-
 
   border-color: transparent;
 }
@@ -2055,14 +1945,8 @@ header {
 
 .gallery-empty {
   display: none;
-
-
   text-align: center;
-
-
   padding: 80px 20px;
-
-
   color: rgba(255, 255, 255, 0.55);
 }
 
@@ -2075,24 +1959,12 @@ header {
 .empty-icon {
   width: 70px;
   height: 70px;
-
-
   margin: 0 auto 20px;
-
-
   display: grid;
   place-items: center;
-
-
   border-radius: 22px;
-
-
   font-size: 2rem;
-
-
   color: #1a1024;
-
-
   background: linear-gradient(135deg,
       var(--pink),
       var(--purple));
@@ -2117,23 +1989,18 @@ header {
 
 
 @media (max-width: 900px) {
-
-
   .gallery-header {
     align-items: flex-start;
     flex-direction: column;
   }
 
-
   .gallery-stats {
     width: 100%;
   }
 
-
   .gallery-stat {
     flex: 1;
   }
-
 
   .video-gallery {
     columns: 2 280px;
@@ -2142,46 +2009,36 @@ header {
 
 
 @media (max-width: 600px) {
-
-
   .gallery-page {
     padding-top: 45px;
   }
-
 
   .gallery-controls {
     align-items: stretch;
     flex-direction: column;
   }
 
-
   .gallery-search {
     max-width: none;
   }
-
 
   .gallery-filters {
     overflow-x: auto;
     flex-wrap: nowrap;
   }
 
-
   .gallery-filter {
     flex-shrink: 0;
   }
-
 
   .upload-video-btn {
     width: 100%;
   }
 
-
   .video-gallery {
     columns: 1;
   }
 }
-
-
 
 
 /* =========================================================
@@ -2407,4 +2264,750 @@ header {
 .dance-ctrl-btn:disabled {
   opacity: .4;
   cursor: not-allowed;
+}
+
+/* =========================================================
+   MUSE GALLERY — BLACK & PINK UPLOAD MODAL
+   ========================================================= */
+
+.upload-modal[hidden] {
+  display: none !important;
+}
+
+.upload-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 28px 18px;
+  overflow-y: auto;
+
+  background: rgba(0, 0, 0, 0.86);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  animation: museModalFadeIn 0.22s ease-out;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Main upload popup panel */
+.upload-panel {
+  --auth-pink: #f8b8d8;
+  --auth-purple: #c4b0ff;
+  --auth-blue: #a8d0ff;
+
+  position: relative;
+  isolation: isolate;
+
+  width: min(100%, 540px);
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+
+  margin: auto;
+  padding: 34px 36px 26px;
+  box-sizing: border-box;
+
+  color: #fff;
+  background: #000000;
+
+  border: 1px solid rgba(248, 184, 216, 0.25);
+  border-radius: 22px;
+
+  box-shadow:
+    0 24px 90px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(248, 184, 216, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  animation: museModalRise 0.28s ease-out;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Subtle pastel spotlight */
+.upload-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+
+  background: radial-gradient(ellipse at 50% 0%,
+      rgba(248, 184, 216, 0.08),
+      transparent 65%);
+}
+
+.upload-panel:hover {
+  border-color: rgba(248, 184, 216, 0.6);
+
+  box-shadow:
+    0 24px 90px rgba(0, 0, 0, 0.7),
+    0 0 32px rgba(248, 184, 216, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* Popup heading */
+.upload-panel h2,
+.upload-panel h3 {
+  color: #fff;
+}
+
+.upload-panel h2 {
+  text-align: center;
+}
+
+/* Labels */
+.upload-panel label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Inputs and dropdowns */
+.upload-panel input,
+.upload-panel select,
+.upload-panel textarea {
+  box-sizing: border-box;
+  width: 100%;
+
+  color: #fff;
+  background: #080808;
+
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 12px;
+
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.upload-panel input:focus,
+.upload-panel select:focus,
+.upload-panel textarea:focus {
+  outline: none;
+  border-color: var(--auth-purple);
+
+  box-shadow: 0 0 0 3px rgba(196, 176, 255, 0.12);
+}
+
+.upload-panel input::placeholder,
+.upload-panel textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Gradient save button */
+.upload-panel #saveGalleryVideo {
+  color: #1a1024;
+
+  background: linear-gradient(110deg,
+      var(--auth-pink),
+      var(--auth-purple),
+      var(--auth-blue),
+      var(--auth-pink));
+
+  background-size: 300% 100%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 30px;
+
+  animation: shimmer 6s linear infinite;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.upload-panel #saveGalleryVideo:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 24px rgba(248, 184, 216, 0.18),
+    0 0 22px rgba(196, 176, 255, 0.15);
+}
+
+.upload-panel #saveGalleryVideo:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Cancel and close buttons */
+.upload-panel #cancelUpload,
+.upload-panel #closeUploadForm {
+  color: #fff;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.upload-panel #cancelUpload:hover,
+.upload-panel #closeUploadForm:hover {
+  color: var(--auth-pink);
+}
+
+/* Upload progress */
+.upload-panel progress {
+  accent-color: var(--auth-purple);
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+  .upload-panel,
+  .upload-panel *,
+  .upload-panel::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Subtle scrollbar */
+.upload-panel {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(248, 184, 216, 0.4) transparent;
+}
+
+.upload-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.upload-panel::-webkit-scrollbar-thumb {
+  background: rgba(248, 184, 216, 0.35);
+  border-radius: 20px;
+}
+
+/* Header */
+.upload-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+
+  margin-bottom: 28px;
+  padding-bottom: 23px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.upload-heading {
+  min-width: 0;
+}
+
+.upload-eyebrow,
+.gallery-eyebrow {
+  margin: 0 0 11px;
+
+  color: #d8a8e8;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+
+.upload-heading h2,
+#uploadTitle {
+  margin: 0;
+
+  color: #fff;
+  font-size: clamp(28px, 5vw, 36px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -1.1px;
+}
+
+.upload-heading .shimmer {
+  background: linear-gradient(100deg,
+      #f8b8d8 0%,
+      #d6a2f0 48%,
+      #f8b8d8 100%);
+
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.upload-subtitle {
+  margin: 10px 0 0;
+
+  color: #a6a0b1;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* Close button */
+.upload-close {
+  display: grid;
+  flex: 0 0 36px;
+  place-items: center;
+
+  width: 36px;
+  height: 36px;
+  padding: 0;
+
+  color: #c9c1d0;
+  background: rgba(255, 255, 255, 0.045);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.upload-close:hover {
+  color: #f8b8d8;
+  background: rgba(248, 184, 216, 0.1);
+  border-color: rgba(248, 184, 216, 0.4);
+  transform: rotate(90deg);
+}
+
+/* Form spacing */
+#galleryUploadForm {
+  display: flex;
+  flex-direction: column;
+  gap: 21px;
+}
+
+.upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.upload-field>label,
+.upload-progress-heading label {
+  color: #eee8f3;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.required-star {
+  color: #f8b8d8;
+}
+
+.optional-label {
+  margin-left: 7px;
+
+  color: #94899f;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.3px;
+}
+
+/* Inputs */
+#galleryUploadForm input[type="text"],
+#galleryUploadForm select,
+#galleryUploadForm textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 45px;
+  padding: 12px 14px;
+
+  color: #f7f2fa;
+  background: #111116;
+
+  border: 1px solid #2c2733;
+  border-radius: 10px;
+  outline: none;
+
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.6;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+#galleryUploadForm textarea {
+  min-height: 94px;
+  resize: vertical;
+}
+
+#galleryUploadForm input::placeholder,
+#galleryUploadForm textarea::placeholder {
+  color: #777080;
+  opacity: 1;
+}
+
+#galleryUploadForm input[type="text"]:focus,
+#galleryUploadForm select:focus,
+#galleryUploadForm textarea:focus {
+  background: #141119;
+  border-color: #c78edb;
+  box-shadow: 0 0 0 3px rgba(199, 142, 219, 0.1);
+}
+
+#galleryUploadForm select {
+  cursor: pointer;
+}
+
+#galleryUploadForm select option {
+  color: #f7f2fa;
+  background: #111116;
+}
+
+/* Progress slider */
+.upload-progress-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#newVideoProgressLabel {
+  color: #f3b9df;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+#newVideoProgress {
+  width: 100%;
+  height: 5px;
+  margin: 8px 0;
+
+  accent-color: #e8a9dc;
+  cursor: pointer;
+}
+
+.progress-range-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+
+  color: #898192;
+  font-size: 10px;
+}
+
+/* File upload */
+#galleryUploadForm input[type="file"] {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+
+  color: #bdb4c7;
+  background: #111116;
+
+  border: 1px dashed #494052;
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 11px;
+}
+
+#galleryUploadForm input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 8px 11px;
+
+  color: #f7d8ed;
+  background: #29202f;
+
+  border: 1px solid #59405f;
+  border-radius: 7px;
+
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#galleryUploadForm input[type="file"]::file-selector-button:hover {
+  background: #3a2942;
+}
+
+.upload-hint {
+  margin: 0;
+
+  color: #898192;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* Status message */
+#uploadMessage {
+  margin: 0;
+
+  color: #f0bce0;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* Footer buttons */
+.upload-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 11px;
+
+  margin-top: 3px;
+  padding-top: 19px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.upload-cancel,
+.upload-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  min-height: 43px;
+  padding: 0 19px;
+
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.upload-cancel {
+  color: #d0c7d7;
+  background: #141218;
+
+  border: 1px solid #342c3b;
+}
+
+.upload-cancel:hover {
+  color: #fff;
+  background: #201a25;
+  border-color: #65516d;
+}
+
+.upload-save {
+  color: #1b1020;
+  background: linear-gradient(110deg, #f4b9dc, #d7a4ef);
+
+  border: 1px solid transparent;
+  box-shadow: 0 4px 18px rgba(218, 157, 221, 0.13);
+}
+
+.upload-save:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 7px 24px rgba(218, 157, 221, 0.24);
+}
+
+.upload-save:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.upload-cancel:focus-visible,
+.upload-save:focus-visible,
+.upload-close:focus-visible {
+  outline: 2px solid #f8b8d8;
+  outline-offset: 3px;
+}
+
+/* Small footer detail */
+.upload-footer-note {
+  margin: 1px 0 0;
+  padding-top: 1px;
+
+  color: #70677b;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+/* Animations */
+@keyframes museModalFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes museModalRise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Mobile layout */
+@media (max-width: 600px) {
+  .upload-modal {
+    align-items: flex-start;
+    padding: 14px 12px;
+  }
+
+  .upload-panel {
+    width: 100%;
+    max-height: calc(100vh - 28px);
+    padding: 25px 20px 20px;
+    border-radius: 17px;
+  }
+
+  .upload-modal-header {
+    gap: 12px;
+    margin-bottom: 23px;
+    padding-bottom: 19px;
+  }
+
+  .upload-heading h2,
+  #uploadTitle {
+    font-size: 29px;
+  }
+
+  #galleryUploadForm {
+    gap: 18px;
+  }
+
+  .upload-form-actions {
+    gap: 9px;
+  }
+
+  .upload-cancel,
+  .upload-save {
+    flex: 1;
+    padding: 0 12px;
+  }
+}
+
+/* Respect reduced-motion settings */
+@media (prefers-reduced-motion: reduce) {
+
+  .upload-modal,
+  .upload-panel {
+    animation: none;
+  }
+
+  .upload-close,
+  .upload-save,
+  .upload-cancel {
+    transition: none;
+  }
+}
+
+/* Animated gradient for ADD VIDEO */
+#openUploadForm {
+  background: linear-gradient(110deg,
+      #f8b8d8,
+      #c4b0ff,
+      #a8d0ff,
+      #f8b8d8);
+
+  background-size: 300% 100%;
+  animation: shimmer 6s linear infinite;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  transition: filter 0.3s ease;
+}
+
+#openUploadForm:hover {
+  filter: brightness(1.2);
+}
+
+/* =========================================
+   UPLOAD POPUP — PURE BLACK AND WHITE
+========================================= */
+
+.upload-panel {
+  background: #000000 !important;
+  color: #ffffff;
+
+  border: 1px solid #ffffff;
+  border-radius: 22px;
+
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.7);
+
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* No coloured border or glow on hover */
+.upload-panel:hover {
+  border-color: #ffffff;
+
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.7);
+}
+
+/* Remove any decorative coloured spotlight */
+.upload-panel::before {
+  display: none;
+}
+
+/* Popup headings and labels */
+.upload-panel h2,
+.upload-panel h3,
+.upload-panel label {
+  color: #ffffff;
+}
+
+/* =========================================
+   ADD A VIDEO — ANIMATED GRADIENT
+========================================= */
+
+/* Keep the rest of the heading white */
+.upload-panel h2 {
+  color: #ffffff;
+}
+
+/* Apply the gradient only to the word Video */
+.upload-panel h2 .gradient-text {
+  background: linear-gradient(110deg,
+      #f8b8d8,
+      #c4b0ff,
+      #a8d0ff,
+      #f8b8d8);
+
+  background-size: 300% 100%;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  animation: shimmer 6s linear infinite;
+}
+
+/* Keep the popup controls consistent */
+.upload-panel input,
+.upload-panel select,
+.upload-panel textarea {
+  color: #ffffff;
+  background: #080808;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.upload-panel input:focus,
+.upload-panel select:focus,
+.upload-panel textarea:focus {
+  border-color: #ffffff !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
