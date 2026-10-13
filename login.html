@@ -10,8 +10,8 @@
 
     <style>
         /* =========================================
-           MUSE LOGIN PAGE
-           Uses the existing MUSE colour palette
+            MUSE LOGIN PAGE
+            Uses the existing MUSE colour palette
         ========================================= */
 
         .auth-body {
@@ -52,7 +52,7 @@
         }
 
         /* =========================================
-           GLASS LOGIN CARD
+            GLASS LOGIN CARD
         ========================================= */
 
         .auth-page {
@@ -152,8 +152,8 @@
         }
 
         /* =========================================
-           CENTERED TAGLINE
-           No separate MUSE heading
+            CENTERED TAGLINE
+            No separate MUSE heading
         ========================================= */
 
         .auth-heading {
@@ -191,7 +191,7 @@
         }
 
         /* =========================================
-           SIGN IN / CREATE ACCOUNT FORMS
+            SIGN IN / CREATE ACCOUNT FORMS
         ========================================= */
 
         .auth-page .auth-form {
@@ -266,8 +266,8 @@
         }
 
         /* =========================================
-           PASTEL GRADIENT BUTTONS
-           Same colours as the home-page shimmer
+            PASTEL GRADIENT BUTTONS
+            Same colours as the home-page shimmer
         ========================================= */
 
         .auth-page .auth-button {
@@ -325,7 +325,7 @@
         }
 
         /* =========================================
-           FORGOT PASSWORD + ACCOUNT SWITCH LINKS
+            FORGOT PASSWORD + ACCOUNT SWITCH LINKS
         ========================================= */
 
         .auth-page .auth-reset,
@@ -381,7 +381,7 @@
         }
 
         /* =========================================
-           AUTHENTICATION STATUS MESSAGES
+            AUTHENTICATION STATUS MESSAGES
         ========================================= */
 
         .auth-page .auth-message {
@@ -442,7 +442,7 @@
         }
 
         /* =========================================
-           RESPONSIVE DESIGN
+            RESPONSIVE DESIGN
         ========================================= */
 
         @media (max-width: 480px) {
@@ -461,7 +461,7 @@
         }
 
         /* =========================================
-           ACCESSIBILITY
+            ACCESSIBILITY
         ========================================= */
 
         @media (prefers-reduced-motion: reduce) {
@@ -607,9 +607,7 @@
 
     </main>
 
-    <!-- Existing Firebase authentication -->
-
-    <!-- Local Authentication Script -->
+    <!-- Local Authentication Logic Script -->
 
     <script>
         const signInForm = document.getElementById("sign-in-form");
@@ -623,7 +621,6 @@
         const signedInPanel = document.getElementById("signed-in-panel");
         const authForms = document.getElementById("auth-forms");
 
-        // Toggle between Sign In and Create Account forms
         showSignUpBtn.addEventListener("click", () => {
             signInForm.hidden = true;
             signUpForm.hidden = false;
@@ -636,7 +633,6 @@
             authMessage.textContent = "";
         });
 
-        // Handle Create Account (Sign Up)
         signUpForm.addEventListener("submit", (e) => {
             e.preventDefault();
             const name = document.getElementById("display-name").value;
@@ -649,7 +645,6 @@
                 return;
             }
 
-            // Save user data locally
             localStorage.setItem("muse_user", JSON.stringify({ name, email, password }));
             
             authMessage.textContent = "Account created successfully! Please sign in.";
@@ -658,7 +653,6 @@
             signUpForm.reset();
         });
 
-        // Handle Sign In
         signInForm.addEventListener("submit", (e) => {
             e.preventDefault();
             const email = document.getElementById("sign-in-email").value;
@@ -676,7 +670,6 @@
             }
         });
 
-        // Handle Password Reset
         resetPasswordBtn.addEventListener("click", () => {
             const email = document.getElementById("sign-in-email").value;
             if (!email) {
@@ -687,7 +680,6 @@
             authMessage.textContent = `Password reset link sent to ${email} (simulation).`;
         });
 
-        // Handle Log Out
         logoutBtn.addEventListener("click", () => {
             signedInPanel.hidden = true;
             authForms.hidden = false;
