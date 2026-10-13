@@ -1021,4 +1021,25 @@ if (videoGallery) {
             }
         }
     });
+    
+document.addEventListener("DOMContentLoaded", () => {
+    const signInForm = document.getElementById("sign-in-form");
+    const signUpForm = document.getElementById("sign-up-form");
+
+    const showSignUpButton = document.getElementById("show-sign-up");
+    const showSignInButton = document.getElementById("show-sign-in");
+
+    // Show Create Account form
+    showSignUpButton.addEventListener("click", () => {
+        signInForm.hidden = true;
+        signUpForm.hidden = false;
+    });
+
+    // Show Sign In form
+    showSignInButton.addEventListener("click", () => {
+        signUpForm.hidden = true;
+        signInForm.hidden = false;
+    });
+});
+
 }
