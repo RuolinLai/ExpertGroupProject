@@ -643,6 +643,19 @@
     /* full-body video but you are not fully in the camera: no scoring */
     const syncNeedFullBody = () => syncRefIsFullBody() && !syncCamFullOk;
 
+
+    /* an uploaded recording of yourself can stand in for the camera (see ANALYZE AN UPLOADED RECORDING) */
+    let recState = 'idle';                 // 'idle' | 'scanning' | 'playing'
+    const recActive = () => recState === 'playing';
+    const userLive = () => camRunning() || recActive();
+
+    function syncResetSession() {
+        sess = syncNewSession();
+        syncShown = null; syncSegFit = SYNC_SEGS.map(() => 1); syncMirrorFit = [0, 0]; syncMirror = false;
+        syncPrevCam = null; syncCamSpeed = 0; syncCamFull = 0; syncCamFullOk = false;
+    }
+
+
     function syncNewSession() {
         return {
             start: performance.now(), samples: [], lastSample: 0, n: 0,
@@ -767,18 +780,29 @@
 
     function syncWaitMsg() {
         if (!vpOn) return vpMode === 'file' ? 'Upload a practice video to compare with.' : 'Press Skeleton on the practice video and share this tab to compare.';
-        if (!camRunning()) return 'Start your camera to compare.';
+
+        if (!userLive()) return 'Start your camera (or analyze a recording) to compare.';
         if (!syncRefs.length) return 'No dancer found in the practice video yet.';
-        if (syncNeedFullBody()) return 'Full-body video: step back so your whole body, feet included, is in the camera.';
-        if (performance.now() - syncLastCamT > 600) return 'Step back until your whole body is in the camera.';
+        const rec = recActive();
+        if (rec && recEl.video.paused) return vpVideo.currentTime < recOffset ? 'Waiting for the matched moment...' : 'Paused. Press play on the practice video to continue.';
+        if (syncNeedFullBody()) return rec ? 'Full-body video: only moments where your recording shows your whole body are scored.'
+            : 'Full-body video: step back so your whole body, feet included, is in the camera.';
+        if (performance.now() - syncLastCamT > 600) return rec ? 'You are not fully visible in your recording right now.' : 'Step back until your whole body is in the camera.';
+
         return null;
     }
 
     /* ---------- live mini panel on the camera ---------- */
     function syncRenderLive() {
-        syncFullBanner.hidden = !(camRunning() && vpOn && syncRefs.length && syncNeedFullBody());
-        syncEl.hud.hidden = !camRunning();
-        if (!camRunning()) return;
+
+        const live = userLive();
+        syncFullBanner.hidden = !(live && vpOn && syncRefs.length && syncNeedFullBody());
+        if (!syncFullBanner.hidden) syncFullBanner.textContent = recActive()
+            ? 'Full-body dance, but your recording does not show your whole body (feet included). Only moments where you are fully in view are scored.'
+            : 'Full-body dance: please step back until your whole body (feet included) is in the camera. Scoring starts once you are fully in view.';
+        syncEl.hud.hidden = !live;
+        if (!live) return;
+
         const msg = syncWaitMsg();
         syncEl.hud.classList.toggle('waiting', !!msg || !syncShown);
         if (msg || !syncShown) {
@@ -999,11 +1023,273 @@
         syncRenderReport();
     });
     syncEl.reset.addEventListener('click', () => {
-        sess = syncNewSession();
-        syncShown = null; syncSegFit = SYNC_SEGS.map(() => 1); syncMirrorFit = [0, 0]; syncMirror = false;
+=
+        syncResetSession();
         syncEl.saveNote.textContent = '';
         syncRenderReport();
     });
+
+    /* =========================================================
+       ANALYZE AN UPLOADED RECORDING OF YOURSELF
+       1. Both videos are scanned (one pose every few tenths of a second).
+       2. The recording is slid along the practice video to find where the moves
+          match best: that is the moment the two line up (mirror-style is tried too).
+       3. Both videos jump to that moment and play together; every frame of the
+          recording goes into the analyzer exactly like a camera frame.
+       4. It stops when either video ends. Pausing the practice video pauses both.
+       ========================================================= */
+    const recEl = {
+        stage: $s('recStage'), video: $s('recVideo'), canvas: $s('recCanvas'),
+        upload: $s('recUpload'), btn: $s('recAnalyzeBtn'), status: $s('recStatus'), badge: $s('camBadge')
+    };
+    const recCtx = recEl.canvas.getContext('2d');
+    const REC_MAX_SAMPLES = 600;           // poses scanned per video at most (longer videos use a bigger step)
+    const REC_MIN_STEP = 0.25;             // seconds between scanned poses
+    const REC_MIN_MATCH = 0.45;            // below this the videos are probably not the same dance
+    let recURL = null, recLandmarker = null, recLoadingLm = null, recLastTs = 0;
+    let recRun = 0;                        // bumps on every start / stop so older async work gives up
+    let recOffset = 0, recDur = 0;         // recOffset = practice-video time minus recording time
+    let recTimer = null;
+    const recScanCache = new Map();        // url|step -> scanned poses
+
+    function recSay(msg, isError) {
+        recEl.status.textContent = msg;
+        recEl.status.classList.toggle('error', !!isError);
+    }
+    function recUpdateBtn() {
+        recEl.btn.disabled = !recURL;
+        recEl.btn.textContent = recState === 'idle' ? 'Analyze recording' : 'Stop analysis';
+        recEl.btn.classList.toggle('active-btn', recState !== 'idle');
+    }
+    function recShow(on) {
+        recEl.stage.hidden = !on;
+        if (!camRunning()) recEl.badge.textContent = on ? 'MY VIDEO' : 'OFF';
+    }
+
+    /* its own pose model on the page, so it never fights with the practice-video worker */
+    function recNextTs() { recLastTs = Math.max(performance.now(), recLastTs + 1); return recLastTs; }
+    async function recLoadModel() {
+        if (recLandmarker) return;
+        if (!recLoadingLm) {
+            recLoadingLm = (async () => {
+                const fileset = await FilesetResolver.forVisionTasks(VP_MP + '/wasm');
+                const make = delegate => PoseLandmarker.createFromOptions(fileset, {
+                    baseOptions: { modelAssetPath: VP_MODEL, delegate }, runningMode: 'VIDEO', numPoses: 1
+                });
+                try { recLandmarker = await make('GPU'); }
+                catch (e) { console.warn('GPU delegate failed, using CPU instead', e); recLandmarker = await make('CPU'); }
+            })().catch(err => { recLoadingLm = null; throw err; });
+        }
+        return recLoadingLm;
+    }
+    const recDetect = v => recLandmarker.detectForVideo(vpShrink(v, v.videoWidth, v.videoHeight), recNextTs());
+
+    function recWait(el, ev, ms) {
+        return new Promise(resolve => {
+            const done = () => { clearTimeout(timer); el.removeEventListener(ev, done); resolve(); };
+            const timer = setTimeout(done, ms);
+            el.addEventListener(ev, done);
+        });
+    }
+    async function recSeek(v, t) {
+        if (Math.abs(v.currentTime - t) < 0.001 && v.readyState >= 2) return;
+        const p = recWait(v, 'seeked', 4000);
+        v.currentTime = t;
+        await p;
+    }
+    /* videos recorded in the browser (WebM) often report their length as Infinity until you seek to the end */
+    async function recDuration(v) {
+        if (v.readyState < 1) await recWait(v, 'loadedmetadata', 10000);
+        if (!isFinite(v.duration)) { await recSeek(v, 1e9); await recSeek(v, 0); }
+        return isFinite(v.duration) ? v.duration : 0;
+    }
+
+    /* the pose every `step` seconds through a video, on a hidden copy so the players are not disturbed */
+    async function recScan(url, step, run, onProgress) {
+        const key = url + '|' + step;
+        if (recScanCache.has(key)) { onProgress(1); return recScanCache.get(key); }
+        const v = document.createElement('video');
+        v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = url;
+        try {
+            const dur = await recDuration(v);
+            if (v.readyState < 2) await recWait(v, 'loadeddata', 10000);
+            if (!dur || !v.videoWidth) throw new Error('Could not read one of the videos.');
+            const n = Math.floor(dur / step) + 1, out = [];
+            for (let i = 0; i < n; i++) {
+                if (run !== recRun) return null;           // stopped meanwhile
+                await recSeek(v, Math.min(i * step, dur - 0.05));
+                let f = null;
+                try { f = syncFeatures(recDetect(v)); } catch (e) { console.warn(e); }
+                out.push(f);
+                onProgress((i + 1) / n);
+            }
+            recScanCache.set(key, out);
+            return out;
+        } finally {
+            v.removeAttribute('src'); v.load();
+        }
+    }
+
+    /* slide the recording along the practice video; the offset whose poses agree best is the match */
+    function recAlign(ref, rec, step) {
+        const valid = a => a.filter(Boolean).length;
+        const minPairs = Math.max(8, Math.floor(0.5 * Math.min(valid(ref), valid(rec))));   // a tiny overlap proves nothing
+        let best = null;
+        [false, true].forEach(swap => {
+            const S = rec.map(a => a ? ref.map(b => { const c = b && syncCompare(a, b, swap); return c ? c.score : null; }) : null);
+            for (let k = 1 - rec.length; k < ref.length; k++) {
+                let sum = 0, n = 0;
+                for (let j = Math.max(0, -k); j < rec.length && j + k < ref.length; j++) {
+                    const s = S[j] ? S[j][j + k] : null;
+                    if (s != null) { sum += s; n++; }
+                }
+                if (n >= minPairs && (!best || sum / n > best.score)) best = { score: sum / n, offset: k * step, mirror: swap };
+            }
+        });
+        return best;
+    }
+
+    async function recStart() {
+        if (recState !== 'idle') return;
+        if (!recURL) { recSay('Upload a video of yourself dancing first.', true); return; }
+        if (vpMode !== 'file' || !vpVideo.currentSrc || !vpVideo.videoWidth) {
+            recSay('Upload the practice video as a file first (YouTube / TikTok / Instagram links cannot be scanned).', true);
+            return;
+        }
+        if (!vpOn) { recSay('The practice video is not tracked yet. Wait for the pose model to load, then try again.', true); return; }
+        const run = ++recRun;
+        recState = 'scanning';
+        recUpdateBtn();
+        window.MUSE?.camera?.stop?.();                   // the recording takes the camera's place
+        vpVideo.pause(); recEl.video.pause();
+        recShow(true);
+        try {
+            recSay('Loading pose model...');
+            await recLoadModel();
+            const dRef = isFinite(vpVideo.duration) ? vpVideo.duration : await recDuration(vpVideo);
+            const dRec = await recDuration(recEl.video);
+            if (!dRef || !dRec) throw new Error('Could not read the length of the videos.');
+            const step = Math.max(REC_MIN_STEP, Math.ceil(Math.max(dRef, dRec) / REC_MAX_SAMPLES * 20) / 20);
+            const say = (half, p) => recSay('Finding where your recording matches the practice video... ' + Math.round((half + p) * 50) + '%');
+            const ref = await recScan(vpVideo.currentSrc, step, run, p => say(0, p));
+            if (!ref) return;
+            const rec = await recScan(recURL, step, run, p => say(1, p));
+            if (!rec) return;
+            if (ref.filter(Boolean).length < 8) throw new Error('No dancer was found in the practice video.');
+            if (rec.filter(Boolean).length < 8) throw new Error('No dancer was found in your recording. Make sure your body is in the picture.');
+            const m = recAlign(ref, rec, step);
+            if (!m || m.score < REC_MIN_MATCH) throw new Error('Could not find where your recording matches the practice video. Is it the same dance?');
+
+            recOffset = m.offset; recDur = dRec;
+            const refStart = Math.max(0, m.offset), recStart = refStart - m.offset;
+            await Promise.all([recSeek(vpVideo, refStart), recSeek(recEl.video, recStart)]);
+            if (run !== recRun) return;
+            syncResetSession();                          // a fresh report for this recording
+            syncMirror = m.mirror;
+            syncMirrorFit = m.mirror ? [0, m.score] : [m.score, 0];
+            recEl.video.playbackRate = vpVideo.playbackRate;
+            recState = 'playing';
+            recUpdateBtn();
+            recSay('Matched: your recording at ' + syncClock(recStart) + ' = practice video at ' + syncClock(refStart)
+                + ' (' + syncPct(m.score) + ' match' + (m.mirror ? ', mirrored' : '') + '). Analyzing until the video ends...');
+            recTimer = setInterval(() => recFollow(!vpVideo.paused), 250);
+            recLoop(run);
+            // its 'play' event starts the recording too
+            vpVideo.play().catch(() => recSay('Matched! Press play on the practice video to start the analysis.'));
+        } catch (err) {
+            if (run !== recRun) return;
+            console.error(err);
+            recState = 'idle';
+            recUpdateBtn();
+            recSay(err.message || String(err), true);
+        }
+    }
+
+    /* keep the recording on the same moment as the practice video (the practice video is the clock) */
+    function recFollow(playing) {
+        if (!recActive()) return;
+        const v = recEl.video, want = vpVideo.currentTime - recOffset;
+        if (want >= recDur - 0.1) { recFinish(); return; }
+        if (want < 0) {                                  // before the matched moment: hold the first frame
+            if (!v.paused) v.pause();
+            if (v.currentTime > 0.05) v.currentTime = 0;
+            return;
+        }
+        if (Math.abs(v.currentTime - want) > 0.25) v.currentTime = want;   // drifted, or the practice video was seeked
+        if (playing && v.paused) v.play().catch(() => { });
+        if (!playing && !v.paused) v.pause();
+    }
+
+    function recLoop(run) {
+        if (run !== recRun || !recActive()) return;
+        const v = recEl.video, cb = () => { recFrame(); recLoop(run); };
+        if ('requestVideoFrameCallback' in v) v.requestVideoFrameCallback(cb);
+        else requestAnimationFrame(cb);
+    }
+    function recFrame() {
+        const v = recEl.video;
+        if (!recActive() || v.paused || v.readyState < 2) return;
+        let res;
+        try { res = recDetect(v); } catch (e) { console.warn(e); return; }
+        const c = recEl.canvas;
+        if (c.width !== v.videoWidth || c.height !== v.videoHeight) { c.width = v.videoWidth; c.height = v.videoHeight; }
+        recCtx.clearRect(0, 0, c.width, c.height);
+        if (res.landmarks?.[0]) vpDrawPoses(recCtx, c.width, [res.landmarks[0]]);
+        syncAddCam(res);
+    }
+
+    function recStop(msg) {
+        recRun++;
+        clearInterval(recTimer);
+        recState = 'idle';
+        recEl.video.pause();
+        recUpdateBtn();
+        if (msg) recSay(msg);
+    }
+    function recFinish() {
+        recStop();
+        vpVideo.pause();
+        const a = syncAvg();
+        recSay(a && sess.n >= 20
+            ? 'Done! Your recording scored ' + syncPct(a.overall) + '. The full report is in the Analyzer card.'
+            : 'Done, but there was not enough to score (was your whole body in the recording?).');
+        syncRenderReport();
+    }
+
+    function recLoad(file) {
+        if (!file || !file.type.startsWith('video/')) { recSay('Please choose a video file.', true); return; }
+        if (recState !== 'idle') recStop();
+        if (recURL) {
+            recScanCache.forEach((_, k) => { if (k.startsWith(recURL + '|')) recScanCache.delete(k); });
+            URL.revokeObjectURL(recURL);
+        }
+        recURL = URL.createObjectURL(file);
+        recEl.video.src = recURL;
+        recEl.video.load();
+        recCtx.clearRect(0, 0, recEl.canvas.width, recEl.canvas.height);
+        if (!camRunning()) recShow(true);
+        recUpdateBtn();
+        recSay('Loaded “' + file.name + '”. Press Analyze recording: it finds where your moves match the practice video, then plays both together.');
+    }
+
+    recEl.upload.addEventListener('change', e => { recLoad(e.target.files[0]); e.target.value = ''; });
+    recEl.btn.addEventListener('click', () => {
+        if (recState === 'idle') recStart();
+        else { recStop('Analysis stopped.'); vpVideo.pause(); }
+    });
+    vpVideo.addEventListener('play', () => recFollow(true));
+    vpVideo.addEventListener('pause', () => recFollow(false));
+    vpVideo.addEventListener('ended', () => { if (recActive()) recFinish(); });
+    vpVideo.addEventListener('ratechange', () => { recEl.video.playbackRate = vpVideo.playbackRate; });
+    vpVideo.addEventListener('loadstart', () => { if (recState !== 'idle') recStop('The practice video changed, so the analysis stopped.'); });
+    recEl.video.addEventListener('ended', () => { if (recActive()) recFinish(); });
+    document.addEventListener('muse:camerastart', () => {
+        if (recState !== 'idle') recStop('The camera was started, so the recording analysis stopped.');
+        recShow(false);
+    });
+    document.addEventListener('muse:leave', () => { if (recState !== 'idle') recStop(); });
+    recUpdateBtn();
+
     syncRenderReport();
 
     /* A paused video produces no frame callbacks, so redraw after seeking / loading */
@@ -1036,7 +1322,9 @@
 
     /* camera.js calls this with every new camera pose */
     window.MUSE = window.MUSE || {};
-    window.MUSE.sync = { addCam: syncAddCam };
+
+    window.MUSE.sync = { addCam: res => { if (recState === 'idle') syncAddCam(res); } };   // a recording being analyzed has priority
+
 
     /* this script loads after the page, so a video may already be waiting */
     vpUpdateBtn();

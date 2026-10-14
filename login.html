@@ -8,38 +8,33 @@
 
     <title>Sign In | MUSE</title>
 
-
     <link rel="preload" href="assets/fonts/poppins-400.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="assets/fonts/poppins-500.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="assets/fonts/poppins-700.ttf" as="font" type="font/ttf" crossorigin>
+
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
+    <script type="module" src="firebase-auth.js"></script>
 </head>
 
 <body class="auth-body">
-
-    <!-- Background effects -->
     <div class="auth-background" aria-hidden="true">
         <div class="auth-orb pink"></div>
         <div class="auth-orb purple"></div>
         <div class="auth-orb blue"></div>
     </div>
 
-    <!-- Main authentication card -->
     <main class="auth-page" id="auth-card">
-
         <header class="auth-heading">
+            <h1 class="auth-logo">MUSE</h1>
             <p class="auth-tagline">
                 Where movement meets <span>memory.</span>
             </p>
         </header>
 
-        <section id="auth-forms">
-
-            <!-- Sign In -->
+        <section id="auth-forms" aria-label="Account authentication">
             <form id="sign-in-form" class="auth-form">
-
                 <h2>Sign In</h2>
 
                 <label for="sign-in-email">Email</label>
@@ -66,6 +61,15 @@
                     Sign In
                 </button>
 
+                <button
+                    id="google-sign-in-btn"
+                    class="auth-button google-btn"
+                    type="button"
+                >
+                    <span class="google-g" aria-hidden="true">G</span>
+                    Continue with Google
+                </button>
+
                 <p class="auth-reset">
                     <button id="reset-password-button" type="button">
                         Forgot password?
@@ -78,12 +82,9 @@
                         Create Account
                     </button>
                 </p>
-
             </form>
 
-            <!-- Create Account -->
             <form id="sign-up-form" class="auth-form" hidden>
-
                 <h2>Create Account</h2>
 
                 <label for="display-name">Display Name</label>
@@ -129,8 +130,21 @@
                     required
                 >
 
-                <button class="auth-button" type="submit">
+                <button
+                    id="create-account-button"
+                    class="auth-button"
+                    type="submit"
+                >
                     Create Account
+                </button>
+
+                <button
+                    id="google-sign-up-btn"
+                    class="auth-button google-btn"
+                    type="button"
+                >
+                    <span class="google-g" aria-hidden="true">G</span>
+                    Continue with Google
                 </button>
 
                 <p class="auth-switch">
@@ -139,33 +153,26 @@
                         Sign In
                     </button>
                 </p>
-
             </form>
-
         </section>
 
-        <!-- Signed-in panel -->
-        <section id="signed-in-panel" hidden>
-
-            <h2>You're signed in!</h2>
-
+        <section
+            id="signed-in-panel"
+            aria-labelledby="signed-in-heading"
+            hidden
+        >
+            <h2 id="signed-in-heading">You're signed in!</h2>
             <p id="welcome-message"></p>
 
-            <button
-                id="logout-button"
-                class="auth-button"
-                type="button"
-            >
+            <button id="logout-button" class="auth-button" type="button">
                 Log Out
             </button>
 
             <a href="index.html" class="auth-home-link">
                 Return to MUSE
             </a>
-
         </section>
 
-        <!-- Authentication status messages -->
         <p
             id="auth-message"
             class="auth-message"
@@ -173,12 +180,10 @@
             aria-live="polite"
         ></p>
 
-        <!-- Homepage link -->
         <a href="index.html" class="auth-home-link">
             Back to Home
         </a>
-
     </main>
-
 </body>
+
 </html>

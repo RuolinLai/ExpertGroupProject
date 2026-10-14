@@ -7,7 +7,6 @@
     <!-- YouTube needs the page origin as a referrer, otherwise it shows error 153 -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Expert Group Project</title>
-
     <link rel="preload" href="assets/fonts/poppins-400.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="assets/fonts/poppins-500.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
@@ -163,6 +162,11 @@
                             <div class="cam-ico">&#9673;</div>
                             <p>Camera is off</p>
                         </div>
+                        <!-- your uploaded recording while it is analyzed (not mirrored) -->
+                        <div class="rec-stage" id="recStage" hidden>
+                            <video id="recVideo" playsinline muted></video>
+                            <canvas id="recCanvas"></canvas>
+                        </div>
                         <span class="cam-badge" id="camBadge">OFF</span>
                         <!-- live sync score, filled in by the analyzer below -->
                         <div class="sync-hud waiting" id="syncHud" hidden>
@@ -187,6 +191,13 @@
                         <button id="camRecBtn" class="dance-ctrl-btn" disabled>&#9679; Record</button>
                     </div>
                     <p class="cam-status" id="camStatus">Allow camera access when your browser asks. Your video stays on your device.</p>
+                    <!-- Analyze a video of yourself instead of the live camera -->
+                    <div class="ctrl-row">
+                        <input type="file" id="recUpload" accept="video/*" hidden>
+                        <label for="recUpload" class="dance-ctrl-btn">&#8679; Upload my recording</label>
+                        <button id="recAnalyzeBtn" class="dance-ctrl-btn" disabled>Analyze recording</button>
+                    </div>
+                    <p class="cam-status" id="recStatus">Recorded yourself dancing? Upload it: it is matched to the practice video automatically, then both play together and are analyzed until the video ends.</p>
                 </article>
             </div>
 

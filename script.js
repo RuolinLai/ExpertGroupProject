@@ -68,6 +68,7 @@ const cards = document.querySelectorAll('[data-card]');
 const RANGE = 380;
 const MOVE = 22;
 const TILT = 12;
+
 const reduce = window.matchMedia(
     '(prefers-reduced-motion: reduce)'
 ).matches;
@@ -87,7 +88,10 @@ const state = [...cards].map(el => ({
 let mouse = null;
 
 window.addEventListener('mousemove', e => {
-    mouse = { x: e.clientX, y: e.clientY };
+    mouse = {
+        x: e.clientX,
+        y: e.clientY
+    };
 });
 
 window.addEventListener('mouseleave', () => {
@@ -257,10 +261,13 @@ metroToggleBtn?.addEventListener('click', async () => {
     try {
         if (!audioCtx) {
             const AudioContextClass =
-                window.AudioContext || window.webkitAudioContext;
+                window.AudioContext ||
+                window.webkitAudioContext;
 
             if (!AudioContextClass) {
-                throw new Error('Audio is not supported in this browser.');
+                throw new Error(
+                    'Audio is not supported in this browser.'
+                );
             }
 
             audioCtx = new AudioContextClass();
@@ -274,23 +281,34 @@ metroToggleBtn?.addEventListener('click', async () => {
 
         if (isPlaying) {
             metroToggleBtn.textContent = 'Stop Metronome';
+
             metroToggleBtn.classList.add('active-btn');
+
             runMetronome();
         } else {
             metroToggleBtn.textContent = 'Start Metronome';
+
             metroToggleBtn.classList.remove('active-btn');
 
             clearTimeout(timerId);
 
             if (beatLight) {
-                beatLight.style.background = 'rgba(255,255,255,0.2)';
+                beatLight.style.background =
+                    'rgba(255,255,255,0.2)';
+
                 beatLight.style.boxShadow = 'none';
             }
         }
     } catch (error) {
-        console.error('Could not start the metronome:', error);
+        console.error(
+            'Could not start the metronome:',
+            error
+        );
     }
 });
+
+
+/* Play each metronome beat. */
 
 function runMetronome() {
     if (!isPlaying || !audioCtx) return;
@@ -299,7 +317,12 @@ function runMetronome() {
     const gain = audioCtx.createGain();
 
     osc.frequency.value = 880;
-    gain.gain.setValueAtTime(1, audioCtx.currentTime);
+
+    gain.gain.setValueAtTime(
+        1,
+        audioCtx.currentTime
+    );
+
     gain.gain.exponentialRampToValueAtTime(
         0.001,
         audioCtx.currentTime + 0.08
@@ -309,51 +332,79 @@ function runMetronome() {
     gain.connect(audioCtx.destination);
 
     osc.start();
+
     osc.stop(audioCtx.currentTime + 0.08);
 
     if (beatLight) {
-        beatLight.style.background = 'var(--pink, #f8b8d8)';
-        beatLight.style.boxShadow = '0 0 20px var(--pink, #f8b8d8)';
+        beatLight.style.background =
+            'var(--pink, #f8b8d8)';
+
+        beatLight.style.boxShadow =
+            '0 0 20px var(--pink, #f8b8d8)';
     }
 
     setTimeout(() => {
         if (beatLight) {
-            beatLight.style.background = 'rgba(255,255,255,0.2)';
+            beatLight.style.background =
+                'rgba(255,255,255,0.2)';
+
             beatLight.style.boxShadow = 'none';
         }
     }, 100);
 
-    timerId = setTimeout(runMetronome, (60 / bpm) * 1000);
+    timerId = setTimeout(
+        runMetronome,
+        (60 / bpm) * 1000
+    );
 }
 
-document.getElementById('tapTempoBtn')?.addEventListener('click', () => {
-    const now = Date.now();
 
-    tapTimes.push(now);
+/* =========================================================
+   TAP TEMPO
+   ========================================================= */
 
-    if (tapTimes.length > 4) {
-        tapTimes.shift();
-    }
+document.getElementById('tapTempoBtn')?.addEventListener(
+    'click',
+    () => {
+        const now = Date.now();
 
-    if (tapTimes.length > 1) {
-        const diffs = [];
+        tapTimes.push(now);
 
-        for (let i = 1; i < tapTimes.length; i++) {
-            diffs.push(tapTimes[i] - tapTimes[i - 1]);
+        if (tapTimes.length > 4) {
+            tapTimes.shift();
         }
 
-        const calcBpm = Math.round(
-            60000 / (diffs.reduce((a, b) => a + b, 0) / diffs.length)
-        );
+        if (tapTimes.length > 1) {
+            const diffs = [];
 
-        if (calcBpm >= 40 && calcBpm <= 220) {
-            bpm = calcBpm;
+            for (let i = 1; i < tapTimes.length; i++) {
+                diffs.push(
+                    tapTimes[i] - tapTimes[i - 1]
+                );
+            }
 
-            if (bpmRange) bpmRange.value = bpm;
-            if (bpmVal) bpmVal.textContent = bpm;
+            const calcBpm = Math.round(
+                60000 /
+                (
+                    diffs.reduce((a, b) => a + b, 0) /
+                    diffs.length
+                )
+            );
+
+            if (calcBpm >= 40 && calcBpm <= 220) {
+                bpm = calcBpm;
+
+                if (bpmRange) {
+                    bpmRange.value = bpm;
+                }
+
+                if (bpmVal) {
+                    bpmVal.textContent = bpm;
+                }
+            }
         }
     }
-});
+);
 
 
 /* =========================================================
@@ -364,19 +415,30 @@ const canvas = document.getElementById('rhythmCanvas');
 
 if (canvas) {
     const ctx = canvas.getContext('2d');
+
     let phase = 0;
 
     function drawWave() {
         const width = canvas.clientWidth;
         const height = canvas.clientHeight;
 
-        if (canvas.width !== width || canvas.height !== height) {
+        if (
+            canvas.width !== width ||
+            canvas.height !== height
+        ) {
             canvas.width = width;
             canvas.height = height;
         }
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
         ctx.beginPath();
+
         ctx.strokeStyle = '#f8b8d8';
         ctx.lineWidth = 2.5;
 
@@ -385,16 +447,23 @@ if (canvas) {
         for (let x = 0; x < canvas.width; x++) {
             const y =
                 canvas.height / 2 +
-                Math.sin(x * 0.035 + phase) * amp * Math.cos(x * 0.01);
+                Math.sin(x * 0.035 + phase) *
+                amp *
+                Math.cos(x * 0.01);
 
-            if (x === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
+            if (x === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
         }
 
         ctx.stroke();
 
         if (!reduce) {
-            phase += isPlaying ? bpm / 550 : 0.03;
+            phase += isPlaying
+                ? bpm / 550
+                : 0.03;
         }
 
         requestAnimationFrame(drawWave);
@@ -409,35 +478,70 @@ if (canvas) {
    Video files and metadata are stored in IndexedDB.
    ========================================================= */
 
-const gallerySearch = document.getElementById('gallerySearch');
-const galleryFilters = document.querySelectorAll('.gallery-filter');
-const videoGallery = document.getElementById('videoGallery');
-const videoUpload = document.getElementById('galleryVideoUpload');
-const galleryEmpty = document.getElementById('galleryEmpty');
-const videoCount = document.getElementById('videoCount');
-const completedCount = document.getElementById('completedCount');
+const gallerySearch =
+    document.getElementById('gallerySearch');
 
-const uploadModal = document.getElementById('uploadModal');
-const uploadPanel = document.getElementById('uploadPanel');
-const openUploadForm = document.getElementById('openUploadForm');
-const closeUploadForm = document.getElementById('closeUploadForm');
-const uploadForm = document.getElementById('galleryUploadForm');
-const cancelUpload = document.getElementById('cancelUpload');
-const uploadMessage = document.getElementById('uploadMessage');
-const saveGalleryVideo = document.getElementById('saveGalleryVideo');
+const galleryFilters =
+    document.querySelectorAll('.gallery-filter');
 
-const newVideoTitle = document.getElementById('newVideoTitle');
-const newVideoCategory = document.getElementById('newVideoCategory');
-const newVideoDescription = document.getElementById('newVideoDescription');
-const newVideoProgress = document.getElementById('newVideoProgress');
-const newVideoProgressLabel = document.getElementById('newVideoProgressLabel');
+const videoGallery =
+    document.getElementById('videoGallery');
+
+const videoUpload =
+    document.getElementById('galleryVideoUpload');
+
+const galleryEmpty =
+    document.getElementById('galleryEmpty');
+
+const videoCount =
+    document.getElementById('videoCount');
+
+const completedCount =
+    document.getElementById('completedCount');
+
+const uploadModal =
+    document.getElementById('uploadModal');
+
+const uploadPanel =
+    document.getElementById('uploadPanel');
+
+const openUploadForm =
+    document.getElementById('openUploadForm');
+
+const closeUploadForm =
+    document.getElementById('closeUploadForm');
+
+const uploadForm =
+    document.getElementById('galleryUploadForm');
+
+const cancelUpload =
+    document.getElementById('cancelUpload');
+
+const uploadMessage =
+    document.getElementById('uploadMessage');
+
+const saveGalleryVideo =
+    document.getElementById('saveGalleryVideo');
+
+const newVideoTitle =
+    document.getElementById('newVideoTitle');
+
+const newVideoCategory =
+    document.getElementById('newVideoCategory');
+
+const newVideoDescription =
+    document.getElementById('newVideoDescription');
+
+const newVideoProgress =
+    document.getElementById('newVideoProgress');
+
+const newVideoProgressLabel =
+    document.getElementById('newVideoProgressLabel');
 
 let currentGalleryFilter = 'all';
 let galleryDBPromise = null;
 
 const galleryObjectURLs = new Map();
-
-
 
 
 /* =========================================================
@@ -461,15 +565,20 @@ function clearUploadForm() {
     }
 }
 
+
 function openUploadModal() {
     if (!uploadModal) {
-        console.error('Upload popup #uploadModal was not found.');
+        console.error(
+            'Upload popup #uploadModal was not found.'
+        );
+
         return;
     }
 
     clearUploadForm();
 
     uploadModal.hidden = false;
+
     document.body.classList.add('modal-open');
 
     window.setTimeout(() => {
@@ -477,28 +586,47 @@ function openUploadModal() {
     }, 50);
 }
 
+
 function closeUploadModal() {
     if (!uploadModal) return;
 
     uploadModal.hidden = true;
+
     document.body.classList.remove('modal-open');
 
     clearUploadForm();
+
     openUploadForm?.focus();
 }
 
-openUploadForm?.addEventListener('click', openUploadModal);
-closeUploadForm?.addEventListener('click', closeUploadModal);
-cancelUpload?.addEventListener('click', closeUploadModal);
 
-// Close when clicking the dark backdrop.
+openUploadForm?.addEventListener(
+    'click',
+    openUploadModal
+);
+
+closeUploadForm?.addEventListener(
+    'click',
+    closeUploadModal
+);
+
+cancelUpload?.addEventListener(
+    'click',
+    closeUploadModal
+);
+
+
+/* Close the popup when the backdrop is clicked. */
+
 uploadModal?.addEventListener('click', event => {
     if (event.target === uploadModal) {
         closeUploadModal();
     }
 });
 
-// Close with Escape.
+
+/* Close the popup with Escape. */
+
 document.addEventListener('keydown', event => {
     if (
         event.key === 'Escape' &&
@@ -509,7 +637,9 @@ document.addEventListener('keydown', event => {
     }
 });
 
-// Keep the progress percentage synchronized.
+
+/* Update the progress percentage. */
+
 newVideoProgress?.addEventListener('input', () => {
     if (newVideoProgressLabel) {
         newVideoProgressLabel.textContent =
@@ -517,33 +647,46 @@ newVideoProgress?.addEventListener('input', () => {
     }
 });
 
+
 /* =========================================================
    INDEXEDDB STORAGE
    ========================================================= */
 
 function openGalleryDB() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('MUSEGalleryDB', 1);
+        const request = indexedDB.open(
+            'MUSEGalleryDB',
+            1
+        );
 
         request.onupgradeneeded = () => {
             const db = request.result;
 
             if (!db.objectStoreNames.contains('videos')) {
-                db.createObjectStore('videos', { keyPath: 'id' });
+                db.createObjectStore('videos', {
+                    keyPath: 'id'
+                });
             }
         };
 
-        request.onsuccess = () => resolve(request.result);
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
 
-        request.onerror = () => reject(
-            request.error || new Error('Could not open video storage.')
-        );
+        request.onerror = () => {
+            reject(
+                request.error ||
+                new Error('Could not open video storage.')
+            );
+        };
     });
 }
+
 
 if (videoGallery) {
     galleryDBPromise = openGalleryDB();
 }
+
 
 async function getGalleryDB() {
     if (!galleryDBPromise) {
@@ -553,158 +696,231 @@ async function getGalleryDB() {
     return galleryDBPromise;
 }
 
+
 async function getAllSavedVideos() {
     const db = await getGalleryDB();
 
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction('videos', 'readonly');
-        const request = transaction.objectStore('videos').getAll();
-
-        request.onsuccess = () => resolve(request.result || []);
-
-        request.onerror = () => reject(
-            request.error || new Error('Could not load saved videos.')
+        const transaction = db.transaction(
+            'videos',
+            'readonly'
         );
+
+        const request = transaction
+            .objectStore('videos')
+            .getAll();
+
+        request.onsuccess = () => {
+            resolve(request.result || []);
+        };
+
+        request.onerror = () => {
+            reject(
+                request.error ||
+                new Error('Could not load saved videos.')
+            );
+        };
     });
 }
+
 
 async function saveGalleryRecord(record) {
     const db = await getGalleryDB();
 
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction('videos', 'readwrite');
-
-        transaction.objectStore('videos').put(record);
-
-        transaction.oncomplete = () => resolve(record);
-
-        transaction.onerror = () => reject(
-            transaction.error || new Error('Could not save the video.')
+        const transaction = db.transaction(
+            'videos',
+            'readwrite'
         );
 
-        transaction.onabort = () => reject(
-            transaction.error || new Error('Saving the video was cancelled.')
-        );
+        transaction
+            .objectStore('videos')
+            .put(record);
+
+        transaction.oncomplete = () => {
+            resolve(record);
+        };
+
+        transaction.onerror = () => {
+            reject(
+                transaction.error ||
+                new Error('Could not save the video.')
+            );
+        };
+
+        transaction.onabort = () => {
+            reject(
+                transaction.error ||
+                new Error('Saving the video was cancelled.')
+            );
+        };
     });
 }
+
 
 async function deleteGalleryRecord(id) {
     const db = await getGalleryDB();
 
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction('videos', 'readwrite');
-
-        transaction.objectStore('videos').delete(id);
-
-        transaction.oncomplete = () => resolve();
-
-        transaction.onerror = () => reject(
-            transaction.error || new Error('Could not delete the video.')
+        const transaction = db.transaction(
+            'videos',
+            'readwrite'
         );
 
-        transaction.onabort = () => reject(
-            transaction.error || new Error('Deleting the video was cancelled.')
-        );
+        transaction
+            .objectStore('videos')
+            .delete(id);
+
+        transaction.oncomplete = () => {
+            resolve();
+        };
+
+        transaction.onerror = () => {
+            reject(
+                transaction.error ||
+                new Error('Could not delete the video.')
+            );
+        };
+
+        transaction.onabort = () => {
+            reject(
+                transaction.error ||
+                new Error('Deleting the video was cancelled.')
+            );
+        };
     });
 }
-
-
 
 
 /* =========================================================
    SAVE A VIDEO FROM THE POPUP
    ========================================================= */
 
-uploadForm?.addEventListener('submit', async event => {
-    event.preventDefault();
+uploadForm?.addEventListener(
+    'submit',
+    async event => {
+        event.preventDefault();
 
-    if (!newVideoTitle || !videoUpload || !saveGalleryVideo) {
-        return;
-    }
-
-    const title = newVideoTitle.value.trim();
-    const file = videoUpload.files?.[0];
-
-    if (!title) {
-        if (uploadMessage) {
-            uploadMessage.textContent = 'Please enter a video title.';
+        if (
+            !newVideoTitle ||
+            !videoUpload ||
+            !saveGalleryVideo
+        ) {
+            return;
         }
 
-        newVideoTitle.focus();
-        return;
-    }
+        const title = newVideoTitle.value.trim();
 
-    if (!file) {
-        if (uploadMessage) {
-            uploadMessage.textContent = 'Please choose a video file.';
+        const file = videoUpload.files?.[0];
+
+        if (!title) {
+            if (uploadMessage) {
+                uploadMessage.textContent =
+                    'Please enter a video title.';
+            }
+
+            newVideoTitle.focus();
+
+            return;
         }
 
-        videoUpload.focus();
-        return;
-    }
+        if (!file) {
+            if (uploadMessage) {
+                uploadMessage.textContent =
+                    'Please choose a video file.';
+            }
 
-    if (!file.type.startsWith('video/')) {
+            videoUpload.focus();
+
+            return;
+        }
+
+        if (!file.type.startsWith('video/')) {
+            if (uploadMessage) {
+                uploadMessage.textContent =
+                    'Please select a valid video file.';
+            }
+
+            videoUpload.focus();
+
+            return;
+        }
+
+        const MAX_VIDEO_SIZE =
+            500 * 1024 * 1024;
+
+        if (file.size > MAX_VIDEO_SIZE) {
+            if (uploadMessage) {
+                uploadMessage.textContent =
+                    'This video exceeds the 500 MB limit. Please choose a smaller file.';
+            }
+
+            return;
+        }
+
+        const record = {
+            id: (
+                window.crypto?.randomUUID?.() ||
+                `${Date.now()}-${Math.random().toString(36).slice(2)}`
+            ),
+
+            title,
+
+            category: newVideoCategory?.value || '',
+
+            description:
+                newVideoDescription?.value.trim() || '',
+
+            progress: Number(
+                newVideoProgress?.value || 0
+            ),
+
+            favourite: false,
+
+            dateAdded: new Date().toISOString(),
+
+            fileName: file.name,
+
+            fileType: file.type,
+
+            videoBlob: file
+        };
+
+        saveGalleryVideo.disabled = true;
+
+        saveGalleryVideo.textContent = 'Saving...';
+
         if (uploadMessage) {
             uploadMessage.textContent =
-                'Please select a valid video file.';
+                'Saving your dance video...';
         }
 
-        videoUpload.focus();
-        return;
-    }
+        try {
+            await saveGalleryRecord(record);
 
-    const MAX_VIDEO_SIZE = 500 * 1024 * 1024;
+            await renderSavedVideos();
 
-    if (file.size > MAX_VIDEO_SIZE) {
-        if (uploadMessage) {
-            uploadMessage.textContent =
-                'This video exceeds the 500 MB limit. Please choose a smaller file.';
+            // Close and clear only after saving succeeds.
+            closeUploadModal();
+
+        } catch (error) {
+            console.error(
+                'Error saving gallery video:',
+                error
+            );
+
+            if (uploadMessage) {
+                uploadMessage.textContent =
+                    'Could not save the video. Check browser storage and try again.';
+            }
+
+            saveGalleryVideo.disabled = false;
+
+            saveGalleryVideo.textContent = 'Save Video';
         }
-
-        return;
     }
+);
 
-    const record = {
-        id: (
-            window.crypto?.randomUUID?.() ||
-            `${Date.now()}-${Math.random().toString(36).slice(2)}`
-        ),
-        title,
-        category: newVideoCategory?.value || '',
-        description: newVideoDescription?.value.trim() || '',
-        progress: Number(newVideoProgress?.value || 0),
-        favourite: false,
-        dateAdded: new Date().toISOString(),
-        fileName: file.name,
-        fileType: file.type,
-        videoBlob: file
-    };
-
-    saveGalleryVideo.disabled = true;
-    saveGalleryVideo.textContent = 'Saving...';
-
-    if (uploadMessage) {
-        uploadMessage.textContent = 'Saving your dance video...';
-    }
-
-    try {
-        await saveGalleryRecord(record);
-        await renderSavedVideos();
-
-        // Close and clear only after the save succeeds.
-        closeUploadModal();
-    } catch (error) {
-        console.error('Error saving gallery video:', error);
-
-        if (uploadMessage) {
-            uploadMessage.textContent =
-                'Could not save the video. Check browser storage and try again.';
-        }
-
-        saveGalleryVideo.disabled = false;
-        saveGalleryVideo.textContent = 'Save Video';
-    }
-});
 
 /* =========================================================
    CREATE VIDEO CARDS
@@ -713,29 +929,51 @@ uploadForm?.addEventListener('submit', async event => {
 function el(tag, className, text) {
     const node = document.createElement(tag);
 
-    if (className) node.className = className;
-    if (text !== undefined) node.textContent = text;
+    if (className) {
+        node.className = className;
+    }
+
+    if (text !== undefined) {
+        node.textContent = text;
+    }
 
     return node;
 }
+
 
 function createVideoCard(record) {
     const card = el('article', 'video-card');
 
     card.dataset.id = record.id;
+
     card.dataset.category = record.category || '';
+
     card.dataset.title = record.title || '';
 
-    // Video preview.
+
+    /* Video preview. */
+
     const preview = el('div', 'video-preview');
+
     const player = el('video');
 
     player.controls = true;
+
     player.preload = 'metadata';
 
-    const objectURL = URL.createObjectURL(record.videoBlob);
-    galleryObjectURLs.set(record.id, objectURL);
+    const objectURL = URL.createObjectURL(
+        record.videoBlob
+    );
+
+    galleryObjectURLs.set(
+        record.id,
+        objectURL
+    );
+
     player.src = objectURL;
+
+
+    /* Favourite button. */
 
     const favourite = el(
         'button',
@@ -744,19 +982,34 @@ function createVideoCard(record) {
     );
 
     favourite.type = 'button';
-    favourite.setAttribute('aria-label', 'Favourite video');
-    favourite.setAttribute('aria-pressed', String(!!record.favourite));
+
+    favourite.setAttribute(
+        'aria-label',
+        'Favourite video'
+    );
+
+    favourite.setAttribute(
+        'aria-pressed',
+        String(!!record.favourite)
+    );
 
     preview.append(player, favourite);
 
-    // Title and status.
+
+    /* Title and completion status. */
+
     const titleRow = el('div', 'video-title-row');
 
     titleRow.appendChild(
-        el('h3', null, record.title || 'Untitled dance')
+        el(
+            'h3',
+            null,
+            record.title || 'Untitled dance'
+        )
     );
 
-    const isComplete = Number(record.progress) >= 100;
+    const isComplete =
+        Number(record.progress) >= 100;
 
     titleRow.appendChild(
         el(
@@ -766,7 +1019,9 @@ function createVideoCard(record) {
         )
     );
 
-    // Category and date.
+
+    /* Category and date. */
+
     const metaRow = el('div', 'video-meta');
 
     const categoryLabel = {
@@ -774,15 +1029,21 @@ function createVideoCard(record) {
         performance: 'Performance',
         other: 'Other',
         recording: 'Recording'
-    }[record.category] || record.category || 'Uncategorized';
+    }[record.category] ||
+        record.category ||
+        'Uncategorized';
 
     metaRow.append(
         el('span', null, categoryLabel),
+
         el('span', null, '•'),
+
         el(
             'span',
             null,
-            new Date(record.dateAdded).toLocaleDateString('en-CA', {
+            new Date(
+                record.dateAdded
+            ).toLocaleDateString('en-CA', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'
@@ -790,24 +1051,42 @@ function createVideoCard(record) {
         )
     );
 
-    // Progress.
-    const progressLabel = el('div', 'progress-label');
+
+    /* Progress. */
+
+    const progressLabel =
+        el('div', 'progress-label');
 
     progressLabel.append(
         el('span', null, 'Progress'),
-        el('strong', null, `${record.progress || 0}%`)
+
+        el(
+            'strong',
+            null,
+            `${record.progress || 0}%`
+        )
     );
 
     const progressBar = el('div', 'progress-bar');
+
     const progressFill = el('span');
 
-    progressFill.style.width = `${record.progress || 0}%`;
+    progressFill.style.width =
+        `${record.progress || 0}%`;
+
     progressBar.appendChild(progressFill);
 
-    const progressSection = el('div', 'video-progress');
-    progressSection.append(progressLabel, progressBar);
+    const progressSection =
+        el('div', 'video-progress');
 
-    // Actions.
+    progressSection.append(
+        progressLabel,
+        progressBar
+    );
+
+
+    /* Action buttons. */
+
     const actions = el('div', 'video-actions');
 
     const completeButton = el(
@@ -818,23 +1097,44 @@ function createVideoCard(record) {
 
     completeButton.type = 'button';
 
-    const deleteButton = el('button', 'delete-video', 'Delete');
+    const deleteButton = el(
+        'button',
+        'delete-video',
+        'Delete'
+    );
+
     deleteButton.type = 'button';
 
-    actions.append(completeButton, deleteButton);
+    actions.append(
+        completeButton,
+        deleteButton
+    );
 
-    // Assemble card.
+
+    /* Assemble the card. */
+
     const info = el('div', 'video-info');
 
     info.append(
         titleRow,
-        el('p', null, record.description || 'No description added.'),
+
+        el(
+            'p',
+            null,
+            record.description || 'No description added.'
+        ),
+
         metaRow,
+
         progressSection,
+
         actions
     );
 
-    card.append(preview, info);
+    card.append(
+        preview,
+        info
+    );
 
     return card;
 }
@@ -849,18 +1149,25 @@ async function renderSavedVideos() {
 
     const records = await getAllSavedVideos();
 
-    // Release old video preview URLs before rebuilding the gallery.
-    galleryObjectURLs.forEach(url => URL.revokeObjectURL(url));
+    // Release old preview URLs before rebuilding the gallery.
+    galleryObjectURLs.forEach(url => {
+        URL.revokeObjectURL(url);
+    });
+
     galleryObjectURLs.clear();
 
     videoGallery.replaceChildren();
 
     records.sort(
-        (a, b) => new Date(b.dateAdded) - new Date(a.dateAdded)
+        (a, b) =>
+            new Date(b.dateAdded) -
+            new Date(a.dateAdded)
     );
 
     records.forEach(record => {
-        videoGallery.appendChild(createVideoCard(record));
+        videoGallery.appendChild(
+            createVideoCard(record)
+        );
     });
 
     if (videoCount) {
@@ -868,9 +1175,11 @@ async function renderSavedVideos() {
     }
 
     if (completedCount) {
-        completedCount.textContent = records.filter(
-            record => Number(record.progress) >= 100
-        ).length;
+        completedCount.textContent =
+            records.filter(
+                record =>
+                    Number(record.progress) >= 100
+            ).length;
     }
 
     filterGallery();
@@ -888,13 +1197,20 @@ galleryFilters.forEach(filter => {
         });
 
         filter.classList.add('active-filter');
-        currentGalleryFilter = filter.dataset.filter || 'all';
+
+        currentGalleryFilter =
+            filter.dataset.filter || 'all';
 
         filterGallery();
     });
 });
 
-gallerySearch?.addEventListener('input', filterGallery);
+
+gallerySearch?.addEventListener(
+    'input',
+    filterGallery
+);
+
 
 function filterGallery() {
     if (!videoGallery) return;
@@ -904,57 +1220,86 @@ function filterGallery() {
 
     let visibleCards = 0;
 
-    videoGallery.querySelectorAll('.video-card').forEach(card => {
-        const title = (card.dataset.title || '').toLowerCase();
-        const category = (card.dataset.category || '').toLowerCase();
+    videoGallery
+        .querySelectorAll('.video-card')
+        .forEach(card => {
+            const title =
+                (card.dataset.title || '').toLowerCase();
 
-        const description =
-            card.querySelector('.video-info > p')?.textContent.toLowerCase() || '';
+            const category =
+                (card.dataset.category || '').toLowerCase();
 
-        const matchesSearch =
-            title.includes(searchText) ||
-            description.includes(searchText) ||
-            category.includes(searchText);
+            const description =
+                card.querySelector(
+                    '.video-info > p'
+                )?.textContent.toLowerCase() || '';
 
-        let matchesFilter = true;
+            const matchesSearch =
+                title.includes(searchText) ||
+                description.includes(searchText) ||
+                category.includes(searchText);
 
-        if (currentGalleryFilter === 'favourite') {
-            matchesFilter = !!card
-                .querySelector('.favourite-btn')
-                ?.classList.contains('is-favourite');
-        } else if (currentGalleryFilter !== 'all') {
-            matchesFilter = category === currentGalleryFilter;
-        }
+            let matchesFilter = true;
 
-        const isVisible = matchesSearch && matchesFilter;
+            if (currentGalleryFilter === 'favourite') {
+                matchesFilter = !!card
+                    .querySelector('.favourite-btn')
+                    ?.classList.contains('is-favourite');
 
-        card.classList.toggle('hidden', !isVisible);
+            } else if (currentGalleryFilter !== 'all') {
+                matchesFilter =
+                    category === currentGalleryFilter;
+            }
 
-        if (isVisible) visibleCards++;
-    });
+            const isVisible =
+                matchesSearch && matchesFilter;
+
+            card.classList.toggle(
+                'hidden',
+                !isVisible
+            );
+
+            if (isVisible) {
+                visibleCards++;
+            }
+        });
 
     if (galleryEmpty) {
-        // Do not show the empty state while videos exist but are filtered out.
-        const hasAnyVideos = videoGallery.querySelector('.video-card') !== null;
+        const hasAnyVideos =
+            videoGallery.querySelector('.video-card') !== null;
+
         galleryEmpty.classList.toggle(
             'visible',
             !hasAnyVideos || visibleCards === 0
         );
 
         if (!hasAnyVideos) {
-            const heading = galleryEmpty.querySelector('h2');
-            const message = galleryEmpty.querySelector('p');
+            const heading =
+                galleryEmpty.querySelector('h2');
 
-            if (heading) heading.textContent = 'No videos yet';
+            const message =
+                galleryEmpty.querySelector('p');
+
+            if (heading) {
+                heading.textContent = 'No videos yet';
+            }
+
             if (message) {
                 message.textContent =
                     'Add your first dance video to start your collection.';
             }
-        } else if (visibleCards === 0) {
-            const heading = galleryEmpty.querySelector('h2');
-            const message = galleryEmpty.querySelector('p');
 
-            if (heading) heading.textContent = 'No matching videos';
+        } else if (visibleCards === 0) {
+            const heading =
+                galleryEmpty.querySelector('h2');
+
+            const message =
+                galleryEmpty.querySelector('p');
+
+            if (heading) {
+                heading.textContent = 'No matching videos';
+            }
+
             if (message) {
                 message.textContent =
                     'Try another search or select a different filter.';
@@ -968,56 +1313,80 @@ function filterGallery() {
    FAVOURITE, COMPLETE, AND DELETE ACTIONS
    ========================================================= */
 
-videoGallery?.addEventListener('click', async event => {
-    const target = event.target;
+videoGallery?.addEventListener(
+    'click',
+    async event => {
+        const target = event.target;
 
-    if (!(target instanceof Element)) return;
+        if (!(target instanceof Element)) return;
 
-    const favouriteButton = target.closest('.favourite-btn');
-    const completeButton = target.closest('.complete-video');
-    const deleteButton = target.closest('.delete-video');
+        const favouriteButton =
+            target.closest('.favourite-btn');
 
-    const button = favouriteButton || completeButton || deleteButton;
+        const completeButton =
+            target.closest('.complete-video');
 
-    if (!button) return;
+        const deleteButton =
+            target.closest('.delete-video');
 
-    const card = button.closest('.video-card');
-    const id = card?.dataset.id;
+        const button =
+            favouriteButton ||
+            completeButton ||
+            deleteButton;
 
-    if (!id) return;
+        if (!button) return;
 
-    try {
-        const records = await getAllSavedVideos();
-        const record = records.find(item => item.id === id);
+        const card = button.closest('.video-card');
 
-        if (!record) return;
+        const id = card?.dataset.id;
 
-        if (favouriteButton) {
-            record.favourite = !record.favourite;
-        } else if (completeButton) {
-            record.progress = 100;
-        } else if (deleteButton) {
-            const confirmed = window.confirm(
-                `Delete "${record.title}" from your gallery?`
+        if (!id) return;
+
+        try {
+            const records = await getAllSavedVideos();
+
+            const record = records.find(
+                item => item.id === id
             );
 
-            if (!confirmed) return;
+            if (!record) return;
 
-            await deleteGalleryRecord(id);
+            if (favouriteButton) {
+                record.favourite = !record.favourite;
+
+            } else if (completeButton) {
+                record.progress = 100;
+
+            } else if (deleteButton) {
+                const confirmed = window.confirm(
+                    `Delete "${record.title}" from your gallery?`
+                );
+
+                if (!confirmed) return;
+
+                await deleteGalleryRecord(id);
+
+                await renderSavedVideos();
+
+                return;
+            }
+
+            await saveGalleryRecord(record);
+
             await renderSavedVideos();
-            return;
+
+        } catch (error) {
+            console.error(
+                'Could not update gallery video:',
+                error
+            );
+
+            window.alert(
+                'Your video could not be updated. Please try again.'
+            );
         }
-
-        await saveGalleryRecord(record);
-        await renderSavedVideos();
-    } catch (error) {
-        console.error('Could not update gallery video:', error);
-
-        window.alert(
-            'Your video could not be updated. Please try again.'
-        );
     }
-});
+);
 
 
 /* =========================================================
@@ -1028,41 +1397,56 @@ window.MUSE = window.MUSE || {};
 
 window.MUSE.gallery = {
     addRecording(blob, name) {
-        if (!blob || !videoGallery) return false;
+        if (!blob || !videoGallery) {
+            return false;
+        }
 
-        const fileName = name || 'Dance Recording';
-        const title = fileName.replace(/\.[^/.]+$/, '');
+        const fileName =
+            name || 'Dance Recording';
+
+        const title = fileName.replace(
+            /\.[^/.]+$/,
+            ''
+        );
 
         const record = {
             id: (
                 window.crypto?.randomUUID?.() ||
                 `${Date.now()}-${Math.random().toString(36).slice(2)}`
             ),
+
             title: title || 'Dance Recording',
+
             category: 'practice',
-            description: 'Recorded in the Live Pose Mirror.',
+
+            description:
+                'Recorded in the Live Pose Mirror.',
+
             progress: 0,
+
             favourite: false,
+
             dateAdded: new Date().toISOString(),
+
             fileName,
+
             fileType: blob.type || 'video/webm',
+
             videoBlob: blob
         };
 
         saveGalleryRecord(record)
             .then(() => renderSavedVideos())
             .catch(error => {
-                console.error('Could not save the recording:', error);
+                console.error(
+                    'Could not save the recording:',
+                    error
+                );
             });
 
         return true;
     }
 };
-
-
-/* =========================================================
-   INITIALIZE THE GALLERY
-   ========================================================= */
 
 
 /* =========================================================
@@ -1075,142 +1459,9 @@ if (videoGallery) {
     }
 
     renderSavedVideos().catch(error => {
-        console.error('Could not load the MUSE gallery:', error);
+        console.error(
+            'Could not load the MUSE gallery:',
+            error
+        );
     });
 }
-
-
-/* =========================================================
-   LOGIN AND CREATE ACCOUNT FORM SWITCHING
-   ========================================================= */
-
-const signInForm = document.getElementById('sign-in-form');
-const signUpForm = document.getElementById('sign-up-form');
-
-const showSignUpButton = document.getElementById('show-sign-up');
-const showSignInButton = document.getElementById('show-sign-in');
-
-const authMessage = document.getElementById('auth-message');
-
-if (showSignUpButton && signInForm && signUpForm) {
-    showSignUpButton.addEventListener('click', () => {
-        signInForm.hidden = true;
-        signUpForm.hidden = false;
-
-        if (authMessage) {
-            authMessage.textContent = '';
-        }
-    });
-}
-
-if (showSignInButton && signInForm && signUpForm) {
-    showSignInButton.addEventListener('click', () => {
-        signUpForm.hidden = true;
-        signInForm.hidden = false;
-
-        if (authMessage) {
-            authMessage.textContent = '';
-        }
-    });
-}
-/* =========================================================
-   LOCAL EMAIL AUTHENTICATION & SESSION MANAGEMENT
-   ========================================================= */
-
-document.addEventListener('DOMContentLoaded', () => {
-    const signInForm = document.getElementById("sign-in-form");
-    const signUpForm = document.getElementById("sign-up-form");
-    const showSignUpBtn = document.getElementById("show-sign-up");
-    const showSignInBtn = document.getElementById("show-sign-in");
-    const resetPasswordBtn = document.getElementById("reset-password-button");
-    const logoutBtn = document.getElementById("logout-button");
-    const authMessage = document.getElementById("auth-message");
-    const welcomeMessage = document.getElementById("welcome-message");
-    const signedInPanel = document.getElementById("signed-in-panel");
-    const authForms = document.getElementById("auth-forms");
-
-    if (!signInForm || !signUpForm) return; // Exit if not on the login page
-
-    // Check if user is already logged in from a previous session
-    const activeUser = JSON.parse(localStorage.getItem("muse_active_user"));
-    if (activeUser) {
-        if (authForms) authForms.hidden = true;
-        if (signedInPanel) signedInPanel.hidden = false;
-        if (welcomeMessage) welcomeMessage.textContent = `Welcome back, ${activeUser.name}!`;
-    }
-
-    // Toggle between Sign In and Create Account forms
-    showSignUpBtn?.addEventListener("click", () => {
-        signInForm.hidden = true;
-        signUpForm.hidden = false;
-        if (authMessage) authMessage.textContent = "";
-    });
-
-    showSignInBtn?.addEventListener("click", () => {
-        signUpForm.hidden = true;
-        signInForm.hidden = false;
-        if (authMessage) authMessage.textContent = "";
-    });
-
-    // Handle Create Account (Sign Up)
-    signUpForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const name = document.getElementById("display-name")?.value.trim();
-        const email = document.getElementById("sign-up-email")?.value.trim();
-        const password = document.getElementById("sign-up-password")?.value;
-        const confirmPassword = document.getElementById("confirm-password")?.value;
-
-        if (password !== confirmPassword) {
-            if (authMessage) authMessage.textContent = "Passwords do not match.";
-            return;
-        }
-
-        // Save user data locally
-        localStorage.setItem("muse_user", JSON.stringify({ name, email, password }));
-        
-        if (authMessage) authMessage.textContent = "Account created successfully! Please sign in.";
-        signUpForm.hidden = true;
-        signInForm.hidden = false;
-        signUpForm.reset();
-    });
-
-    // Handle Sign In
-    signInForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const email = document.getElementById("sign-in-email")?.value.trim();
-        const password = document.getElementById("sign-in-password")?.value;
-
-        const savedUser = JSON.parse(localStorage.getItem("muse_user"));
-
-        if (savedUser && savedUser.email === email && savedUser.password === password) {
-            localStorage.setItem("muse_active_user", JSON.stringify(savedUser));
-            if (authForms) authForms.hidden = true;
-            if (signedInPanel) signedInPanel.hidden = false;
-            if (welcomeMessage) welcomeMessage.textContent = `Welcome back, ${savedUser.name}!`;
-            if (authMessage) authMessage.textContent = "";
-        } else {
-            if (authMessage) authMessage.textContent = "Invalid email or password (or no account found).";
-        }
-    });
-
-    // Handle Password Reset
-    resetPasswordBtn?.addEventListener("click", () => {
-        const email = document.getElementById("sign-in-email")?.value.trim();
-        if (!email) {
-            if (authMessage) authMessage.textContent = "Please enter your email above first.";
-            document.getElementById("sign-in-email")?.focus();
-            return;
-        }
-        if (authMessage) authMessage.textContent = `Password reset link sent to ${email} (simulation).`;
-    });
-
-    // Handle Log Out
-    logoutBtn?.addEventListener("click", () => {
-        localStorage.removeItem("muse_active_user");
-        if (signedInPanel) signedInPanel.hidden = true;
-        if (authForms) authForms.hidden = false;
-        signInForm.reset();
-        if (authMessage) authMessage.textContent = "You have been logged out.";
-    });
-});
-

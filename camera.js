@@ -119,6 +119,7 @@
             running = true;
             lastCamTime = -1;
             setStatus('Move back until your whole body is in the frame.');
+            document.dispatchEvent(new Event('muse:camerastart'));   // pose-sync.js stops a recording analysis
             loop();
         } catch (err) {
             console.error(err);
@@ -289,6 +290,11 @@
 
     /* pose-sync.js asks whether the camera is on (for its hints and the live score) */
     window.MUSE = window.MUSE || {};
-    window.MUSE.camera = { isRunning: () => running };
+    window.MUSE.camera = {
+        isRunning: () => running,
+        stop: () => {
+            if (running) stopCamera();
+        }
+    };
 
 })();
