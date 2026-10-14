@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- YouTube needs the page origin as a referrer, otherwise it shows error 153 -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Expert Group Project</title>
+
+    <link rel="preload" href="assets/fonts/poppins-400.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/poppins-500.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/poppins-700.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <nav class="navbar section-content">
+            <a href="index.html" class="nav-logo">
+                <h2 class="nav-text">MUSE</h2>
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a href="features.html" id="dance-nav-link" class="nav-link">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a href="gallery.html" id="gallery-nav-link" class="nav-link">Gallery</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#about-project" class="nav-link">About Us</a>
+                </li>
+                <li class="nav-item">
+                    <a href="login.html" class="nav-link">Sign In</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ================= DANCE STUDIO PAGE ==================== -->
+    <div id="dance-page-container">
+        <section style="max-width: var(--site-max-width, 1200px); margin: 0 auto; padding: 40px 24px 80px;">
+
+
+            <!-- Header Banner -->
+            <div style="text-align: center; margin-bottom: 50px;">
+                <p
+                    style="color: var(--purple, #c4b0ff); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">
+                    Where movement meets precision</p>
+                <h1 style="font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 700; margin: 10px 0; color: #fff;">Dance
+                    <span class="shimmer">Studio</span> & Suite
+                </h1>
+                <p style="color: rgba(255,255,255,0.7); max-width: 600px; margin: 0 auto; font-size: 0.95rem;">Analyze
+                    performance sync, mirror & edit practice footage, and lock into the beat with the Audio Copilot.</p>
+            </div>
+
+
+            <!-- Dance Feature Layout -->
+            <!-- ROW 1: big Practice Video Editor + live camera / MediaPipe -->
+            <div class="dance-top">
+
+
+                <!-- 2. PRACTICE VIDEO EDITOR (big) -->
+                <article class="shot dance-big dance-editor">
+                    <h3 class="dance-title">&#10022; Practice Video Editor</h3>
+                    <p class="dance-sub">Slow down tricky footwork, change playback speed, or flip video orientation for mirror practice.</p>
+
+
+                    <div class="video-frame" id="videoFrame">
+                        <!-- ONLY this layer is flipped by Mirror. The controls below are outside it. -->
+                        <div class="video-stage" id="videoStage">
+                            <video id="danceVideo" playsinline>
+                                <source src="your-dance-video.mp4" type="video/mp4">
+                            </video>
+                            <!-- Shows a YouTube / TikTok / Instagram video when a link is loaded -->
+                            <div class="embed-stage wide" id="embedStage" hidden></div>
+                            <!-- MediaPipe skeleton drawn over the video (flips together with it) -->
+                            <canvas class="pose-overlay" id="poseOverlay" hidden></canvas>
+                            <!-- skeleton drawn over a linked video (YouTube / TikTok / Instagram) -->
+                            <canvas class="pose-overlay" id="poseCapOverlay" hidden></canvas>
+                        </div>
+
+                        <!-- Transparent layer over YouTube so its own (flippable) UI never shows -->
+                        <div class="click-shield" id="clickShield" hidden></div>
+
+                        <!-- Our own controls: never mirrored -->
+                        <div class="player-bar" id="playerBar">
+                            <button type="button" class="pb-btn" id="pbPlay" aria-label="Play">&#9654;</button>
+                            <span class="pb-time" id="pbTime">0:00 / 0:00</span>
+                            <input type="range" class="pb-seek" id="pbSeek" min="0" max="1000" step="1" value="0" aria-label="Seek">
+                            <button type="button" class="pb-btn" id="pbMute" aria-label="Mute">&#128266;</button>
+                            <input type="range" class="pb-vol" id="pbVol" min="0" max="1" step="0.05" value="1" aria-label="Volume">
+                            <button type="button" class="pb-btn" id="pbFull" aria-label="Fullscreen">&#9974;</button>
+                        </div>
+                    </div>
+
+
+                    <div class="ctrl-row">
+                        <!-- Play / pause live on the player bar's own toggle button -->
+                        <button id="replayBtn" class="dance-ctrl-btn" hidden title="Start the TikTok / Instagram video again">Replay</button>
+                        <!-- Playback speed is a slider, so any rate from 0.25x to 2x can be picked -->
+                        <div class="speed-ctrl" id="speedCtrl" title="Playback speed (double-click to reset to 1x)">
+                            <label for="speedRange">Speed</label>
+                            <input type="range" id="speedRange" min="0.25" max="2" step="0.05" value="1"
+                                aria-label="Playback speed">
+                            <output class="speed-val" id="speedVal" for="speedRange">1.00x</output>
+                        </div>
+                        <button id="mirrorBtn" class="dance-ctrl-btn">Mirror Video</button>
+                        <button id="vidSkelBtn" class="dance-ctrl-btn">Skeleton: Off</button>
+                    </div>
+                    <p class="link-status" id="vidPoseStatus">Upload a dance video: the dancer is tracked automatically. Skeleton On / Off only shows or hides it.</p>
+
+                    <div class="sync-row">
+                        <label for="vpLead">Skeleton sync</label>
+                        <input type="range" id="vpLead" min="0" max="300" step="10" value="0" aria-label="Skeleton lag compensation">
+                        <span id="vpLeadVal">0 ms</span>
+                        <button type="button" class="dance-ctrl-btn small" id="vpPosesBtn" title="Tracking one dancer is faster">Dancers: 1</button>
+                    </div>
+
+                    <!-- Skeleton for YouTube / TikTok / Instagram links (screen-capture of this tab) -->
+                    <div class="pose-view" id="poseView" hidden>
+                        <div class="pose-view-head">Pose view &middot; skeleton from the linked video (older browsers only)</div>
+                        <canvas id="poseViewCanvas"></canvas>
+                    </div>
+                    <video id="capVideo" class="cap-video" autoplay muted playsinline></video>
+
+
+                    <!-- Paste a link to learn from an online video -->
+                    <form class="link-zone" id="linkForm" novalidate>
+                        <input type="url" id="videoLinkInput" placeholder="Paste a YouTube, TikTok or Instagram link..." autocomplete="off">
+                        <button type="submit" class="dance-ctrl-btn" id="loadLinkBtn">Load Link</button>
+                    </form>
+                    <p class="link-status" id="linkStatus">YouTube: play, pause, seek and speed all work. TikTok &amp; Instagram: use their own player controls; Mirror still works.</p>
+
+                    <!-- Upload your own dance video to learn -->
+                    <div class="upload-zone" id="uploadZone">
+                        <input type="file" id="videoUpload" accept="video/*" hidden>
+                        <label for="videoUpload" class="upload-btn">
+                            <span class="upload-ico">&#8679;</span> Upload a dance video to learn
+                        </label>
+                        <span class="upload-name" id="uploadName">or drag &amp; drop a video here (MP4, MOV, WebM)</span>
+                    </div>
+                </article>
+
+
+                <!-- LIVE CAMERA + MEDIAPIPE -->
+                <article class="shot dance-big dance-cam">
+                    <h3 class="dance-title">&#10022; Live Pose Mirror</h3>
+                    <p class="dance-sub">Turn on your camera and follow along. MediaPipe tracks your body in real time.</p>
+
+
+                    <div class="cam-frame" id="camFrame">
+                        <video id="camVideo" autoplay playsinline muted></video>
+                        <canvas id="camCanvas"></canvas>
+                        <div class="cam-placeholder" id="camPlaceholder">
+                            <div class="cam-ico">&#9673;</div>
+                            <p>Camera is off</p>
+                        </div>
+                        <span class="cam-badge" id="camBadge">OFF</span>
+                        <!-- live sync score, filled in by the analyzer below -->
+                        <div class="sync-hud waiting" id="syncHud" hidden>
+                            <div class="hud-top"><b id="hudScore">--</b><span id="hudLabel">Sync</span></div>
+                            <div class="hud-bars">
+                                <span>T</span><i id="hudTiming"></i>
+                                <span>A</span><i id="hudAlign"></i>
+                                <span>E</span><i id="hudEnergy"></i>
+                            </div>
+                            <div class="hud-hint" id="hudHint"></div>
+                        </div>
+                        <!-- shown when the practice video is full-body but you are only half in the camera -->
+                        <div class="cam-fullbody" id="camFullBody" hidden>Full-body dance: please step back until your whole body (feet included) is in the camera. Scoring starts once you are fully in view.</div>
+                    </div>
+
+
+                    <div class="ctrl-row">
+                        <button id="camStartBtn" class="dance-ctrl-btn">Start Camera</button>
+                        <button id="camStopBtn" class="dance-ctrl-btn" disabled>Stop</button>
+                        <button id="skelBtn" class="dance-ctrl-btn active-btn">Skeleton: On</button>
+                        <!-- Records the camera stream and saves it to the Gallery -->
+                        <button id="camRecBtn" class="dance-ctrl-btn" disabled>&#9679; Record</button>
+                    </div>
+                    <p class="cam-status" id="camStatus">Allow camera access when your browser asks. Your video stays on your device.</p>
+                </article>
+            </div>
+
+
+            <!-- ROW 2: the other two cards, below the editor -->
+            <div class="dance-bottom">
+
+
+                <!-- 1. AI SYNCHRONIZATION ANALYZER -->
+                <article class="shot"
+                    style="padding: 32px; background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(14px); border-radius: 24px;">
+                    <h3 style="font-size: 1.35rem; margin-bottom: 8px; color: #fff;">✦ AI Synchronization Analyzer</h3>
+                    <p style="font-size: 0.9rem; color: rgba(255,255,255,0.65); margin-bottom: 22px;">Compares the
+                        practice-video skeleton with your camera skeleton. Live score on your camera, full report here.</p>
+
+
+                    <div class="sync-panel">
+                        <div class="sync-ring" id="syncRing" style="--p: 0">
+                            <div class="sync-ring-inner" id="syncScore">--</div>
+                        </div>
+                        <div class="sync-summary">
+                            <p class="sync-label" id="syncLabel">No session yet</p>
+                            <p class="sync-hint" id="syncHint">Upload a practice video and start your camera.</p>
+                            <p class="sync-meta" id="syncMeta"></p>
+                        </div>
+                    </div>
+
+                    <div class="sync-stats">
+                        <div class="sync-stat">Timing <span id="syncTiming">--</span></div>
+                        <div class="sync-stat">Align <span id="syncAlign">--</span></div>
+                        <div class="sync-stat">Energy <span id="syncEnergy">--</span></div>
+                    </div>
+
+                    <h4 class="sync-h">Score over time</h4>
+                    <div class="sync-chart">
+                        <canvas id="syncChart" aria-label="Overall sync score over the session"></canvas>
+                        <div class="sync-tip" id="syncTip" hidden></div>
+                        <p class="sync-empty sync-chart-empty" id="syncChartEmpty">Dance for a few seconds to see your timeline.</p>
+                    </div>
+
+                    <h4 class="sync-h">Body parts</h4>
+                    <div class="sync-parts" id="syncParts"></div>
+
+                    <h4 class="sync-h">How to improve</h4>
+                    <ul class="sync-tips" id="syncTips"></ul>
+
+                    <h4 class="sync-h">Progress</h4>
+                    <div class="sync-history" id="syncHistory"></div>
+
+                    <div class="sync-foot">
+                        <span id="syncSaveNote"></span>
+                        <span>
+                            <button type="button" class="dance-ctrl-btn small" id="syncSaveBtn">Save session</button>
+                            <button type="button" class="dance-ctrl-btn small" id="syncResetBtn">Reset</button>
+                        </span>
+                    </div>
+                </article>
+
+
+                <!-- 3. AUDIO COPILOT & RHYTHM HUB -->
+                <article class="shot"
+                    style="padding: 32px; background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(14px); border-radius: 24px;">
+                    <h3 style="font-size: 1.35rem; margin-bottom: 8px; color: #fff;">✦ Audio Copilot & Rhythm Hub</h3>
+                    <p style="font-size: 0.9rem; color: rgba(255,255,255,0.65); margin-bottom: 22px;">Built-in Web Audio
+                        API synthesizer metronome with tap tempo and live rhythm waveform visualizer.</p>
+
+
+                    <div
+                        style="background: rgba(0,0,0,0.35); border-radius: 18px; padding: 24px; border: 1px solid rgba(255,255,255,0.08); text-align: center;">
+                        <div id="beatLight"
+                            style="width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,0.2); margin: 0 auto 12px; transition: all 0.1s;">
+                        </div>
+                        <div style="font-size: 2.5rem; font-weight: 700; color: var(--pink, #f8b8d8); line-height: 1;">
+                            <span id="bpmVal">120</span> <small
+                                style="font-size: 0.9rem; font-weight: 500; color: rgba(255,255,255,0.6);">BPM</small>
+                        </div>
+                        <input type="range" id="bpmRange" min="40" max="220" value="120"
+                            style="width: 100%; accent-color: var(--purple, #c4b0ff); margin: 16px 0; cursor: pointer;">
+                        <div style="display: flex; justify-content: center; gap: 10px;">
+                            <button id="metroToggleBtn" class="dance-ctrl-btn">Start Metronome</button>
+                            <button id="tapTempoBtn" class="dance-ctrl-btn">Tap Tempo</button>
+                        </div>
+                    </div>
+
+
+                    <div style="margin-top: 20px;">
+                        <h4
+                            style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: rgba(255,255,255,0.85);">
+                            Rhythm Waveform</h4>
+                        <canvas id="rhythmCanvas"
+                            style="width: 100%; height: 70px; background: rgba(0,0,0,0.4); border-radius: 14px; border: 1px solid rgba(255,255,255,0.1);"></canvas>
+                    </div>
+                </article>
+
+
+            </div>
+        </section>
+    </div>
+
+    <!-- LINKED JAVASCRIPT -->
+    <script src="script.js"></script>
+
+    <!-- Practice Video Editor controls -->
+    <script src="video-editor.js"></script>
+
+    <!-- Live Pose Mirror: camera, MediaPipe pose, recording.
+         works when opened directly from disk; camera.js imports MediaPipe
+         itself when the camera starts. -->
+    <script src="camera.js"></script>
+
+    <!-- Skeleton on the practice video + AI Synchronization Analyzer (compares it with camera.js's poses) -->
+    <script src="pose-sync.js"></script>
+
+</body>
+
+</html>

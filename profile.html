@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- YouTube needs the page origin as a referrer, otherwise it shows error 153 -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>My Profile | MUSE</title>
+
+    <link rel="preload" href="assets/fonts/poppins-400.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/poppins-500.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/poppins-700.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="profile.css">
+</head>
+
+<body>
+
+    <header>
+        <nav class="navbar section-content">
+            <a href="index.html" class="nav-logo">
+                <h2 class="nav-text">MUSE</h2>
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link" aria-current="page">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a href="features.html" id="dance-nav-link" class="nav-link">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a href="gallery.html" id="gallery-nav-link" class="nav-link">Gallery</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#about-project" class="nav-link">About Us</a>
+                </li>
+                <li class="nav-item">
+                    <a href="login.html" class="nav-link">Sign In</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="profile-page">
+        <div class="profile-glow profile-glow-pink" aria-hidden="true"></div>
+        <div class="profile-glow profile-glow-purple" aria-hidden="true"></div>
+
+        <div class="profile-heading">
+            <h1>My <span class="shimmer">Profile</span></h1>
+        </div>
+
+        <section class="profile-card" aria-label="Your profile">
+            <div class="profile-avatar-section">
+                <button class="profile-avatar-button" id="chooseAvatar" type="button"
+                    aria-label="Change profile picture" aria-haspopup="dialog">
+                    <img id="profileAvatar" src="assets/avatars/avatar-01.webp" alt="Quokka profile picture" width="160" height="160">
+                    <span class="profile-avatar-edit" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 5l4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15v5Z"/></svg>
+                    </span>
+                </button>
+                <button class="profile-text-button" id="changeAvatar" type="button">Change picture <span aria-hidden="true">↗</span></button>
+            </div>
+
+            <div class="profile-username-section">
+                <label for="profileUsername">Username</label>
+                <div class="profile-username-field">
+                    <input id="profileUsername" type="text" value="MUSE Dancer" autocomplete="nickname"
+                        spellcheck="false" enterkeyhint="done" aria-describedby="usernameHelp usernameCount">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 5l4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15v5Z"/></svg>
+                </div>
+                <div class="profile-input-meta">
+                    <p id="usernameHelp">Changes save automatically.</p>
+                    <span id="usernameCount">11 / 20</span>
+                </div>
+            </div>
+
+            <section class="profile-streak-section" aria-labelledby="streakTitle">
+                <div class="profile-streak-heading">
+                    <h2 id="streakTitle">Day streak</h2>
+                    <span class="profile-today-badge"><span aria-hidden="true"></span> Checked in today</span>
+                </div>
+                <div class="profile-streak-value">
+                    <svg class="profile-flame" aria-hidden="true" viewBox="0 0 40 48" fill="none"><path d="M22 2c2 11 12 13 14 23 2 11-5 20-16 21C8 47 2 39 3 29c1-7 5-12 10-16-1 7 2 9 4 10 5-5 6-13 5-21Z" fill="url(#flameGradient)"/><path d="M21 25c1 5 7 7 7 12 0 5-4 8-8 8s-7-3-7-7c0-5 5-8 8-13Z" fill="#fff" fill-opacity=".65"/><defs><linearGradient id="flameGradient" x1="4" y1="45" x2="30" y2="3" gradientUnits="userSpaceOnUse"><stop stop-color="#c4b0ff"/><stop offset="1" stop-color="#f8b8d8"/></linearGradient></defs></svg>
+                    <strong id="profileStreak">1</strong><span id="profileStreakUnit">day</span>
+                </div>
+                <p class="profile-streak-caption" id="streakCaption">Your first step. Keep the rhythm going.</p>
+                <div class="profile-week" id="profileWeek" aria-label="Your visits over the last seven days"></div>
+            </section>
+
+            <p class="profile-status" id="profileStatus" role="status" aria-live="polite"></p>
+        </section>
+        <p class="profile-footer">Small steps. Every day. <span aria-hidden="true">✦</span></p>
+    </main>
+
+    <dialog class="profile-avatar-dialog" id="avatarDialog" aria-labelledby="avatarDialogTitle">
+        <div class="profile-dialog-head">
+            <div><h2 id="avatarDialogTitle">Pick your <span class="shimmer">MUSE</span></h2></div>
+            <button class="profile-dialog-close" id="closeAvatarDialog" type="button" aria-label="Close avatar picker">×</button>
+        </div>
+        <div class="profile-avatar-grid" id="avatarGrid" role="group" aria-label="Profile picture options"></div>
+        <div class="profile-dialog-foot">
+            <a href="https://ipaslogo.com/" target="_blank" rel="noopener noreferrer">Characters by IP as Logo ↗</a>
+            <button class="profile-save-button" id="saveAvatar" type="button">Use this picture <span aria-hidden="true">✦</span></button>
+        </div>
+    </dialog>
+
+    <!-- Shared script records one visit per local calendar day on every MUSE page. -->
+    <script src="script.js"></script>
+    <script src="profile.js"></script>
+
+</body>
+
+</html>
