@@ -290,6 +290,11 @@
 
     /* pose-sync.js asks whether the camera is on (for its hints and the live score) */
     window.MUSE = window.MUSE || {};
-    window.MUSE.camera = { isRunning: () => running, stop: () => { if (running) stopCamera(); } };
+    window.MUSE.camera = {
+        isRunning: () => running,
+        stop: () => {
+            if (running) stopCamera();
+        }
+    };
 
 })();

@@ -5,519 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="referrer" content="strict-origin-when-cross-origin">
+
     <title>My Profile | MUSE</title>
+
+    <link rel="preload" href="assets/fonts/poppins-400.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/poppins-500.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/poppins-700.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="profile.css">
 
-    <style>
-        .dashboard {
-            width: min(1120px, 92%);
-            margin: 0 auto;
-            padding: 48px 0 90px;
-            position: relative;
-            z-index: 1;
-            color: #fff;
-        }
-
-        .dash-intro {
-            text-align: center;
-            margin: 20px 0 36px;
-        }
-
-        .dash-intro h1 {
-            font-size: clamp(2.4rem, 5vw, 4rem);
-            margin: 12px 0;
-        }
-
-        .muted {
-            color: rgba(255, 255, 255, .64);
-            line-height: 1.6;
-        }
-
-        .panel {
-            padding: 26px;
-            margin: 22px 0;
-            border: 1px solid rgba(255, 255, 255, .12);
-            border-radius: 24px;
-            background: rgba(255, 255, 255, .045);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            box-shadow: 0 14px 48px rgba(0, 0, 0, .13);
-        }
-
-        .panel-heading {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .panel-heading h2 {
-            margin: 0;
-            font-size: 1.55rem;
-        }
-
-        .panel-heading p {
-            margin: 6px 0 0;
-        }
-
-        .muse-btn {
-            border: 1px solid rgba(215, 185, 255, .4);
-            background: rgba(190, 150, 255, .13);
-            color: #fff;
-            border-radius: 999px;
-            padding: 11px 18px;
-            font: inherit;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            transition: .2s ease;
-        }
-
-        .muse-btn:hover {
-            background: rgba(190, 150, 255, .25);
-            transform: translateY(-1px);
-        }
-
-        .muse-btn:disabled {
-            opacity: .55;
-            cursor: wait;
-            transform: none;
-        }
-
-        .profile-top {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-        }
-
-        .avatar-wrap {
-            position: relative;
-            flex: 0 0 auto;
-        }
-
-        .avatar {
-            width: 108px;
-            height: 108px;
-            border-radius: 50%;
-            object-fit: cover;
-            display: grid;
-            place-items: center;
-            overflow: hidden;
-            background: linear-gradient(135deg, #f5a6d7, #a991ff 55%, #85cfff);
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: #fff;
-            box-shadow: 0 0 32px rgba(180, 140, 255, .2);
-        }
-
-        .profile-main {
-            min-width: 0;
-            flex: 1;
-        }
-
-        .profile-main h2 {
-            margin: 0 0 5px;
-            font-size: 1.8rem;
-            overflow-wrap: anywhere;
-        }
-
-        .profile-main p {
-            margin: 5px 0;
-            overflow-wrap: anywhere;
-        }
-
-        .profile-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 16px;
-        }
-
-        .edit-form {
-            display: none;
-            border-top: 1px solid rgba(255, 255, 255, .1);
-            margin-top: 24px;
-            padding-top: 22px;
-        }
-
-        .edit-form.open {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-        }
-
-        .field {
-            display: grid;
-            gap: 7px;
-            color: rgba(255, 255, 255, .8);
-            font-size: .94rem;
-        }
-
-        .field.full {
-            grid-column: 1 / -1;
-        }
-
-        .field input,
-        .field textarea,
-        .field select {
-            width: 100%;
-            box-sizing: border-box;
-            border-radius: 12px;
-            padding: 12px 13px;
-            font: inherit;
-            color: #fff;
-            background: rgba(10, 8, 22, .7);
-            border: 1px solid rgba(255, 255, 255, .16);
-        }
-
-        .field textarea {
-            min-height: 90px;
-            resize: vertical;
-        }
-
-        .field option {
-            background: #171326;
-        }
-
-        .form-actions {
-            grid-column: 1 / -1;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 14px;
-        }
-
-        .stat {
-            padding: 19px;
-            border-radius: 17px;
-            border: 1px solid rgba(255, 255, 255, .1);
-            background: rgba(255, 255, 255, .035);
-        }
-
-        .stat .emoji {
-            font-size: 1.35rem;
-        }
-
-        .stat strong {
-            display: block;
-            font-size: 2rem;
-            margin: 9px 0 4px;
-        }
-
-        .stat span:last-child {
-            color: rgba(255, 255, 255, .62);
-            font-size: .9rem;
-        }
-
-        .analytics-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-            margin-top: 22px;
-        }
-
-        .subpanel {
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, .1);
-            border-radius: 18px;
-            min-width: 0;
-        }
-
-        .subpanel h3 {
-            margin: 0 0 16px;
-        }
-
-        .chart-bars {
-            display: grid;
-            gap: 13px;
-        }
-
-        .bar-row {
-            display: grid;
-            grid-template-columns: 95px 1fr 36px;
-            align-items: center;
-            gap: 10px;
-            font-size: .86rem;
-        }
-
-        .bar-track {
-            height: 9px;
-            background: rgba(255, 255, 255, .09);
-            border-radius: 20px;
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            height: 100%;
-            width: 0;
-            border-radius: inherit;
-            background: linear-gradient(90deg, #f5a6d7, #a991ff, #85cfff);
-            transition: width .35s ease;
-        }
-
-        .week-chart {
-            height: 160px;
-            display: flex;
-            align-items: end;
-            justify-content: space-around;
-            gap: 12px;
-            padding-top: 10px;
-        }
-
-        .day-col {
-            flex: 1;
-            display: flex;
-            height: 100%;
-            flex-direction: column;
-            justify-content: end;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .day-bar {
-            width: min(32px, 80%);
-            min-height: 3px;
-            border-radius: 8px 8px 3px 3px;
-            background: linear-gradient(180deg, #85cfff, #a991ff, #f5a6d7);
-        }
-
-        .day-col small {
-            color: rgba(255, 255, 255, .6);
-        }
-
-        .track-list,
-        .session-list {
-            display: grid;
-            gap: 10px;
-        }
-
-        .track-row,
-        .session-row {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-            padding: 13px;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, .035);
-            min-width: 0;
-        }
-
-        .rank {
-            color: #d8b9ff;
-            font-size: 1.05rem;
-            width: 22px;
-            text-align: center;
-        }
-
-        .track-art {
-            width: 46px;
-            height: 46px;
-            flex: 0 0 46px;
-            border-radius: 12px;
-            object-fit: cover;
-            display: grid;
-            place-items: center;
-            background: linear-gradient(135deg, rgba(245, 166, 215, .25), rgba(137, 156, 255, .25));
-        }
-
-        .track-info,
-        .session-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .track-info strong,
-        .session-info strong {
-            display: block;
-            overflow-wrap: anywhere;
-        }
-
-        .track-info small,
-        .session-info small {
-            display: block;
-            margin-top: 4px;
-            color: rgba(255, 255, 255, .6);
-        }
-
-        .track-count {
-            color: #d8b9ff;
-            font-size: .85rem;
-            white-space: nowrap;
-        }
-
-        .empty {
-            padding: 22px 14px;
-            text-align: center;
-            color: rgba(255, 255, 255, .6);
-            border: 1px dashed rgba(255, 255, 255, .15);
-            border-radius: 14px;
-            line-height: 1.6;
-        }
-
-        .nav-cards {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 14px;
-        }
-
-        .nav-card {
-            display: block;
-            padding: 20px;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 17px;
-            background: rgba(255, 255, 255, .035);
-            border: 1px solid rgba(255, 255, 255, .1);
-            transition: .2s ease;
-        }
-
-        .nav-card:hover {
-            transform: translateY(-3px);
-            background: rgba(190, 150, 255, .1);
-        }
-
-        .nav-card span {
-            display: block;
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-        }
-
-        .nav-card strong {
-            display: block;
-            margin-bottom: 6px;
-        }
-
-        .nav-card small {
-            color: rgba(255, 255, 255, .6);
-            line-height: 1.5;
-        }
-
-        .status-message {
-            min-height: 1.3em;
-            color: #d8b9ff;
-            font-size: .9rem;
-        }
-
-        .signed-out {
-            text-align: center;
-            padding: 50px 20px;
-        }
-
-        .chat-tab {
-            position: fixed;
-            z-index: 20;
-            right: 0;
-            top: 45%;
-            border: 1px solid rgba(215, 185, 255, .4);
-            border-right: 0;
-            border-radius: 14px 0 0 14px;
-            padding: 16px 12px;
-            color: #fff;
-            background: rgba(42, 30, 65, .92);
-            cursor: pointer;
-            writing-mode: vertical-rl;
-            box-shadow: 0 0 25px rgba(180, 140, 255, .16);
-        }
-
-        .chat-drawer {
-            position: fixed;
-            z-index: 19;
-            top: 0;
-            right: 0;
-            height: 100dvh;
-            width: min(360px, 88vw);
-            box-sizing: border-box;
-            background: rgba(15, 12, 27, .97);
-            backdrop-filter: blur(20px);
-            border-left: 1px solid rgba(255, 255, 255, .13);
-            transform: translateX(102%);
-            transition: transform .25s ease;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-drawer.open {
-            transform: translateX(0);
-        }
-
-        .chat-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .chat-head h2 {
-            font-size: 1.15rem;
-            margin: 0;
-        }
-
-        .chat-blank {
-            flex: 1;
-        }
-
-        .chat-close {
-            background: transparent;
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, .2);
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            cursor: pointer;
-        }
-
-        [hidden] {
-            display: none !important;
-        }
-
-        @media(max-width:720px) {
-            .dashboard {
-                padding-top: 25px;
-            }
-
-            .panel {
-                padding: 20px;
-            }
-
-            .profile-top {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .analytics-grid,
-            .nav-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .edit-form.open {
-                grid-template-columns: 1fr;
-            }
-
-            .field.full,
-            .form-actions {
-                grid-column: auto;
-            }
-
-            .bar-row {
-                grid-template-columns: 78px 1fr 28px;
-                gap: 7px;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -527,232 +24,100 @@
                 <h2 class="nav-text">MUSE</h2>
             </a>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
-                <li class="nav-item"><a href="profile.html" class="nav-link">Profile</a></li>
-                <li class="nav-item"><a href="features.html" class="nav-link">Features</a></li>
-                <li class="nav-item"><a href="gallery.html" class="nav-link">Gallery</a></li>
-                <li class="nav-item"><a href="index.html#about-project" class="nav-link">About Us</a></li>
-                <li class="nav-item"><a href="login.html" class="nav-link">Sign In</a></li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+
+                    <a href="profile.html" class="nav-link" aria-current="page">Profile</a>
+
+                </li>
+                <li class="nav-item">
+                    <a href="features.html" id="dance-nav-link" class="nav-link">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a href="gallery.html" id="gallery-nav-link" class="nav-link">Gallery</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#about-project" class="nav-link">About Us</a>
+                </li>
+                <li class="nav-item">
+                    <a href="login.html" class="nav-link">Sign In</a>
+                </li>
             </ul>
         </nav>
     </header>
 
-    <main>
-        <div class="orb orb-pink" aria-hidden="true"></div>
-        <div class="orb orb-purple" aria-hidden="true"></div>
-        <div class="orb orb-blue" aria-hidden="true"></div>
 
-        <div class="dashboard">
-            <section class="dash-intro hero-text">
-                <p class="hero-sub">Your space, your story</p>
-                <h1>Your MUSE <span class="shimmer">profile</span></h1>
-                <p class="muted">Your movement, your music, your memories.</p>
-            </section>
+    <main class="profile-page">
+        <div class="profile-glow profile-glow-pink" aria-hidden="true"></div>
+        <div class="profile-glow profile-glow-purple" aria-hidden="true"></div>
 
-            <section id="signed-out-view" class="panel signed-out" hidden>
-                <h2>Sign in to see your profile</h2>
-                <p class="muted">Your MUSE activity and saved details live with your account.</p>
-                <a class="muse-btn" href="login.html">Go to Sign In</a>
-            </section>
-
-            <div id="profile-dashboard" hidden>
-                <!-- PROFILE -->
-                <section class="panel">
-                    <div class="profile-top">
-                        <div class="avatar-wrap">
-                            <img id="avatar-image" class="avatar" alt="Your profile avatar" hidden>
-                            <div id="avatar-initials" class="avatar">M</div>
-                        </div>
-                        <div class="profile-main">
-                            <h2 id="profile-name">Loading profile…</h2>
-                            <p id="profile-username" class="muted">@username</p>
-                            <p id="profile-email" class="muted"></p>
-                            <p id="profile-bio" class="muted">Add a little about yourself.</p>
-                            <div class="profile-buttons">
-                                <button class="muse-btn" id="edit-profile-btn" type="button">Edit profile</button>
-                                <button class="muse-btn" id="sign-out-btn" type="button">Sign out</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <form id="profile-form" class="edit-form">
-                        <label class="field">
-                            Display name
-                            <input id="edit-name" maxlength="70" required>
-                        </label>
-                        <label class="field">
-                            Username
-                            <input id="edit-username" maxlength="30" pattern="[A-Za-z0-9_.-]+" placeholder="yourname">
-                        </label>
-                        <label class="field full">
-                            Bio
-                            <textarea id="edit-bio" maxlength="240"
-                                placeholder="What do you love about music or movement?"></textarea>
-                        </label>
-                        <label class="field">
-                            Favorite genre
-                            <select id="edit-genre">
-                                <option value="">Choose a genre</option>
-                                <option>Hip-hop</option>
-                                <option>Contemporary</option>
-                                <option>Jazz</option>
-                                <option>Ballet</option>
-                                <option>Afrobeats</option>
-                                <option>Pop</option>
-                                <option>R&B</option>
-                                <option>Electronic</option>
-                                <option>Latin</option>
-                                <option>Other</option>
-                            </select>
-                        </label>
-                        <label class="field">
-                            Profile photo
-                            <input id="avatar-file" type="file" accept="image/png,image/jpeg,image/webp">
-                            <small class="muted">JPG, PNG, or WebP; up to 5 MB.</small>
-                        </label>
-                        <div class="form-actions">
-                            <button class="muse-btn" id="save-profile-btn" type="submit">Save changes</button>
-                            <button class="muse-btn" id="cancel-edit-btn" type="button">Cancel</button>
-                        </div>
-                        <p id="profile-status" class="status-message field full" role="status"></p>
-                    </form>
-                </section>
-
-                <!-- ACTIVITY -->
-                <section class="panel">
-                    <div class="panel-heading">
-                        <div>
-                            <h2>Your activity</h2>
-                            <p class="muted">Statistics based on sessions recorded in MUSE.</p>
-                        </div>
-                    </div>
-                    <div class="stats-grid">
-                        <article class="stat"><span class="emoji"></span><strong
-                                id="stat-sessions">0</strong><span>Practice sessions</span></article>
-                        <article class="stat"><span class="emoji"></span><strong
-                                id="stat-minutes">0</strong><span>Minutes practiced</span></article>
-                        <article class="stat"><span class="emoji"></span><strong id="stat-tracks">0</strong><span>Tracks
-                                recorded</span></article>
-                    </div>
-
-                    <div class="analytics-grid">
-                        <div class="subpanel">
-                            <h3>Weekly activity</h3>
-                            <p class="muted">Practice minutes · last 7 days</p>
-                            <div id="weekly-chart" class="week-chart"></div>
-                            <p id="weekly-empty" class="muted" hidden>No sessions recorded this week yet.</p>
-                        </div>
-                        <div class="subpanel">
-                            <h3>Genre breakdown</h3>
-                            <p class="muted">From your saved practice sessions</p>
-                            <div id="genre-chart" class="chart-bars"></div>
-                            <p id="genre-empty" class="muted">Genre data will appear when you log sessions.</p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- TOP TRACKS -->
-                <section class="panel">
-                    <div class="panel-heading">
-                        <div>
-                            <h2>Top 5 tracks</h2>
-                            <p class="muted">Your most-played or most-practiced tracks.</p>
-                        </div>
-                    </div>
-                    <div id="top-tracks" class="track-list"></div>
-                    <p id="tracks-empty" class="empty">No tracks tracked yet. Once MUSE records your track activity,
-                        your top five will appear here.</p>
-                </section>
-
-                <!-- Statistics Tab -->
-                <section class="profile-section statistics-section" id="statistics">
-                    <button class="section-heading statistics-toggle" id="statisticsToggle" type="button"
-                        aria-expanded="true" aria-controls="statisticsContent">
-                        <span>Statistics</span>
-                        <span id="statisticsArrow" aria-hidden="true">⌄</span>
-                    </button>
-
-                    <div id="statisticsContent">
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <span class="stat-label">Total Practice Time</span>
-                                <strong id="totalPracticeTime">0 min</strong>
-                            </div>
-
-                            <div class="stat-card">
-                                <span class="stat-label">Sessions Completed</span>
-                                <strong id="totalSessions">0</strong>
-                            </div>
-
-                            <div class="stat-card">
-                                <span class="stat-label">Tracks Played</span>
-                                <strong id="totalTracksPlayed">0</strong>
-                            </div>
-
-                            <div class="stat-card">
-                                <span class="stat-label">Features Used</span>
-                                <strong id="featuresUsed">0</strong>
-                            </div>
-                        </div>
-
-                        <p class="statistics-note" id="statisticsNote">
-                            Your activity statistics will appear here as you use MUSE.
-                        </p>
-                    </div>
-                </section>
-
-                <!-- RECENT SESSIONS -->
-                <section class="panel">
-                    <div class="panel-heading">
-                        <div>
-                            <h2>Recent sessions</h2>
-                            <p class="muted">Your latest recorded practice activity.</p>
-                        </div>
-                    </div>
-                    <div id="recent-sessions" class="session-list"></div>
-                    <p id="sessions-empty" class="empty">No sessions yet. Your activity will appear here when a MUSE
-                        feature saves a session.</p>
-                </section>
-
-                <!-- NAVIGATION -->
-                <section class="panel">
-                    <div class="panel-heading">
-                        <div>
-                            <h2>Keep exploring</h2>
-                            <p class="muted">Head back into your MUSE space.</p>
-                        </div>
-                    </div>
-                    <div class="nav-cards">
-                        <a class="nav-card" href="index.html"><span>⌂</span><strong>Homepage</strong><small>Back to the
-                                MUSE home page.</small></a>
-                        <a class="nav-card" href="features.html"><span>♫</span><strong>Features</strong><small>Explore
-                                your practice tools.</small></a>
-                        <a class="nav-card" href="gallery.html"><span>▧</span><strong>Gallery</strong><small>Revisit
-                                saved recordings and memories.</small></a>
-                    </div>
-                </section>
-            </div>
+        <div class="profile-heading">
+            <h1>My <span class="shimmer">Profile</span></h1>
         </div>
+
+        <section class="profile-card" aria-label="Your profile">
+            <div class="profile-avatar-section">
+                <button class="profile-avatar-button" id="chooseAvatar" type="button"
+                    aria-label="Change profile picture" aria-haspopup="dialog">
+                    <img id="profileAvatar" src="assets/avatars/avatar-01.webp" alt="Quokka profile picture" width="160" height="160">
+                    <span class="profile-avatar-edit" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 5l4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15v5Z"/></svg>
+                    </span>
+                </button>
+                <button class="profile-text-button" id="changeAvatar" type="button">Change picture <span aria-hidden="true">↗</span></button>
+            </div>
+
+            <div class="profile-username-section">
+                <label for="profileUsername">Username</label>
+                <div class="profile-username-field">
+                    <input id="profileUsername" type="text" value="MUSE Dancer" autocomplete="nickname"
+                        spellcheck="false" enterkeyhint="done" aria-describedby="usernameHelp usernameCount">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 5l4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15v5Z"/></svg>
+                </div>
+                <div class="profile-input-meta">
+                    <p id="usernameHelp">Changes save automatically.</p>
+                    <span id="usernameCount">11 / 20</span>
+                </div>
+            </div>
+
+            <section class="profile-streak-section" aria-labelledby="streakTitle">
+                <div class="profile-streak-heading">
+                    <h2 id="streakTitle">Day streak</h2>
+                    <span class="profile-today-badge"><span aria-hidden="true"></span> Checked in today</span>
+                </div>
+                <div class="profile-streak-value">
+                    <svg class="profile-flame" aria-hidden="true" viewBox="0 0 40 48" fill="none"><path d="M22 2c2 11 12 13 14 23 2 11-5 20-16 21C8 47 2 39 3 29c1-7 5-12 10-16-1 7 2 9 4 10 5-5 6-13 5-21Z" fill="url(#flameGradient)"/><path d="M21 25c1 5 7 7 7 12 0 5-4 8-8 8s-7-3-7-7c0-5 5-8 8-13Z" fill="#fff" fill-opacity=".65"/><defs><linearGradient id="flameGradient" x1="4" y1="45" x2="30" y2="3" gradientUnits="userSpaceOnUse"><stop stop-color="#c4b0ff"/><stop offset="1" stop-color="#f8b8d8"/></linearGradient></defs></svg>
+                    <strong id="profileStreak">1</strong><span id="profileStreakUnit">day</span>
+                </div>
+                <p class="profile-streak-caption" id="streakCaption">Your first step. Keep the rhythm going.</p>
+                <div class="profile-week" id="profileWeek" aria-label="Your visits over the last seven days"></div>
+            </section>
+
+            <p class="profile-status" id="profileStatus" role="status" aria-live="polite"></p>
+        </section>
+        <p class="profile-footer">Small steps. Every day. <span aria-hidden="true">✦</span></p>
     </main>
 
-    <!-- Empty future AI chat: UI only -->
-    <button id="chat-tab" class="chat-tab" type="button" aria-expanded="false" aria-controls="chat-drawer">MUSE
-        Chat</button>
-    <aside id="chat-drawer" class="chat-drawer" aria-label="Future MUSE assistant" aria-hidden="true">
-        <div class="chat-head">
-            <h2>MUSE Assistant</h2>
-            <button id="chat-close" class="chat-close" type="button" aria-label="Close chat">×</button>
+    <dialog class="profile-avatar-dialog" id="avatarDialog" aria-labelledby="avatarDialogTitle">
+        <div class="profile-dialog-head">
+            <div><h2 id="avatarDialogTitle">Pick your <span class="shimmer">MUSE</span></h2></div>
+            <button class="profile-dialog-close" id="closeAvatarDialog" type="button" aria-label="Close avatar picker">×</button>
         </div>
-        <div class="chat-blank"></div>
-        <!-- Intentionally empty. AI chat can be connected later. -->
-    </aside>
+        <div class="profile-avatar-grid" id="avatarGrid" role="group" aria-label="Profile picture options"></div>
+        <div class="profile-dialog-foot">
+            <a href="https://ipaslogo.com/" target="_blank" rel="noopener noreferrer">Characters by IP as Logo ↗</a>
+            <button class="profile-save-button" id="saveAvatar" type="button">Use this picture <span aria-hidden="true">✦</span></button>
+        </div>
+    </dialog>
 
-    <footer class="site-foot">
-        <p>Made with love and movement. <span class="shimmer">MUSE</span></p>
-    </footer>
+    <!-- Shared script records one visit per local calendar day on every MUSE page. -->
+    <script src="script.js"></script>
+    <script src="profile.js"></script>
 
-    <!-- info.js owns the profile-page behavior and Firebase data access. -->
-    <script type="module" src="info.js"></script>
+   
 </body>
 
 </html>
+

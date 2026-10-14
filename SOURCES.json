@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "name": "quokka",
+    "path": "assets/avatars/avatar-01.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/a746787047a05c50-quokka-2.webp"
+  },
+  {
+    "id": 2,
+    "name": "cassowary",
+    "path": "assets/avatars/avatar-02.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/0f172b46e5536515-cassowary-2.webp"
+  },
+  {
+    "id": 3,
+    "name": "manatee",
+    "path": "assets/avatars/avatar-03.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/51cf9d38cb29760f-manatee-2.webp"
+  },
+  {
+    "id": 4,
+    "name": "pangolin",
+    "path": "assets/avatars/avatar-04.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/ee2828cd95f2cc32-pangolin-3.webp"
+  },
+  {
+    "id": 5,
+    "name": "tapir",
+    "path": "assets/avatars/avatar-05.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/388091f222839862-tapir-3.webp"
+  },
+  {
+    "id": 6,
+    "name": "nautilus",
+    "path": "assets/avatars/avatar-06.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/9f32ff0956de731e-nautilus-2.webp"
+  },
+  {
+    "id": 7,
+    "name": "moon moth",
+    "path": "assets/avatars/avatar-07.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/e09ffd9919eacc74-moon-moth.webp"
+  },
+  {
+    "id": 8,
+    "name": "kettle bot",
+    "path": "assets/avatars/avatar-08.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/9dc2e151a484833f-kettle-bot.webp"
+  },
+  {
+    "id": 9,
+    "name": "nautilus",
+    "path": "assets/avatars/avatar-09.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/92af3c2f76ee9320-nautilus-3.webp"
+  },
+  {
+    "id": 10,
+    "name": "rain boot",
+    "path": "assets/avatars/avatar-10.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/ebe8d41412d7ed86-rain-boot.webp"
+  },
+  {
+    "id": 11,
+    "name": "horseshoe magnet",
+    "path": "assets/avatars/avatar-11.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/29648588b5ce5b4c-horseshoe-magnet.webp"
+  },
+  {
+    "id": 12,
+    "name": "musk ox",
+    "path": "assets/avatars/avatar-12.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/5bb0f6d64063d14a-musk-ox.webp"
+  },
+  {
+    "id": 13,
+    "name": "seahorse",
+    "path": "assets/avatars/avatar-13.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/56edc9b46bb64692-seahorse-3.webp"
+  },
+  {
+    "id": 14,
+    "name": "pitcher plant",
+    "path": "assets/avatars/avatar-14.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/698c2beda5f0a40a-pitcher-plant-2.webp"
+  },
+  {
+    "id": 15,
+    "name": "tapir",
+    "path": "assets/avatars/avatar-15.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/15519888e6c06d71-tapir-4.webp"
+  },
+  {
+    "id": 16,
+    "name": "armadillo",
+    "path": "assets/avatars/avatar-16.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/46ba8019398cf7bd-armadillo-3.webp"
+  },
+  {
+    "id": 17,
+    "name": "rice cooker bot",
+    "path": "assets/avatars/avatar-17.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/4ddf84d5a5ae7119-rice-cooker-bot.webp"
+  },
+  {
+    "id": 18,
+    "name": "accordion",
+    "path": "assets/avatars/avatar-18.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/2099ff740ee4fe66-accordion.webp"
+  },
+  {
+    "id": 19,
+    "name": "scarab beetle",
+    "path": "assets/avatars/avatar-19.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/b30e4b941d47a94e-scarab-beetle-2.webp"
+  },
+  {
+    "id": 20,
+    "name": "mushroom knight",
+    "path": "assets/avatars/avatar-20.webp",
+    "source": "https://cdn.ipaslogo.com/display-512/f82c2d3a6cc13c60-mushroom-knight.webp"
+  }
+]

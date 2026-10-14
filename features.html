@@ -7,6 +7,10 @@
     <!-- YouTube needs the page origin as a referrer, otherwise it shows error 153 -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Expert Group Project</title>
+    <link rel="preload" href="assets/fonts/poppins-400.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/poppins-500.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="assets/fonts/poppins-700.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -187,7 +191,6 @@
                         <button id="camRecBtn" class="dance-ctrl-btn" disabled>&#9679; Record</button>
                     </div>
                     <p class="cam-status" id="camStatus">Allow camera access when your browser asks. Your video stays on your device.</p>
-
                     <!-- Analyze a video of yourself instead of the live camera -->
                     <div class="ctrl-row">
                         <input type="file" id="recUpload" accept="video/*" hidden>

@@ -643,6 +643,7 @@
     /* full-body video but you are not fully in the camera: no scoring */
     const syncNeedFullBody = () => syncRefIsFullBody() && !syncCamFullOk;
 
+
     /* an uploaded recording of yourself can stand in for the camera (see ANALYZE AN UPLOADED RECORDING) */
     let recState = 'idle';                 // 'idle' | 'scanning' | 'playing'
     const recActive = () => recState === 'playing';
@@ -653,6 +654,7 @@
         syncShown = null; syncSegFit = SYNC_SEGS.map(() => 1); syncMirrorFit = [0, 0]; syncMirror = false;
         syncPrevCam = null; syncCamSpeed = 0; syncCamFull = 0; syncCamFullOk = false;
     }
+
 
     function syncNewSession() {
         return {
@@ -778,6 +780,7 @@
 
     function syncWaitMsg() {
         if (!vpOn) return vpMode === 'file' ? 'Upload a practice video to compare with.' : 'Press Skeleton on the practice video and share this tab to compare.';
+
         if (!userLive()) return 'Start your camera (or analyze a recording) to compare.';
         if (!syncRefs.length) return 'No dancer found in the practice video yet.';
         const rec = recActive();
@@ -785,11 +788,13 @@
         if (syncNeedFullBody()) return rec ? 'Full-body video: only moments where your recording shows your whole body are scored.'
             : 'Full-body video: step back so your whole body, feet included, is in the camera.';
         if (performance.now() - syncLastCamT > 600) return rec ? 'You are not fully visible in your recording right now.' : 'Step back until your whole body is in the camera.';
+
         return null;
     }
 
     /* ---------- live mini panel on the camera ---------- */
     function syncRenderLive() {
+
         const live = userLive();
         syncFullBanner.hidden = !(live && vpOn && syncRefs.length && syncNeedFullBody());
         if (!syncFullBanner.hidden) syncFullBanner.textContent = recActive()
@@ -797,6 +802,7 @@
             : 'Full-body dance: please step back until your whole body (feet included) is in the camera. Scoring starts once you are fully in view.';
         syncEl.hud.hidden = !live;
         if (!live) return;
+
         const msg = syncWaitMsg();
         syncEl.hud.classList.toggle('waiting', !!msg || !syncShown);
         if (msg || !syncShown) {
@@ -1017,6 +1023,7 @@
         syncRenderReport();
     });
     syncEl.reset.addEventListener('click', () => {
+=
         syncResetSession();
         syncEl.saveNote.textContent = '';
         syncRenderReport();
@@ -1282,6 +1289,7 @@
     });
     document.addEventListener('muse:leave', () => { if (recState !== 'idle') recStop(); });
     recUpdateBtn();
+
     syncRenderReport();
 
     /* A paused video produces no frame callbacks, so redraw after seeking / loading */
@@ -1314,7 +1322,9 @@
 
     /* camera.js calls this with every new camera pose */
     window.MUSE = window.MUSE || {};
+
     window.MUSE.sync = { addCam: res => { if (recState === 'idle') syncAddCam(res); } };   // a recording being analyzed has priority
+
 
     /* this script loads after the page, so a video may already be waiting */
     vpUpdateBtn();

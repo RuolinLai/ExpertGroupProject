@@ -1,7 +1,69 @@
-/* =========================================================
-   CARD MOUSE MOVEMENT AND TILT
-   ========================================================= */
+/* One check-in per local calendar day, on every MUSE page, with or without
+   an account. A missed day resets the consecutive streak to 1. */
+(function () {
+    'use strict';
+    const KEY = 'muse.visitStreak.v1';
+    let memory = null;
+    let timer;
+    let storageAvailable = true;
 
+    function localDay(date) {
+        return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'),
+            String(date.getDate()).padStart(2, '0')].join('-');
+    }
+
+    // Calendar-day arithmetic avoids daylight-saving 23/25-hour days.
+    function dayNumber(day) {
+        if (typeof day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return NaN;
+        const [year, month, date] = day.split('-').map(Number);
+        const timestamp = Date.UTC(year, month - 1, date);
+        if (new Date(timestamp).toISOString().slice(0, 10) !== day) return NaN;
+        return timestamp / 86400000;
+    }
+
+    function load() {
+        try { return JSON.parse(localStorage.getItem(KEY)) || memory; }
+        catch (error) { storageAvailable = false; return memory; }
+    }
+
+    function checkIn() {
+        const now = new Date();
+        const today = localDay(now);
+        const previous = load();
+        const valid = previous && Number.isSafeInteger(previous.count) && previous.count >= 1
+            && Number.isFinite(dayNumber(previous.lastDate));
+        const difference = valid ? dayNumber(today) - dayNumber(previous.lastDate) : NaN;
+        // A clock moved backwards must not add a second check-in or erase progress.
+        const next = valid && difference <= 0 ? previous : {
+            count: difference === 1 ? previous.count + 1 : 1,
+            lastDate: today
+        };
+        memory = next;
+        try { localStorage.setItem(KEY, JSON.stringify(next)); storageAvailable = true; }
+        catch (error) { storageAvailable = false; }
+        window.dispatchEvent(new CustomEvent('muse:streak', { detail: next }));
+        clearTimeout(timer);
+        const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        timer = setTimeout(() => {
+            if (document.visibilityState === 'visible') checkIn();
+        }, midnight - now + 250);
+        return next;
+    }
+
+    window.MUSE = window.MUSE || {};
+    window.MUSE.streak = { checkIn, get: load, localDay,
+        isPersistent: () => storageAvailable };
+    checkIn();
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') checkIn();
+    });
+    window.addEventListener('pageshow', checkIn);
+    window.addEventListener('storage', event => {
+        if (event.key === KEY || event.key === null) checkIn();
+    });
+})();
+
+// Cards drift toward the mouse and tilt when the pointer is nearby.
 const cards = document.querySelectorAll('[data-card]');
 const RANGE = 380;
 const MOVE = 22;
@@ -42,19 +104,12 @@ function tick() {
 
         if (mouse && !reduce && window.innerWidth > 800) {
             const r = s.el.getBoundingClientRect();
-
             const cx = r.left + r.width / 2;
             const cy = r.top + r.height / 2;
-
             const dx = mouse.x - cx;
             const dy = mouse.y - cy;
-
             const dist = Math.hypot(dx, dy);
-
-            const power = Math.max(
-                0,
-                1 - dist / RANGE
-            );
+            const power = Math.max(0, 1 - dist / RANGE);
 
             const nx = Math.max(
                 -1,
@@ -68,7 +123,6 @@ function tick() {
 
             s.tx = (dx / (dist || 1)) * MOVE * power;
             s.ty = (dy / (dist || 1)) * MOVE * power;
-
             s.trx = -ny * TILT * power;
             s.try_ = nx * TILT * power;
 
@@ -82,17 +136,13 @@ function tick() {
                 `${((mouse.y - r.top) / (r.height || 1)) * 100}%`
             );
 
-            s.el.style.setProperty(
-                '--glow',
-                power.toFixed(2)
-            );
+            s.el.style.setProperty('--glow', power.toFixed(2));
         } else {
             s.el.style.setProperty('--glow', 0);
         }
 
         s.x += (s.tx - s.x) * 0.1;
         s.y += (s.ty - s.y) * 0.1;
-
         s.rx += (s.trx - s.rx) * 0.1;
         s.ry += (s.try_ - s.ry) * 0.1;
 
@@ -109,10 +159,7 @@ if (state.length && !reduce) {
 }
 
 
-/* =========================================================
-   SCROLL REVEAL
-   ========================================================= */
-
+// Scroll reveal.
 if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver(entries => {
         entries.forEach(entry => {
@@ -121,13 +168,9 @@ if ('IntersectionObserver' in window) {
                 io.unobserve(entry.target);
             }
         });
-    }, {
-        threshold: 0.15
-    });
+    }, { threshold: 0.15 });
 
-    document.querySelectorAll('.reveal').forEach(el => {
-        io.observe(el);
-    });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 } else {
     document.querySelectorAll('.reveal').forEach(el => {
         el.classList.add('in');
@@ -135,18 +178,13 @@ if ('IntersectionObserver' in window) {
 }
 
 
-/* =========================================================
-   DUPLICATE REVIEW CARDS FOR SEAMLESS MARQUEE
-   ========================================================= */
-
+// Duplicate review cards for a seamless marquee.
 const track = document.getElementById('track');
 
 if (track && !track.dataset.cloned) {
     [...track.children].forEach(card => {
         const clone = card.cloneNode(true);
-
         clone.setAttribute('aria-hidden', 'true');
-
         track.appendChild(clone);
     });
 
@@ -154,21 +192,14 @@ if (track && !track.dataset.cloned) {
 }
 
 
-/* =========================================================
-   SCREENSHOT FRAME TILT
-   ========================================================= */
-
-document.querySelectorAll('.shot').forEach(el => {
+// Tilt decorative home screenshots only. Keep video/camera/control panels still.
+document.querySelectorAll('.shots .shot').forEach(el => {
     el.addEventListener('mousemove', e => {
         if (reduce) return;
 
         const r = el.getBoundingClientRect();
-
-        const x =
-            (e.clientX - r.left) / (r.width || 1) - 0.5;
-
-        const y =
-            (e.clientY - r.top) / (r.height || 1) - 0.5;
+        const x = (e.clientX - r.left) / (r.width || 1) - 0.5;
+        const y = (e.clientY - r.top) / (r.height || 1) - 0.5;
 
         el.style.setProperty('--tx', `${x * 8}deg`);
         el.style.setProperty('--ty', `${-y * 8}deg`);
@@ -181,10 +212,7 @@ document.querySelectorAll('.shot').forEach(el => {
 });
 
 
-/* =========================================================
-   DECORATION PARALLAX
-   ========================================================= */
-
+// Decorations shift slightly with the mouse.
 const decos = document.querySelectorAll('.deco');
 
 window.addEventListener('mousemove', e => {
@@ -195,9 +223,7 @@ window.addEventListener('mousemove', e => {
 
     decos.forEach(d => {
         const k = Number(d.dataset.depth) || 0;
-
-        d.style.translate =
-            `${-nx * k}px ${-ny * k}px`;
+        d.style.translate = `${-nx * k}px ${-ny * k}px`;
     });
 });
 
@@ -220,15 +246,8 @@ let tapTimes = [];
 
 const bpmRange = document.getElementById('bpmRange');
 const bpmVal = document.getElementById('bpmVal');
-
-const metroToggleBtn =
-    document.getElementById('metroToggleBtn');
-
-const beatLight =
-    document.getElementById('beatLight');
-
-
-/* Update the BPM slider. */
+const metroToggleBtn = document.getElementById('metroToggleBtn');
+const beatLight = document.getElementById('beatLight');
 
 bpmRange?.addEventListener('input', e => {
     bpm = Number(e.target.value);
@@ -237,9 +256,6 @@ bpmRange?.addEventListener('input', e => {
         bpmVal.textContent = bpm;
     }
 });
-
-
-/* Start or stop the metronome. */
 
 metroToggleBtn?.addEventListener('click', async () => {
     try {
