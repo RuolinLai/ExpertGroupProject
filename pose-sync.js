@@ -1023,7 +1023,6 @@
         syncRenderReport();
     });
     syncEl.reset.addEventListener('click', () => {
-=
         syncResetSession();
         syncEl.saveNote.textContent = '';
         syncRenderReport();
