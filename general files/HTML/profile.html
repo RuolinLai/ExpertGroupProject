@@ -8,12 +8,11 @@
 
     <title>My Profile | MUSE</title>
 
-    <link rel="preload" href="assets/fonts/poppins-400.ttf" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="assets/fonts/poppins-500.ttf" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="assets/fonts/poppins-700.ttf" as="font" type="font/ttf" crossorigin>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="profile.css">
+    <link rel="preload" href="../../assets/fonts/poppins-400.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="../../assets/fonts/poppins-500.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="../../assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="../../assets/fonts/poppins-700.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="stylesheet" href="../css/style.css">
 
 </head>
 
@@ -28,9 +27,7 @@
                     <a href="index.html" class="nav-link">Home</a>
                 </li>
                 <li class="nav-item">
-
                     <a href="profile.html" class="nav-link" aria-current="page">Profile</a>
-
                 </li>
                 <li class="nav-item">
                     <a href="features.html" id="dance-nav-link" class="nav-link">Features</a>
@@ -61,7 +58,7 @@
             <div class="profile-avatar-section">
                 <button class="profile-avatar-button" id="chooseAvatar" type="button"
                     aria-label="Change profile picture" aria-haspopup="dialog">
-                    <img id="profileAvatar" src="assets/avatars/avatar-01.webp" alt="Quokka profile picture" width="160" height="160">
+                    <img id="profileAvatar" src="../../assets/avatars/avatar-01.webp" alt="Quokka profile picture" width="160" height="160">
                     <span class="profile-avatar-edit" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 5l4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15v5Z"/></svg>
                     </span>
@@ -113,11 +110,9 @@
     </dialog>
 
     <!-- Shared script records one visit per local calendar day on every MUSE page. -->
-    <script src="script.js"></script>
-    <script src="profile.js"></script>
+    <script src="../js/script.js"></script>
+    <script src="../js/profile.js"></script>
 
-   
 </body>
 
 </html>
-

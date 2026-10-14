@@ -8,8 +8,10 @@
         'Nautilus', 'Moon moth', 'Kettle bot', 'Nautilus II', 'Rain boot',
         'Horseshoe magnet', 'Musk ox', 'Seahorse', 'Pitcher plant', 'Tapir II',
         'Armadillo', 'Rice cooker bot', 'Accordion', 'Scarab beetle', 'Mushroom knight'
-    ].map((name, index) => ({ id: index + 1, name,
-        src: `assets/avatars/avatar-${String(index + 1).padStart(2, '0')}.webp` }));
+    ].map((name, index) => ({
+        id: index + 1, name,
+        src: `../../assets/avatars/avatar-${String(index + 1).padStart(2, '0')}.webp`
+    }));
     const input = document.getElementById('profileUsername');
     if (!input) return;
     const picture = document.getElementById('profileAvatar');
