@@ -57,6 +57,9 @@
                     </button>
                 </p>
 
+                <p id="sign-in-credential-error" class="auth-message auth-credential-error is-error" role="status"
+                    aria-live="polite" hidden></p>
+
                 <p class="auth-switch">
                     Don't have an account?
                     <button id="show-sign-up" type="button">
@@ -67,10 +70,6 @@
 
             <form id="sign-up-form" class="auth-form" hidden>
                 <h2>Create Account</h2>
-
-                <label for="display-name">Display Name</label>
-                <input id="display-name" name="displayName" type="text" autocomplete="nickname" maxlength="50"
-                    placeholder="Choose a display name" required>
 
                 <label for="sign-up-email">Email</label>
                 <input id="sign-up-email" name="email" type="email" autocomplete="email" placeholder="Enter your email"
@@ -100,30 +99,26 @@
                     </button>
                 </p>
             </form>
+
+            <a href="index.html" class="auth-home-link">
+                Back to Home
+            </a>
         </section>
 
         <section id="signed-in-panel" aria-labelledby="signed-in-heading" hidden>
             <h2 id="signed-in-heading">You're signed in!</h2>
             <p id="welcome-message"></p>
-
-            <button id="logout-button" class="auth-button" type="button">
-                Log Out
-            </button>
-
-            <a href="index.html" class="auth-home-link">
-                Return to MUSE
+            <a href="index.html" class="auth-button">
+                Back to Home
             </a>
         </section>
 
         <p id="auth-message" class="auth-message" role="status" aria-live="polite"></p>
-
-        <a href="index.html" class="auth-home-link">
-            Back to Home
-        </a>
     </main>
 
     <script src="../JS/script.js" defer></script>
     <script type="module" src="../JS/firebase-auth.js"></script>
+    <script type="module" src="../JS/auth-ui.js"></script>
 
 </body>
 

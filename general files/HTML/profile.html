@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="auth-pending">
 
 <head>
     <meta charset="UTF-8">
@@ -27,9 +27,6 @@
                     <a href="index.html" class="nav-link">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a href="profile.html" class="nav-link" aria-current="page">Profile</a>
-                </li>
-                <li class="nav-item">
                     <a href="features.html" id="dance-nav-link" class="nav-link">Features</a>
                 </li>
                 <li class="nav-item">
@@ -39,7 +36,7 @@
                     <a href="index.html#about-project" class="nav-link">About Us</a>
                 </li>
                 <li class="nav-item">
-                    <a href="login.html" class="nav-link">Sign In</a>
+                    <a href="login.html" id="account-nav-link" class="nav-link">Sign In</a>
                 </li>
             </ul>
         </nav>
@@ -155,6 +152,7 @@
         </div>
 
         <p class="profile-footer">Small steps. Every day. <span aria-hidden="true">✦</span></p>
+        <button id="profile-logout-button" class="profile-logout-button" type="button">Log out</button>
     </main>
 
     <dialog class="profile-avatar-dialog" id="avatarDialog" aria-labelledby="avatarDialogTitle">
@@ -200,6 +198,7 @@
     <script src="../JS/profile.js"></script>
 
     <script src="../JS/chat.js"></script>
+    <script type="module" src="../JS/auth-ui.js"></script>
 </body>
 
 </html>

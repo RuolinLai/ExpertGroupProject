@@ -115,6 +115,7 @@
         profile.avatarId = selectedAvatar;
         renderAvatar();
         save('Profile picture saved');
+        window.dispatchEvent(new Event('muse:profile-updated'));
         dialog.close();
     });
 
