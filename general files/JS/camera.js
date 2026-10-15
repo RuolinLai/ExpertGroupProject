@@ -2,7 +2,7 @@
    LIVE POSE MIRROR
    Every control of the "Live Pose Mirror" card lives in this file:
    the webcam stream, the MediaPipe pose overlay and the Record button
-   that saves a take into the Gallery.
+   that hands a finished take to the Gallery's "Add Video" popup.
 
    Every camera pose is also handed to pose-sync.js (window.MUSE.sync),
    which compares it with the practice video's skeleton and fills in the
@@ -183,8 +183,11 @@
 
     /* =========================================================
        RECORDING
-       Saves the take as a file the browser can play back, adds it to
-       the Gallery and offers it as a download.
+       Turns the take into a file the browser can play back, then hands
+       it to the Gallery's "Add Video" popup (markup lives on this page,
+       logic lives in script.js) so the user fills in the title/category/
+       description/progress before it is actually saved. Closing the
+       popup without saving discards the take.
        ========================================================= */
     function pickMimeType() {
         const candidates = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
@@ -251,24 +254,39 @@
         const blob = new Blob(recordedChunks, { type });
         recordedChunks = [];
         const ext = type.includes('mp4') ? 'mp4' : 'webm';
-        const name = 'MUSE-practice-' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') + '.' + ext;
+        //const name = 'MUSE-practice-' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') + '.' + ext;
+        const name='';
+        const opened = openRecordingInGalleryForm(blob, name, type);
 
-        // Put it in the Gallery first, so the take is never lost even if
-        // the browser blocks or the user cancels the download.
-        const addedToGallery = window.MUSE?.gallery?.addRecording?.(blob, name);
-
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = name;
-        a.click();
-        // The Gallery keeps its own object URL, so this one can be released.
-        setTimeout(() => URL.revokeObjectURL(url), 10000);
-
-        setStatus(addedToGallery
-            ? 'Saved ' + name + ' to your device and added it to the Gallery.'
-            : 'Saved ' + name + ' to your device.');
+        setStatus(opened
+            ? 'Recording stopped. Fill in the details, then click "Save Video" to add it to your Gallery.'
+            : 'Recording stopped, but the Add Video form could not be opened.');
         if (badge && running) badge.textContent = 'LIVE';
+    }
+
+    /* Opens the Gallery's "Add Video" popup (its markup lives on this page,
+       its logic lives in script.js) with the recorded take already attached
+       to the file field, as if the user had picked it with the file input.
+       Returns false (and saves nothing) if the popup is missing from the
+       page, so a recording is never silently lost nor silently saved. */
+    function openRecordingInGalleryForm(blob, name, mimeType) {
+        if (typeof openUploadModal !== 'function') return false;
+        const fileInput = document.getElementById('galleryVideoUpload');
+        const titleInput = document.getElementById('newVideoTitle');
+        if (!fileInput || !titleInput) return false;
+
+        openUploadModal();   // resets the form and shows the popup first
+
+        const file = new File([blob], name, { type: mimeType });
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+
+        //const suggestedTitle = name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ').trim();
+        const suggestedTitle ='';
+        if (suggestedTitle) titleInput.value = suggestedTitle;
+
+        return true;
     }
 
     /* =========================================================

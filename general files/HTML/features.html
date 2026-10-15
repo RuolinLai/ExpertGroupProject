@@ -321,6 +321,108 @@
         </section>
     </div>
 
+
+    <!-- ==================== MUSE UPLOAD VIDEO POPUP ====================
+         Same popup as on the Gallery page (markup + logic in script.js).
+         Here it is opened by camera.js after a recording is stopped, with
+         the recorded take already attached to the file field, so the user
+         only has to fill in the title/category/description/progress and
+         click "Save Video" to add the take to the Gallery. -->
+    <div class="upload-modal" id="uploadModal" hidden>
+        <section class="upload-panel" id="uploadPanel" role="dialog" aria-modal="true" aria-labelledby="uploadTitle">
+            <!-- Popup Header -->
+            <div class="upload-modal-header">
+                <div class="upload-heading">
+                    <p class="gallery-eyebrow">YOUR DANCE ARCHIVE</p>
+                    <h2 id="uploadTitle">
+                        Add a <span class="gradient-text">Video</span>
+                    </h2>
+                    <p class="upload-subtitle">
+                        Every move has a story. Save yours.
+                    </p>
+                </div>
+
+                <button type="button" class="upload-close" id="closeUploadForm"
+                    aria-label="Close upload window">×</button>
+            </div>
+
+            <!-- Upload Form -->
+            <form id="galleryUploadForm">
+
+                <div class="upload-field">
+                    <label for="newVideoTitle">
+                        Video title <span class="required-star">*</span>
+                    </label>
+                    <input type="text" id="newVideoTitle" name="title" maxlength="100"
+                        placeholder="e.g. Contemporary practice" autocomplete="off" required>
+                </div>
+
+                <div class="upload-field">
+                    <label for="newVideoCategory">Dance category</label>
+                    <select id="newVideoCategory" name="category">
+                        <option value="" selected>Choose a category</option>
+                        <option value="practice">Practice</option>
+                        <option value="performance">Performance</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="upload-field">
+                    <label for="newVideoDescription">
+                        Description <span class="optional-label">OPTIONAL</span>
+                    </label>
+                    <textarea id="newVideoDescription" name="description" rows="3" maxlength="1000"
+                        placeholder="Describe your choreography, your goals, or anything you want to remember..."></textarea>
+                </div>
+
+                <div class="upload-field">
+                    <div class="upload-progress-heading">
+                        <label for="newVideoProgress">Dance progress</label>
+                        <strong id="newVideoProgressLabel">0%</strong>
+                    </div>
+                    <input type="range" id="newVideoProgress" name="progress" min="0" max="100" step="5" value="0">
+                    <div class="progress-range-labels">
+                        <span>Just started</span>
+                        <span>Mastered ✦</span>
+                    </div>
+                </div>
+
+
+                <!-- This popup is only opened by camera.js once a take has been
+                     recorded, so there is nothing for the user to pick: the file
+                     field is kept (camera.js attaches the recording to it and
+                     script.js reads it on save) but hidden, and it is not
+                     "required" because a hidden required control cannot be
+                     focused by the browser's own validation. -->
+                <div class="upload-field">
+                    <input type="file" id="galleryVideoUpload" name="video" accept="video/*" hidden>
+                    <p class="upload-hint">
+                        Your recording from the Live Pose Mirror is already attached.
+                    </p>
+                </div>
+
+                <!-- Status and Validation Messages -->
+                <p id="uploadMessage" role="status" aria-live="polite"></p>
+
+                <!-- Popup Actions -->
+                <div class="upload-form-actions">
+                    <button type="button" id="cancelUpload" class="upload-cancel">
+                        Cancel
+                    </button>
+
+                    <button type="submit" id="saveGalleryVideo" class="upload-save">
+                        Save Video <span aria-hidden="true">✦</span>
+                    </button>
+                </div>
+
+                <p class="upload-footer-note">
+                    YOUR JOURNEY. YOUR MOVEMENT. YOUR MUSE.
+                </p>
+            </form>
+        </section>
+    </div>
+
+
     <!-- MediaPipe is loaded by camera.js (webcam) and pose-sync.js (practice video),
          both from the jsDelivr CDN, so there is no inline MediaPipe script here. -->
 
