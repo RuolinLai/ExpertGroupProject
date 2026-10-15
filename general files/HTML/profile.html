@@ -45,7 +45,6 @@
         </nav>
     </header>
 
-
     <main class="profile-page">
         <div class="profile-glow profile-glow-pink" aria-hidden="true"></div>
         <div class="profile-glow profile-glow-purple" aria-hidden="true"></div>
@@ -94,6 +93,67 @@
 
             <p class="profile-status" id="profileStatus" role="status" aria-live="polite"></p>
         </section>
+
+        <!-- Statistics Section -->
+        <div class="muse-statistics-section">
+            <h2 class="stats-main-title">User Statistics & Performance</h2>
+
+            <div class="muse-stats-grid">
+                <div class="muse-stat-card">
+                    <span class="muse-stat-number" id="stat-learning-time">4.5 hrs</span>
+                    <span class="muse-stat-label">Learning Time</span>
+                </div>
+                <div class="muse-stat-card">
+                    <span class="muse-stat-number" id="stat-accuracy">94.2%</span>
+                    <span class="muse-stat-label">Avg. Accuracy</span>
+                </div>
+                <div class="muse-stat-card">
+                    <span class="muse-stat-number" id="stat-sessions">12</span>
+                    <span class="muse-stat-label">Recorded Sessions</span>
+                </div>
+                <div class="muse-stat-card">
+                    <span class="muse-stat-number">Top 10%</span>
+                    <span class="muse-stat-label">Global Rank</span>
+                </div>
+            </div>
+
+            <div class="muse-graphs-row">
+                <div class="muse-graph-card">
+                    <h3>Time Point Graph</h3>
+                    <div class="muse-graph-visual">
+                        <span>📈 Active on 7 recent days</span>
+                    </div>
+                </div>
+                <div class="muse-graph-card">
+                    <h3>User Growth Graph</h3>
+                    <div class="muse-graph-visual">
+                        <span>🚀 Accuracy +12% this week</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="muse-heatmap-card">
+                <h3>🔥 Trending HeatMaps: Top 3 Trends</h3>
+                <div class="muse-heatmap-items">
+                    <div class="muse-trend-row">
+                        <span class="muse-trend-rank">#1</span>
+                        <span class="muse-trend-name">Hip-Hop Sync & Beats</span>
+                        <span class="muse-trend-badge">98% Hot</span>
+                    </div>
+                    <div class="muse-trend-row">
+                        <span class="muse-trend-rank">#2</span>
+                        <span class="muse-trend-name">Contemporary Flow</span>
+                        <span class="muse-trend-badge">85% Hot</span>
+                    </div>
+                    <div class="muse-trend-row">
+                        <span class="muse-trend-rank">#3</span>
+                        <span class="muse-trend-name">Classical Piano Rhythm</span>
+                        <span class="muse-trend-badge">72% Hot</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <p class="profile-footer">Small steps. Every day. <span aria-hidden="true">✦</span></p>
     </main>
 
@@ -109,72 +169,93 @@
         </div>
     </dialog>
 
-    <!-- Shared script records one visit per local calendar day on every MUSE page. -->
+    <!-- ============================================================ -->
+    <!--          AI CHATBOT SIDE PANEL & TRIGGER BUTTON              -->
+    <!-- ============================================================ -->
+    
+    <!-- Floating Side Toggle Button -->
+    <button id="toggle-chat-btn" class="chat-trigger-btn">
+        💬 <span>Ask MUSE AI</span>
+    </button>
+
+    <!-- Sliding Collapsible Side Panel -->
+    <div id="side-chat-panel" class="side-panel">
+        <div class="panel-header">
+            <h3>⚡ MUSE AI Assistant</h3>
+            <button id="close-chat-btn" class="close-btn" type="button">&times;</button>
+        </div>
+
+        <div id="chat-box" class="chat-box">
+            <div class="message ai-message">Hello! I'm your MUSE assistant. Ask me anything about your dance progress or stats!</div>
+        </div>
+
+        <form id="chat-form" class="chat-input-area">
+            <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" required />
+            <button type="submit" id="send-btn">Send</button>
+        </form>
+    </div>
+
+    <!-- Scripts -->
     <script src="../js/script.js"></script>
     <script src="../js/profile.js"></script>
 
+    <!-- Chatbot Toggle and API Script -->
+    <script>
+        const sidePanel = document.getElementById('side-chat-panel');
+        const toggleBtn = document.getElementById('toggle-chat-btn');
+        const closeBtn = document.getElementById('close-chat-btn');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatBox = document.getElementById('chat-box');
+
+        // Open & Close Side Panel
+        toggleBtn.addEventListener('click', () => {
+            sidePanel.classList.toggle('open');
+        });
+
+        closeBtn.addEventListener('click', () => {
+            sidePanel.classList.remove('open');
+        });
+
+        function appendMessage(text, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'ai-message');
+            msgDiv.textContent = text;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Send Message to Backend API
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            appendMessage(message, 'user');
+            userInput.value = '';
+
+            const loadingDiv = document.createElement('div');
+            loadingDiv.classList.add('message', 'ai-message');
+            loadingDiv.textContent = 'Thinking...';
+            chatBox.appendChild(loadingDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                chatBox.removeChild(loadingDiv);
+                appendMessage(data.reply, 'ai');
+            } catch (err) {
+                chatBox.removeChild(loadingDiv);
+                appendMessage('Error reaching server.', 'ai');
+            }
+        });
+    </script>
 </body>
-<!-- Statistics Section (Add this inside your profile content area) -->
-<div class="muse-statistics-section">
-    <h2 class="stats-main-title">User Statistics & Performance</h2>
-
-    <!-- Accuracy Scores & Quick Metrics -->
-    <div class="muse-stats-grid">
-        <div class="muse-stat-card">
-            <span class="muse-stat-number" id="stat-learning-time">4.5 hrs</span>
-            <span class="muse-stat-label">Learning Time</span>
-        </div>
-        <div class="muse-stat-card">
-            <span class="muse-stat-number" id="stat-accuracy">94.2%</span>
-            <span class="muse-stat-label">Avg. Accuracy</span>
-        </div>
-        <div class="muse-stat-card">
-            <span class="muse-stat-number" id="stat-sessions">12</span>
-            <span class="muse-stat-label">Recorded Sessions</span>
-        </div>
-        <div class="muse-stat-card">
-            <span class="muse-stat-number">Top 10%</span>
-            <span class="muse-stat-label">Global Rank</span>
-        </div>
-    </div>
-
-    <!-- Time Point & User Growth Graphs -->
-    <div class="muse-graphs-row">
-        <div class="muse-graph-card">
-            <h3>Time Point Graph</h3>
-            <div class="muse-graph-visual">
-                <span>📈 Active on 7 recent days</span>
-            </div>
-        </div>
-        <div class="muse-graph-card">
-            <h3>User Growth Graph</h3>
-            <div class="muse-graph-visual">
-                <span>🚀 Accuracy +12% this week</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Trending HeatMaps: Top 3 Trends -->
-    <div class="muse-heatmap-card">
-        <h3>🔥 Trending HeatMaps: Top 3 Trends</h3>
-        <div class="muse-heatmap-items">
-            <div class="muse-trend-row">
-                <span class="muse-trend-rank">#1</span>
-                <span class="muse-trend-name">Hip-Hop Sync & Beats</span>
-                <span class="muse-trend-badge">98% Hot</span>
-            </div>
-            <div class="muse-trend-row">
-                <span class="muse-trend-rank">#2</span>
-                <span class="muse-trend-name">Contemporary Flow</span>
-                <span class="muse-trend-badge">85% Hot</span>
-            </div>
-            <div class="muse-trend-row">
-                <span class="muse-trend-rank">#3</span>
-                <span class="muse-trend-name">Classical Piano Rhythm</span>
-                <span class="muse-trend-badge">72% Hot</span>
-            </div>
-        </div>
-    </div>
-</div>
 
 </html>
