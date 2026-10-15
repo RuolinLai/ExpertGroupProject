@@ -4676,36 +4676,38 @@ body:has(.profile-avatar-dialog[open]) {
 }
 
 /* =========================================================
-   13. MUSE AI CHATBOT 
+   13. MUSE AI CHATBOT (True Black + Pink-to-Blue Gradient)
    ========================================================= */
 
-/* Floating Trigger Button */
+/* Floating Trigger Button with Pink-to-Blue Gradient Border */
 .chat-trigger-btn {
   position: fixed;
   bottom: 30px;
   right: 30px;
   padding: 14px 24px;
   border-radius: 30px;
-  color: #1a1024;
-  font-weight: 700;
+  color: #ffffff;
+  font-weight: 600;
   font-size: 0.95rem;
-  background: linear-gradient(90deg, var(--pink), var(--purple));
+  background: rgba(20, 20, 20, 0.9);
+  backdrop-filter: blur(12px);
   cursor: pointer;
-  border: none;
-  box-shadow: 0 10px 25px rgba(248, 184, 216, 0.25);
+  border: 1px solid rgba(248, 184, 216, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   gap: 10px;
   z-index: 999;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .chat-trigger-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 15px 30px rgba(196, 176, 255, 0.35);
+  border-color: #a0c4ff;
+  box-shadow: 0 15px 30px rgba(160, 196, 255, 0.2);
 }
 
-/* Sliding Collapsible Side Panel */
+/* Sliding Collapsible Side Panel - Pure Black */
 .side-panel {
   position: fixed;
   top: 0;
@@ -4713,14 +4715,13 @@ body:has(.profile-avatar-dialog[open]) {
   width: 400px;
   max-width: 100vw;
   height: 100vh;
-  background: linear-gradient(145deg, rgba(26, 16, 36, 0.95), rgba(15, 10, 22, 0.98));
-  backdrop-filter: blur(20px);
-  border-left: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: -20px 0 50px rgba(0, 0, 0, 0.6);
+  background: #000000;
+  backdrop-filter: blur(25px);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: -20px 0 50px rgba(0, 0, 0, 0.8);
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
-  /* Hidden off-screen */
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 1000;
 }
@@ -4730,43 +4731,44 @@ body:has(.profile-avatar-dialog[open]) {
   transform: translateX(0);
 }
 
-/* Panel Header */
+/* Panel Header with Pink-to-Blue Gradient Title */
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 24px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #000000;
 }
 
 .panel-header h3 {
   font-size: 1.15rem;
   font-weight: 600;
-  background: linear-gradient(135deg, var(--pink), var(--purple));
+  background: linear-gradient(135deg, #f8b8d8, #a0c4ff);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  letter-spacing: 0.3px;
 }
 
 .close-btn {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   cursor: pointer;
   transition: 0.3s ease;
 }
 
 .close-btn:hover {
   color: #fff;
-  background: linear-gradient(90deg, var(--pink), var(--purple));
-  border-color: transparent;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Chat Messages Container */
@@ -4777,36 +4779,35 @@ body:has(.profile-avatar-dialog[open]) {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background: #000000;
 }
 
 .message {
   max-width: 85%;
   padding: 14px 18px;
-  border-radius: 20px;
+  border-radius: 16px;
   font-size: 0.88rem;
-  line-height: 1.6;
+  line-height: 1.5;
   white-space: pre-wrap;
-  backdrop-filter: blur(10px);
 }
 
 /* User Message Bubble */
 .user-message {
   align-self: flex-end;
-  background: linear-gradient(90deg, var(--pink), var(--purple));
-  color: #1a1024;
-  font-weight: 500;
-  border-bottom-right-radius: 6px;
-  box-shadow: 0 4px 15px rgba(248, 184, 216, 0.15);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-weight: 400;
+  border-bottom-right-radius: 4px;
 }
 
-/* AI Message Bubble (Frosted Glass with Clear Contrast) */
+/* AI Message Bubble */
 .ai-message {
   align-self: flex-start;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.9);
-  border-bottom-left-radius: 6px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border-bottom-left-radius: 4px;
 }
 
 /* Bottom Input Form Area */
@@ -4814,16 +4815,16 @@ body:has(.profile-avatar-dialog[open]) {
   display: flex;
   padding: 18px 20px;
   gap: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(15, 10, 22, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #000000;
 }
 
 .chat-input-area input {
   flex: 1;
   padding: 12px 18px;
-  border-radius: 30px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   outline: none;
   color: #fff;
   font-size: 0.9rem;
@@ -4831,18 +4832,19 @@ body:has(.profile-avatar-dialog[open]) {
 }
 
 .chat-input-area input:focus {
-  border-color: var(--purple);
-  box-shadow: 0 0 20px rgba(196, 176, 255, 0.15);
+  border-color: #a0c4ff;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .chat-input-area input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.35);
 }
 
+/* Submit Button with Pink-to-Blue Gradient */
 .chat-input-area button[type="submit"] {
   padding: 10px 22px;
-  border-radius: 30px;
-  background: linear-gradient(90deg, var(--pink), var(--purple));
+  border-radius: 24px;
+  background: linear-gradient(135deg, #f8b8d8, #a0c4ff);
   color: #1a1024;
   font-weight: 600;
   font-size: 0.85rem;
@@ -4852,8 +4854,8 @@ body:has(.profile-avatar-dialog[open]) {
 }
 
 .chat-input-area button[type="submit"]:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(248, 184, 216, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(160, 196, 255, 0.3);
 }
 
 /* Responsive adjustment for small screens */

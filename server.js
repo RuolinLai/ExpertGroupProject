@@ -4,6 +4,7 @@
    The Groq API key lives only here (in .env), never in the browser. */
 const path = require('path');
 const express = require('express');
+const cors = require('cors'); // Required to allow frontend at port 5500 to talk to backend at port 3000
 
 try { process.loadEnvFile(path.join(__dirname, '.env')); }
 catch (error) { /* No .env file: fall back to real environment variables. */ }
@@ -16,6 +17,13 @@ const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MAX_MESSAGE_CHARACTERS = 1000;
 const MAX_HISTORY_MESSAGES = 12;
 const MAX_STATS_CHARACTERS = 8000;
+
+const app = express();
+
+// Middleware setup
+app.use(cors()); // Enable CORS for all routes (connects Live Server to your backend)
+app.use(express.json()); // Essential for reading JSON body data from frontend requests
+app.use(express.json({ limit: '50kb' }));
 
 const SYSTEM_PROMPT = `You are MUSE AI, the friendly assistant inside MUSE, a website where people
 practise dance with their camera, get live pose and sync scores, and keep their
@@ -36,9 +44,7 @@ How to answer:
 - If asked about something unrelated to dance, practice or MUSE, answer briefly and
   kindly steer back.`;
 
-const app = express();
-app.use(express.json({ limit: '50kb' }));
-
+  
 // Only the website folders are public; server.js, .env and package files are not.
 const root = __dirname;
 app.use('/general%20files', express.static(path.join(root, 'general files')));
