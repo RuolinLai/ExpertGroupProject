@@ -12,7 +12,7 @@
     <link rel="preload" href="../../assets/fonts/poppins-500.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="../../assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="../../assets/fonts/poppins-700.ttf" as="font" type="font/ttf" crossorigin>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../CSS/style.css">
 
 </head>
 
@@ -121,13 +121,13 @@
                 <div class="muse-graph-card">
                     <h3>Time Point Graph</h3>
                     <div class="muse-graph-visual">
-                        <span>📈 Active on 7 recent days</span>
+                        <span id="time-point-summary">📈 Active on 7 recent days</span>
                     </div>
                 </div>
                 <div class="muse-graph-card">
                     <h3>User Growth Graph</h3>
                     <div class="muse-graph-visual">
-                        <span>🚀 Accuracy +12% this week</span>
+                        <span id="growth-summary">🚀 Accuracy +12% this week</span>
                     </div>
                 </div>
             </div>
@@ -196,66 +196,10 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../js/script.js"></script>
-    <script src="../js/profile.js"></script>
+    <script src="../JS/script.js"></script>
+    <script src="../JS/profile.js"></script>
 
-    <!-- Chatbot Toggle and API Script -->
-    <script>
-        const sidePanel = document.getElementById('side-chat-panel');
-        const toggleBtn = document.getElementById('toggle-chat-btn');
-        const closeBtn = document.getElementById('close-chat-btn');
-        const chatForm = document.getElementById('chat-form');
-        const userInput = document.getElementById('user-input');
-        const chatBox = document.getElementById('chat-box');
-
-        // Open & Close Side Panel
-        toggleBtn.addEventListener('click', () => {
-            sidePanel.classList.toggle('open');
-        });
-
-        closeBtn.addEventListener('click', () => {
-            sidePanel.classList.remove('open');
-        });
-
-        function appendMessage(text, sender) {
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'ai-message');
-            msgDiv.textContent = text;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Send Message to Backend API
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const message = userInput.value.trim();
-            if (!message) return;
-
-            appendMessage(message, 'user');
-            userInput.value = '';
-
-            const loadingDiv = document.createElement('div');
-            loadingDiv.classList.add('message', 'ai-message');
-            loadingDiv.textContent = 'Thinking...';
-            chatBox.appendChild(loadingDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            try {
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
-                });
-
-                const data = await response.json();
-                chatBox.removeChild(loadingDiv);
-                appendMessage(data.reply, 'ai');
-            } catch (err) {
-                chatBox.removeChild(loadingDiv);
-                appendMessage('Error reaching server.', 'ai');
-            }
-        });
-    </script>
+    <script src="../JS/chat.js"></script>
 </body>
 
 </html>

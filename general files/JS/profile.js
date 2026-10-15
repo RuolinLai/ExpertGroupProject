@@ -160,33 +160,55 @@
             renderAvatar();
         } catch (error) { /* Ignore malformed data from other tabs. */ }
     });
-    // profile.js - Pulls exact, real-time metrics without fake fallbacks
 
-document.addEventListener("DOMContentLoaded", () => {
-    loadAccurateAppStats();
-});
+    /* Stats come from the sessions saved with "Save session" on the Features
+       page (pose-sync.js stores them under muse.syncHistory, scores 0-1). */
+    const SYNC_HISTORY_KEY = 'muse.syncHistory';
+    const percent = value => (value * 100).toFixed(1) + '%';
 
-function loadAccurateAppStats() {
-    // 1. Get exact number of recorded sessions from gallery storage (0 if none exist)
-    const galleryVideos = JSON.parse(localStorage.getItem('museGalleryVideos')) || [];
-    const sessionCount = galleryVideos.length; // Will be 0 if empty!
-    document.getElementById("stat-sessions").textContent = sessionCount;
-
-    // 2. Calculate learning time accurately based on actual sessions (0 hrs if no sessions)
-    const calculatedHours = (sessionCount * 0.4).toFixed(1); 
-    document.getElementById("stat-learning-time").textContent = `${calculatedHours} hrs`;
-
-    // 3. Sync streak count (defaults to 1 for today if not set)
-    const streak = localStorage.getItem('userStreak') || "1";
-    document.getElementById("streak-days").textContent = streak;
-
-    // 4. Update graph summaries dynamically based on real activity
-    if (sessionCount === 0) {
-        document.getElementById("time-point-summary").textContent = `📈 Start recording to track days`;
-        document.getElementById("growth-summary").textContent = `🚀 Complete a session to see progress`;
-    } else {
-        document.getElementById("time-point-summary").textContent = `📈 Active across ${sessionCount} sessions`;
-        document.getElementById("growth-summary").textContent = `🚀 Great consistency this week`;
+    function readSessions() {
+        try {
+            const sessions = JSON.parse(localStorage.getItem(SYNC_HISTORY_KEY)) || [];
+            return Array.isArray(sessions) ? sessions.filter(session => typeof session.avg === 'number') : [];
+        } catch (error) { return []; }
     }
-}
+
+    function setText(id, text) {
+        const element = document.getElementById(id);
+        if (element) element.textContent = text;
+    }
+
+    function renderStats() {
+        const sessions = readSessions();
+        const totalSeconds = sessions.reduce((sum, session) => sum + (session.secs || 0), 0);
+        setText('stat-sessions', sessions.length);
+        setText('stat-learning-time', `${(totalSeconds / 3600).toFixed(1)} hrs`);
+
+        if (!sessions.length) {
+            setText('stat-accuracy', '0%');
+            setText('time-point-summary', '📈 Start recording to track days');
+            setText('growth-summary', '🚀 Complete a session to see progress');
+            return;
+        }
+        const average = sessions.reduce((sum, session) => sum + session.avg, 0) / sessions.length;
+        setText('stat-accuracy', percent(average));
+
+        const weekAgo = Date.now() - 7 * 86400000;
+        const activeDays = new Set(sessions.filter(session => session.date >= weekAgo)
+            .map(session => new Date(session.date).toDateString())).size;
+        setText('time-point-summary', `📈 Active on ${activeDays} recent day${activeDays === 1 ? '' : 's'}`);
+
+        if (sessions.length === 1) {
+            setText('growth-summary', '🚀 Save another session to see growth');
+        } else {
+            const change = Math.round((sessions[sessions.length - 1].avg - sessions[0].avg) * 100);
+            setText('growth-summary', `🚀 Accuracy ${change >= 0 ? '+' : ''}${change}% since first session`);
+        }
+    }
+
+    renderStats();
+    window.addEventListener('storage', event => {
+        if (event.key === SYNC_HISTORY_KEY || event.key === null) renderStats();
+    });
+    window.addEventListener('pageshow', renderStats);
 })();

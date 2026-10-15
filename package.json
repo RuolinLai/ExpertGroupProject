@@ -1,0 +1,16 @@
+{
+  "name": "muse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MUSE website and the Ask MUSE AI chat server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=21.7"
+  },
+  "dependencies": {
+    "express": "^4.22.3"
+  }
+}
