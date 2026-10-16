@@ -145,29 +145,9 @@ body {
   overflow-x: hidden;
 }
 
-/* Browser-native cross-page fade; ordinary navigation is the fallback. */
+/* Keep page navigation immediate while auth-dependent UI is restored. */
 @view-transition {
-  navigation: auto;
-}
-
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 160ms;
-  animation-timing-function: ease-out;
-}
-
-::view-transition-group(muse-navigation) {
-  animation: none;
-}
-
-::view-transition-old(muse-navigation) {
-  animation: none;
-  opacity: 0;
-}
-
-::view-transition-new(muse-navigation) {
-  animation: none;
-  opacity: 1;
+  navigation: none;
 }
 
 
@@ -185,10 +165,6 @@ header {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-body>header {
-  view-transition-name: muse-navigation;
 }
 
 /* Logo gradient */
@@ -267,6 +243,17 @@ body>header>nav.navbar .nav-menu .nav-account-link {
   place-items: center;
   border-radius: 50%;
   overflow: hidden;
+}
+
+html.auth-cached #account-nav-link {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  padding: 4px;
+  place-items: center;
+  border-radius: 50%;
+  overflow: hidden;
+  visibility: hidden;
 }
 
 .nav-account-avatar {

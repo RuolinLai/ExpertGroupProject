@@ -15,6 +15,13 @@
     <link rel="preload" href="../../assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="../../assets/fonts/poppins-700.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="../CSS/style.css">
+    <script>
+        try {
+            if (localStorage.getItem("muse.authenticated.v1") === "true") {
+                document.documentElement.classList.add("auth-cached");
+            }
+        } catch {}
+    </script>
 </head>
 
 <body>
@@ -47,6 +54,7 @@
             </ul>
         </nav>
     </header>
+    <script src="../JS/auth-bootstrap.js"></script>
 
 
     <!-- ==================== GALLERY PAGE ==================== -->

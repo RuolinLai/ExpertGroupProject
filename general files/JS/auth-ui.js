@@ -70,7 +70,18 @@ function renderAccountLink(user) {
 }
 
 onAuthStateChanged(auth, (user) => {
+    try {
+        if (user) {
+            localStorage.setItem("muse.authenticated.v1", "true");
+        } else {
+            localStorage.removeItem("muse.authenticated.v1");
+        }
+    } catch (error) {
+        // Authentication remains available when browser storage is disabled.
+    }
+
     renderAccountLink(user);
+    document.documentElement.classList.remove("auth-cached");
 
     if (profilePage) {
         if (!user) {
