@@ -793,6 +793,26 @@ html.auth-pending body {
   aspect-ratio: 21 / 9;
 }
 
+/* Real screenshots: framed like the placeholder, cropped from the top so headings stay visible. */
+.shot-img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.shot.big .shot-img {
+  aspect-ratio: 21 / 9;
+}
+
+/* The two smaller cards share one shape so the row lines up, placeholder included. */
+#features .shot:not(.big) .shot-img,
+#features .shot:not(.big) .media-slot {
+  aspect-ratio: 13 / 12;
+}
+
 .shot-bar {
   display: flex;
   gap: 7px;
@@ -1038,6 +1058,11 @@ html.auth-pending body {
 
   .shot.big .media-slot {
     aspect-ratio: 16 / 10;
+  }
+
+  /* On phones the wide screenshot shows in full instead of being cropped. */
+  .shot.big .shot-img {
+    aspect-ratio: auto;
   }
 
   .review {
