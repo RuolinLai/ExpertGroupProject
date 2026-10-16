@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="auth-pending">
 
 <head>
     <meta charset="UTF-8">
@@ -13,6 +13,13 @@
     <link rel="preload" href="../../assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="../../assets/fonts/poppins-700.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="../CSS/style.css">
+    <script>
+        try {
+            if (localStorage.getItem("muse.authenticated.v1") === "true") {
+                document.documentElement.classList.add("auth-cached");
+            }
+        } catch {}
+    </script>
 
 </head>
 
@@ -27,9 +34,6 @@
                     <a href="index.html" class="nav-link">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a href="profile.html" class="nav-link" aria-current="page">Profile</a>
-                </li>
-                <li class="nav-item">
                     <a href="features.html" id="dance-nav-link" class="nav-link">Features</a>
                 </li>
                 <li class="nav-item">
@@ -39,11 +43,12 @@
                     <a href="index.html#about-project" class="nav-link">About Us</a>
                 </li>
                 <li class="nav-item">
-                    <a href="login.html" class="nav-link">Sign In</a>
+                    <a href="login.html" id="account-nav-link" class="nav-link">Sign In</a>
                 </li>
             </ul>
         </nav>
     </header>
+    <script src="../JS/auth-bootstrap.js"></script>
 
     <main class="profile-page">
         <div class="profile-glow profile-glow-pink" aria-hidden="true"></div>
@@ -97,7 +102,7 @@
         <!-- Statistics Section -->
     
         <div class="muse-statistics-section">
-            <h2 class="stats-main-title">User Statistics & Performance</h2>
+            <h2 class="stats-main-title">✦ User Statistics & Performance</h2>
 
             <div class="muse-stats-grid">
                 <div class="muse-stat-card">
@@ -130,22 +135,42 @@
 
             <div class="muse-graphs-row">
                 <div class="muse-graph-card">
-                    <h3>Practice This Week</h3>
+                    <h3>✦ Practice This Week</h3>
                     <div class="muse-graph-visual" id="week-graph" aria-label="Minutes practised per day over the last 7 days"></div>
                     <p class="muse-stat-note" id="time-point-summary">Start recording to track days</p>
                 </div>
                 <div class="muse-graph-card">
-                    <h3>Accuracy Growth</h3>
-                    <div class="muse-graph-visual" id="growth-graph" aria-label="Accuracy of your recent sessions"></div>
-                    <p class="muse-stat-note" id="growth-summary">Complete a session to see progress</p>
+                    <h3>User Growth Graph</h3>
+                    <div class="muse-graph-visual">
+                        <span id="growth-summary">🚀 Accuracy +12% this week</span>
+                    </div>
                 </div>
             </div>
 
-      
-
-            
+            <div class="muse-heatmap-card">
+                <h3>🔥 Trending HeatMaps: Top 3 Trends</h3>
+                <div class="muse-heatmap-items">
+                    <div class="muse-trend-row">
+                        <span class="muse-trend-rank">#1</span>
+                        <span class="muse-trend-name">Hip-Hop Sync & Beats</span>
+                        <span class="muse-trend-badge">98% Hot</span>
+                    </div>
+                    <div class="muse-trend-row">
+                        <span class="muse-trend-rank">#2</span>
+                        <span class="muse-trend-name">Contemporary Flow</span>
+                        <span class="muse-trend-badge">85% Hot</span>
+                    </div>
+                    <div class="muse-trend-row">
+                        <span class="muse-trend-rank">#3</span>
+                        <span class="muse-trend-name">Classical Piano Rhythm</span>
+                        <span class="muse-trend-badge">72% Hot</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <p class="profile-footer">Small steps. Every day. <span aria-hidden="true">✦</span></p>
+        <button id="profile-logout-button" class="profile-logout-button" type="button">Log out</button>
     </main>
 
     <dialog class="profile-avatar-dialog" id="avatarDialog" aria-labelledby="avatarDialogTitle">
@@ -172,7 +197,7 @@
     <!-- Sliding Collapsible Side Panel -->
     <div id="side-chat-panel" class="side-panel">
         <div class="panel-header">
-            <h3>⚡ MUSE AI Assistant</h3>
+            <h3> MUSE AI Assistant</h3>
             <button id="close-chat-btn" class="close-btn" type="button">&times;</button>
         </div>
 
@@ -191,6 +216,7 @@
     <script src="../JS/profile.js"></script>
 
     <script src="../JS/chat.js"></script>
+    <script type="module" src="../JS/auth-ui.js"></script>
 </body>
 </html>
 

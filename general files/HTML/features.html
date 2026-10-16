@@ -12,6 +12,13 @@
     <link rel="preload" href="../../assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="../../assets/fonts/poppins-700.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="../CSS/style.css">
+    <script>
+        try {
+            if (localStorage.getItem("muse.authenticated.v1") === "true") {
+                document.documentElement.classList.add("auth-cached");
+            }
+        } catch {}
+    </script>
 </head>
 
 <body>
@@ -25,9 +32,6 @@
                     <a href="index.html" class="nav-link">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a href="profile.html" class="nav-link">Profile</a>
-                </li>
-                <li class="nav-item">
                     <a href="features.html" id="dance-nav-link" class="nav-link" aria-current="page">Features</a>
                 </li>
                 <li class="nav-item">
@@ -37,11 +41,12 @@
                     <a href="index.html#about-project" class="nav-link">About Us</a>
                 </li>
                 <li class="nav-item">
-                    <a href="login.html" class="nav-link">Sign In</a>
+                    <a href="login.html" id="account-nav-link" class="nav-link">Sign In</a>
                 </li>
             </ul>
         </nav>
     </header>
+    <script src="../JS/auth-bootstrap.js"></script>
 
 
     <!-- ================= DANCE STUDIO PAGE ==================== -->
@@ -227,10 +232,10 @@
             <div class="dance-bottom">
 
 
-                <!-- AI SYNCHRONIZATION ANALYZER -->
+                <!-- SYNCHRONIZATION ANALYZER -->
                 <article class="shot"
                     style="padding: 32px; background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(14px); border-radius: 24px;">
-                    <h3 style="font-size: 1.35rem; margin-bottom: 8px; color: #fff;">✦ AI Synchronization Analyzer</h3>
+                    <h3 style="font-size: 1.35rem; margin-bottom: 8px; color: #fff;">✦ Synchronization Analyzer</h3>
                     <p style="font-size: 0.9rem; color: rgba(255,255,255,0.65); margin-bottom: 22px;">Frame-by-frame
                         beat synchronization, keypoint alignment, and rhythm precision metrics.</p>
 
@@ -437,6 +442,7 @@
 
     <!-- Skeleton on the practice video + AI Synchronization Analyzer -->
     <script src="../JS/pose-sync.js"></script>
+    <script type="module" src="../JS/auth-ui.js"></script>
 
 </body>
 

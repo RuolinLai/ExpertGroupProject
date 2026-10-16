@@ -8,10 +8,8 @@ import {
     getAuth,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    signOut,
     sendPasswordResetEmail,
     onAuthStateChanged,
-    updateProfile,
     GoogleAuthProvider,
     signInWithPopup
 } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
@@ -48,14 +46,13 @@ const signUpForm = document.getElementById("sign-up-form");
 const signedInPanel = document.getElementById("signed-in-panel");
 const welcomeMessage = document.getElementById("welcome-message");
 const authMessage = document.getElementById("auth-message");
+const signInCredentialError = document.getElementById("sign-in-credential-error");
 
 const showSignUpButton = document.getElementById("show-sign-up");
 const showSignInButton = document.getElementById("show-sign-in");
 
 const resetPasswordButton =
     document.getElementById("reset-password-button");
-
-const logoutButton = document.getElementById("logout-button");
 
 const googleSignInButton =
     document.getElementById("google-sign-in-btn");
@@ -67,14 +64,19 @@ const googleSignUpButton =
    MESSAGE HANDLING
    ========================================================= */
 
-function showMessage(message) {
+function showMessage(message, isError = false) {
     if (authMessage) {
         authMessage.textContent = message;
+        authMessage.classList.toggle("is-error", isError);
     }
 }
 
 function clearMessage() {
     showMessage("");
+    if (signInCredentialError) {
+        signInCredentialError.textContent = "";
+        signInCredentialError.hidden = true;
+    }
 }
 
 function friendlyError(error) {
@@ -89,9 +91,10 @@ function friendlyError(error) {
             return "Your password is too weak. Please choose a stronger password.";
 
         case "auth/invalid-credential":
+        case "auth/invalid-login-credentials":
         case "auth/wrong-password":
         case "auth/user-not-found":
-            return "Your email or password is incorrect.";
+            return "Your email and password don't match an account.";
 
         case "auth/too-many-requests":
             return "Too many attempts. Please wait and try again.";
@@ -153,9 +156,6 @@ signUpForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     clearMessage();
 
-    const displayName =
-        document.getElementById("display-name")?.value.trim() || "";
-
     const email =
         document.getElementById("sign-up-email")?.value.trim() || "";
 
@@ -164,12 +164,6 @@ signUpForm?.addEventListener("submit", async (event) => {
 
     const confirmPassword =
         document.getElementById("confirm-password")?.value || "";
-
-    if (!displayName) {
-        showMessage("Please enter your display name.");
-        document.getElementById("display-name")?.focus();
-        return;
-    }
 
     if (password !== confirmPassword) {
         showMessage("Your passwords do not match.");
@@ -191,22 +185,12 @@ signUpForm?.addEventListener("submit", async (event) => {
     }
 
     try {
-        const credential = await createUserWithEmailAndPassword(
-            auth,
-            email,
-            password
-        );
-
-        await updateProfile(credential.user, {
-            displayName: displayName
-        });
+        await createUserWithEmailAndPassword(auth, email, password);
 
         signUpForm.reset();
 
-        showMessage("Your account has been created successfully!");
-
     } catch (error) {
-        showMessage(friendlyError(error));
+        showMessage(friendlyError(error), true);
 
     } finally {
         if (submitButton) {
@@ -242,10 +226,20 @@ signInForm?.addEventListener("submit", async (event) => {
 
         signInForm.reset();
 
-        showMessage("You have signed in successfully!");
-
     } catch (error) {
-        showMessage(friendlyError(error));
+        const invalidCredentialCodes = [
+            "auth/invalid-credential",
+            "auth/invalid-login-credentials",
+            "auth/wrong-password",
+            "auth/user-not-found"
+        ];
+
+        if (signInCredentialError && invalidCredentialCodes.includes(error.code)) {
+            signInCredentialError.textContent = friendlyError(error);
+            signInCredentialError.hidden = false;
+        } else {
+            showMessage(friendlyError(error), true);
+        }
 
     } finally {
         if (submitButton) {
@@ -323,26 +317,6 @@ resetPasswordButton?.addEventListener("click", async () => {
 
     } finally {
         resetPasswordButton.disabled = false;
-    }
-});
-
-/* =========================================================
-   SIGN OUT
-   ========================================================= */
-
-logoutButton?.addEventListener("click", async () => {
-    logoutButton.disabled = true;
-
-    try {
-        await signOut(auth);
-
-        showMessage("You have logged out successfully.");
-
-    } catch (error) {
-        showMessage(friendlyError(error));
-
-    } finally {
-        logoutButton.disabled = false;
     }
 });
 

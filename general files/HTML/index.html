@@ -13,9 +13,17 @@
     <link rel="preload" href="../../assets/fonts/poppins-600.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="preload" href="../../assets/fonts/poppins-700.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="../CSS/style.css">
+    <script>
+        try {
+            if (localStorage.getItem("muse.authenticated.v1") === "true") {
+                document.documentElement.classList.add("auth-cached");
+            }
+        } catch {}
+    </script>
 </head>
 
 <!-- Navigation -->
+
 <body>
 
     <header>
@@ -28,9 +36,6 @@
                     <a href="index.html" class="nav-link">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a href="profile.html" class="nav-link">Profile</a>
-                </li>
-                <li class="nav-item">
                     <a href="features.html" id="dance-nav-link" class="nav-link">Features</a>
                 </li>
                 <li class="nav-item">
@@ -40,11 +45,12 @@
                     <a href="index.html#about-project" class="nav-link">About Us</a>
                 </li>
                 <li class="nav-item">
-                    <a href="login.html" class="nav-link">Sign In</a>
+                    <a href="login.html" id="account-nav-link" class="nav-link">Sign In</a>
                 </li>
             </ul>
         </nav>
     </header>
+    <script src="../JS/auth-bootstrap.js"></script>
 
     <main class="hero">
         <!-- Background glow orbs -->
@@ -54,8 +60,8 @@
 
         <section class="hero-text">
             <p class="hero-sub">Where movement meets memory</p>
-            <h1 class="hero-title">Feel the <span class="shimmer">rhythm</span>,<br>capture every <span
-                    class="shimmer">moment</span></h1>
+            <h1 class="hero-title">Every step you <span class="shimmer">record</span>,<br>brings you closer to the dance you've <span
+                    class="shimmer">imagined</span></h1>
             <p class="hero-desc">Step into MUSE: a soft-lit space for dance and the pictures that remember it.</p>
         </section>
 
@@ -99,34 +105,37 @@
         <section class="block" id="features">
             <div class="block-head reveal">
                 <h2>Features <span class="shimmer">at a glance</span></h2>
-                <p>Screenshots of what you can do in MUSE.</p>
+                <p>Snapshots of what you can do with MUSE.</p>
             </div>
 
             <div class="shots">
-                <!-- To add a screenshot: replace the <div class="media-slot">...</div> with
-                     <img src="images/your-file.png" alt="Describe the screen"> -->
+                <!-- To add a screenshot: put the image in assets/screenshots/ and replace the
+                     <div class="media-slot">...</div> with
+                     <img class="shot-img" src="../../assets/screenshots/your-file.png" alt="Describe the screen"> -->
                 <figure class="shot big reveal">
                     <div class="shot-bar"><i></i><i></i><i></i></div>
-                    <div class="media-slot"><span>Feature screenshot 1</span></div>
+                    <img class="shot-img" src="../../assets/screenshots/Real-time-Performance-Analysis-and-track.png"
+                        alt="Practice page with the choreography video next to the Live Pose Mirror tracking a dancer at 94% sync">
                     <figcaption>
-                        <h4>Feature title</h4>
-                        <p>One short line about what this screen does.</p>
+                        <h4>Real-time Performance Analysis</h4>
+                        <p>Instant feedback to help you improve on the spot.</p>
                     </figcaption>
                 </figure>
                 <figure class="shot reveal d1">
                     <div class="shot-bar"><i></i><i></i><i></i></div>
-                    <div class="media-slot"><span>Feature screenshot 2</span></div>
+                    <img class="shot-img" src="../../assets/screenshots/Synchronization-analyzer.jpg"
+                        alt="Synchronization Analyzer showing a 93% session score, timing, align and energy scores, and a score-over-time chart">
                     <figcaption>
-                        <h4>Feature title</h4>
-                        <p>One short line about what this screen does.</p>
+                        <h4>Synchronization Analyzer</h4>
+                        <p>See exactly how in sync you were, beat by beat.</p>
                     </figcaption>
                 </figure>
                 <figure class="shot reveal d2">
                     <div class="shot-bar"><i></i><i></i><i></i></div>
-                    <div class="media-slot"><span>Feature screenshot 3</span></div>
+                    <div class="media-slot"><span>Statistics screenshot coming soon</span></div>
                     <figcaption>
-                        <h4>Feature title</h4>
-                        <p>One short line about what this screen does.</p>
+                        <h4>Statistics</h4>
+                        <p>A home for all the numbers that matter, so you can track your progress.</p>
                     </figcaption>
                 </figure>
             </div>
@@ -137,7 +146,7 @@
         <section class="block" id="demo">
             <div class="block-head reveal">
                 <h2>See it <span class="shimmer">in action</span></h2>
-                <p>A short walkthrough of the project.</p>
+                <p>A walkthrough of everything MUSE has to offer.</p>
             </div>
             <div class="demo reveal">
                 <!-- To add a video: replace the <div class="media-slot">...</div> with
@@ -154,28 +163,33 @@
         <!-- ============ DESCRIPTION ============ -->
         <section class="block about" id="about-project">
             <div class="about-text reveal">
-                <h2>About the <span class="shimmer">project</span></h2>
-                <p>Write your project description here: what MUSE is, who it is for and the problem it solves. Two or
-                    three short paragraphs work best.</p>
-                <p>Add a second paragraph about how it works or what makes it different.</p>
+                <h2>About <span class="shimmer">MUSE</span></h2>
+                <p>MUSE is an online coach for anyone and everyone who loves dance. It remembers yesterday's
+                    performance, enhances today's and prepares you for tomorrow's. </p>
+                <p>MUSE compares your movement to the choreography you are aiming to learn so you can improve your
+                    accuracy. With performance stats being recoreded, you can easily look back and see how far you've
+                    come as a dancer.</p>
             </div>
             <ul class="points">
                 <li class="reveal d1"><b>01</b>
                     <div>
-                        <h4>Highlight one</h4>
-                        <p>A short explanation of this point.</p>
+                        <h4>✦ Synchronization Analyzer</h4>
+                        <p>Align your routines effortlessly using video editing tools and an integrated metronome to
+                            refine your timing down to the exact beat.</p>
                     </div>
                 </li>
                 <li class="reveal d2"><b>02</b>
                     <div>
-                        <h4>Highlight two</h4>
-                        <p>A short explanation of this point.</p>
+                        <h4>✦ Media Gallery</h4>
+                        <p>Keep your dance videos organized in one place with custom filters and search options, making
+                            it fast and easy to navigate your library.</p>
                     </div>
                 </li>
                 <li class="reveal d3"><b>03</b>
                     <div>
-                        <h4>Highlight three</h4>
-                        <p>A short explanation of this point.</p>
+                        <h4>✦ Growth & Progress Statistics</h4>
+                        <p>Track your skill development over time through detailed visual stats that highlight your
+                            consistency, improvement, and milestones.</p>
                     </div>
                 </li>
             </ul>
@@ -192,38 +206,40 @@
                 <div class="track" id="track">
                     <!-- To add a review: copy one <article class="review"> block. Replace the avatar-slot with <img src="..."> if you have a photo. -->
                     <article class="review">
-                        <p>"Write a user review here. A sentence or two about how MUSE helped them."</p>
+                        <p>"Muse helped me go from no hand-eye coordination to a dancer master! 💃"</p>
                         <footer>
-                            <div class="avatar-slot">A</div>
+                            <div class="avatar-slot">K</div>
                             <div>
-                                <h5>User name</h5><span>Role or story title</span>
+                                <h5>Kermit</h5><span>Marketing Lead</span>
                             </div>
                         </footer>
                     </article>
                     <article class="review">
-                        <p>"Another review goes here. Keep it short and specific."</p>
+                        <p>"Muse is absolute cinema ✋🤚"</p>
                         <footer>
-                            <div class="avatar-slot">B</div>
+                            <div class="avatar-slot">M</div>
                             <div>
-                                <h5>User name</h5><span>Role or story title</span>
+                                <h5>Mame</h5><span>Lead Technical Developer</span>
                             </div>
                         </footer>
                     </article>
                     <article class="review">
-                        <p>"A success story: what changed for them after using MUSE?"</p>
-                        <footer>
-                            <div class="avatar-slot">C</div>
-                            <div>
-                                <h5>User name</h5><span>Role or story title</span>
-                            </div>
-                        </footer>
-                    </article>
-                    <article class="review">
-                        <p>"One more review so the loop feels full."</p>
+                        <p>"Excellent features and systems, highly recommended!"</p>
                         <footer>
                             <div class="avatar-slot">D</div>
                             <div>
-                                <h5>User name</h5><span>Role or story title</span>
+                                <h5>DelDel</h5><span>Leader & SWE</span>
+                            </div>
+                        </footer>
+                    </article>
+                    <article class="review">
+                        <p>"Using MUSE completely transformed how our dance group practices, helping us refine our
+                            movements and sync up routines in half the time while keeping everyone on the same page."
+                        </p>
+                        <footer>
+                            <div class="avatar-slot">M</div>
+                            <div>
+                                <h5>#1 MUSE-User</h5><span>Client</span>
                             </div>
                         </footer>
                     </article>
@@ -237,6 +253,7 @@
 
     <!-- LINKED JAVASCRIPT -->
     <script src="../JS/script.js"></script>
+    <script type="module" src="../JS/auth-ui.js"></script>
 
 </body>
 
