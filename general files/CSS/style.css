@@ -4276,143 +4276,206 @@ body:has(.profile-avatar-dialog[open]) {
   overflow: hidden;
 }
 
-/* ---------- Profile stats (Harshita) ---------- */
+/* ---------- Profile stats ---------- */
+/* Same glass cards, pastel tokens and bar style as the Analyzer card on the Features page. */
 
 .muse-statistics-section {
-    margin-top: 20px;
-    width: 100%;
-    color: #fff;
+  margin-top: 28px;
+  width: 100%;
+  color: #fff;
 }
 
 .stats-main-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #fff;
-    margin-bottom: 15px;
+  margin-bottom: 14px;
+  font-size: var(--font-size-m);
+  font-weight: var(--font-weight-semi-bold);
+  color: #fff;
 }
 
 .muse-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 15px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.muse-stat-card,
+.muse-breakdown-card,
+.muse-graph-card,
+.muse-heatmap-card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  backdrop-filter: blur(14px);
 }
 
 .muse-stat-card {
-    background: rgba(40, 40, 45, 0.7);
-    padding: 15px 10px;
-    border-radius: 12px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(10px);
+  padding: 16px 8px;
+  text-align: center;
+  transition: transform .2s ease, border-color .2s ease;
+}
+.muse-stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(196, 176, 255, 0.4);
 }
 
 .muse-stat-number {
-    display: block;
-    font-size: 16px;
-    font-weight: 700;
-    color: #a855f7; /* Vibrant purple matching theme accents */
-    margin-bottom: 4px;
+  display: block;
+  margin-bottom: 4px;
+  font-size: 1.15rem;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(120deg, var(--pink), var(--purple) 60%, var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .muse-stat-label {
-    font-size: 11px;
-    color: #a0a0a0;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.muse-breakdown-card,
+.muse-graph-card,
+.muse-heatmap-card {
+  padding: 16px;
+}
+.muse-breakdown-card { margin-bottom: 12px; }
+
+.muse-breakdown-card h3,
+.muse-graph-card h3,
+.muse-heatmap-card h3 {
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  font-weight: var(--font-weight-medium);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.muse-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.muse-bar-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+.muse-bar-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.muse-bar-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--purple), var(--pink));
+  transition: width .5s ease;
+}
+.muse-bar-val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+
+.muse-stat-note {
+  margin: 12px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .muse-graphs-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-.muse-graph-card {
-    background: rgba(40, 40, 45, 0.7);
-    padding: 12px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+
+
+.muse-mini-col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+.muse-mini-bar {
+  display: block;
+  width: 100%;
+  max-height: calc(100% - 16px);
+  border-radius: 4px 4px 0 0;
+  background: var(--purple);
+  transition: height .4s ease;
+}
+.muse-mini-bar.empty { background: rgba(255, 255, 255, 0.1); }
+.muse-mini-col:last-child .muse-mini-bar:not(.empty) { background: var(--pink); }
+.muse-mini-label {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.45);
 }
 
-.muse-graph-card h3 {
-    font-size: 13px;
-    color: #ccc;
-    margin-bottom: 8px;
+.muse-line {
+  fill: none;
+  stroke: var(--purple);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
 }
-
-.muse-graph-visual {
-    height: 65px;
-    background: rgba(20, 20, 25, 0.5);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    color: #c084fc;
-    font-weight: 600;
-    border: 1px dashed rgba(168, 85, 247, 0.3);
-}
-
-.muse-heatmap-card {
-    background: rgba(40, 40, 45, 0.7);
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.muse-heatmap-card h3 {
-    font-size: 13px;
-    color: #ccc;
-    margin-bottom: 10px;
-}
+.muse-line-area { fill: rgba(196, 176, 255, 0.12); stroke: none; }
+.muse-line-dot { fill: var(--pink); stroke: #120e18; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.muse-graph-empty { align-self: center; font-size: 0.78rem; color: rgba(255, 255, 255, 0.45); text-align: center; }
 
 .muse-heatmap-items {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .muse-trend-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(30, 30, 35, 0.6);
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 0.85rem;
 }
-
 .muse-trend-rank {
-    font-weight: 700;
-    color: #a855f7;
-    width: 25px;
+  width: 28px;
+  font-weight: var(--font-weight-bold);
+  color: var(--pink);
 }
-
 .muse-trend-name {
-    flex-grow: 1;
-    color: #e5e5e5;
-    font-weight: 500;
+  flex-grow: 1;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: var(--font-weight-medium);
 }
-
 .muse-trend-badge {
-    font-size: 11px;
-    background: rgba(168, 85, 247, 0.15);
-    color: #c084fc;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 600;
-    border: 1px solid rgba(168, 85, 247, 0.3);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--purple);
+  background: rgba(196, 176, 255, 0.12);
+  border: 1px solid rgba(196, 176, 255, 0.3);
 }
 
-/* Responsive adjustment */
 @media (max-width: 768px) {
-    .muse-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .muse-graphs-row {
-        grid-template-columns: 1fr;
-    }
+  .muse-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .muse-graphs-row { grid-template-columns: 1fr; }
 }
 
 /* ---------- Profile responsive ---------- */
@@ -4818,3 +4881,145 @@ body:has(.profile-avatar-dialog[open]) {
     width: 100vw;
   }
 }
+/* ============================================================ */
+/*                 MUSE STATISTICS & PERFORMANCE                */
+/* ============================================================ */
+
+.muse-statistics-section {
+    margin-top: 40px;
+    padding: 28px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+}
+
+.stats-main-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: #ffffff;
+    text-align: left;
+    letter-spacing: 0.5px;
+}
+
+/* --- Top Stat Cards Grid --- */
+.muse-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.muse-stat-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 22px 16px;
+    text-align: center;
+    transition: transform 0.25 ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.muse-stat-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(196, 176, 255, 0.4);
+    box-shadow: 0 10px 25px rgba(196, 176, 255, 0.12);
+}
+
+.muse-stat-number {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #f8b8d8;
+    margin-bottom: 6px;
+}
+
+.muse-stat-label {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.3;
+}
+
+/* --- Graphs Row --- */
+.muse-graphs-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.muse-graph-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 22px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 240px !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+.muse-graph-card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.muse-graph-card .muse-graph-visual {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  height: 84px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.muse-graph-card .muse-graph-visual svg { width: 100%; height: 100%; overflow: visible; }
+
+.muse-graph-card .muse-mini-col {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+.muse-mini-bar {
+  display: block;
+  width: 100%;
+  max-height: calc(100% - 16px);
+  border-radius: 4px 4px 0 0;
+  background: var(--purple);
+  transition: height .4s ease;
+}
+.muse-mini-bar.idle { background: rgba(255, 255, 255, 0.1); border: 0; }
+.muse-mini-col:last-child .muse-mini-bar:not(.idle) { background: var(--pink); }
+.muse-mini-label {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.muse-line {
+  fill: none;
+  stroke: var(--purple);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.muse-line-area { fill: rgba(196, 176, 255, 0.12); stroke: none; }
+.muse-line-dot { fill: none; stroke: var(--pink); stroke-width: 7; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.muse-graph-empty { align-self: center; font-size: 0.78rem; color: rgba(255, 255, 255, 0.45); text-align: center; }

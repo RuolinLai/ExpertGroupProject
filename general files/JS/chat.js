@@ -74,7 +74,7 @@
         return {
             username: profile.username || 'MUSE Dancer',
             visitStreak: streak ? { days: streak.count, lastVisit: streak.lastDate } : null,
-            savedSyncSessions: syncSessions.map(session => ({
+           savedSyncSessions: syncSessions.slice(-30).map(session => ({
                 date: new Date(session.date).toLocaleString(),
                 overall: percent(session.avg),
                 timing: percent(session.timing),

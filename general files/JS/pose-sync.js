@@ -1012,17 +1012,43 @@
     setInterval(syncRenderReport, 1000);
     addEventListener('resize', syncDrawChart);
 
+
+           /* Writes the current session into muse.syncHistory. The Profile page reads this same list to build
+       its statistics, so every saved session updates those numbers. Returns the saved entry (or null). */
+    const SYNC_HISTORY_MAX = 100;
+    function syncCommitSession(source) {
+        const a = syncAvg();
+        if (!a || sess.n < 20 || sess.saved) return null;
+        const entry = {
+            date: Date.now(), avg: a.overall, align: a.align, timing: a.timing, energy: a.energy, secs: a.secs,
+            source,                                                     // 'recording' (auto) or 'manual'
+            parts: a.parts.filter(p => p.v != null).map(p => ({ name: p.name, v: p.v }))
+        };
+        const hist = syncHistory();
+        hist.push(entry);
+        try { localStorage.setItem(SYNC_HISTORY_KEY, JSON.stringify(hist.slice(-SYNC_HISTORY_MAX))); }
+        catch (e) { return null; }
+        sess.saved = true;                                              // never count the same session twice
+        document.dispatchEvent(new CustomEvent('muse:statsupdate', { detail: entry }));
+        return entry;
+    }
+
     syncEl.save.addEventListener('click', () => {
         const a = syncAvg();
         if (!a || sess.n < 20) { syncEl.saveNote.textContent = 'Dance a bit longer first.'; return; }
-        const hist = syncHistory();
-        hist.push({ date: Date.now(), avg: a.overall, align: a.align, timing: a.timing, energy: a.energy, secs: a.secs });
-        try { localStorage.setItem(SYNC_HISTORY_KEY, JSON.stringify(hist.slice(-20))); } catch (e) { }
+        if (sess.saved) {                                               // already auto-saved after an analysis
+            sess = syncNewSession();
+            syncEl.saveNote.textContent = 'Already saved to your stats. New session started.';
+            syncRenderReport();
+            return;
+        }
+        const entry = syncCommitSession('manual');
+        if (!entry) { syncEl.saveNote.textContent = 'Could not save: this browser blocked storage.'; return; }
         syncEl.saveNote.textContent = 'Saved ' + syncPct(a.overall) + '. New session started.';
         sess = syncNewSession();
         syncRenderReport();
     });
-    syncEl.reset.addEventListener('click', () => {
+        syncEl.reset.addEventListener('click', () => {
         syncResetSession();
         syncEl.saveNote.textContent = '';
         syncRenderReport();
@@ -1248,10 +1274,13 @@
     function recFinish() {
         recStop();
         vpVideo.pause();
-        const a = syncAvg();
+               const a = syncAvg();
+        const saved = a && sess.n >= 20 ? syncCommitSession('recording') : null;   // update Profile stats automatically
         recSay(a && sess.n >= 20
-            ? 'Done! Your recording scored ' + syncPct(a.overall) + '. The full report is in the Analyzer card.'
+            ? 'Done! Your recording scored ' + syncPct(a.overall) + (saved ? ' and was added to your Profile stats.' : '.')
+                + ' The full report is in the Analyzer card.'
             : 'Done, but there was not enough to score (was your whole body in the recording?).');
+        if (saved) syncEl.saveNote.textContent = 'Saved automatically to your stats.';
         syncRenderReport();
     }
 

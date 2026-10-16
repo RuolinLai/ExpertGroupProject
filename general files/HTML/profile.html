@@ -91,68 +91,59 @@
                 <div class="profile-week" id="profileWeek" aria-label="Your visits over the last seven days"></div>
             </section>
 
-            <p class="profile-status" id="profileStatus" role="status" aria-live="polite"></p>
+           <p class="profile-status" id="profileStatus" role="status" aria-live="polite"></p>
         </section>
 
         <!-- Statistics Section -->
+    
         <div class="muse-statistics-section">
             <h2 class="stats-main-title">User Statistics & Performance</h2>
 
             <div class="muse-stats-grid">
                 <div class="muse-stat-card">
-                    <span class="muse-stat-number" id="stat-learning-time">4.5 hrs</span>
+                    <span class="muse-stat-number" id="stat-learning-time">0 min</span>
                     <span class="muse-stat-label">Learning Time</span>
                 </div>
                 <div class="muse-stat-card">
-                    <span class="muse-stat-number" id="stat-accuracy">94.2%</span>
+                    <span class="muse-stat-number" id="stat-accuracy">--</span>
                     <span class="muse-stat-label">Avg. Accuracy</span>
                 </div>
                 <div class="muse-stat-card">
-                    <span class="muse-stat-number" id="stat-sessions">12</span>
-                    <span class="muse-stat-label">Recorded Sessions</span>
+                    <span class="muse-stat-number" id="stat-sessions">0</span>
+                    <span class="muse-stat-label">Analyzed Sessions</span>
                 </div>
                 <div class="muse-stat-card">
-                    <span class="muse-stat-number">Top 10%</span>
-                    <span class="muse-stat-label">Global Rank</span>
+                    <span class="muse-stat-number" id="stat-best">--</span>
+                    <span class="muse-stat-label">Best Score</span>
                 </div>
+            </div>
+
+            <div class="muse-breakdown-card">
+                <h3>Average Breakdown</h3>
+                <div class="muse-breakdown" id="stat-breakdown">
+                    <div class="muse-bar-row"><span class="muse-bar-name">Timing</span><span class="muse-bar-track"><span class="muse-bar-fill" id="bar-timing"></span></span><span class="muse-bar-val" id="val-timing">--</span></div>
+                    <div class="muse-bar-row"><span class="muse-bar-name">Align</span><span class="muse-bar-track"><span class="muse-bar-fill" id="bar-align"></span></span><span class="muse-bar-val" id="val-align">--</span></div>
+                    <div class="muse-bar-row"><span class="muse-bar-name">Energy</span><span class="muse-bar-track"><span class="muse-bar-fill" id="bar-energy"></span></span><span class="muse-bar-val" id="val-energy">--</span></div>
+                </div>
+                <p class="muse-stat-note" id="stat-focus">Analyze a recording on the Features page to see your numbers here.</p>
             </div>
 
             <div class="muse-graphs-row">
                 <div class="muse-graph-card">
-                    <h3>Time Point Graph</h3>
-                    <div class="muse-graph-visual">
-                        <span id="time-point-summary">📈 Active on 7 recent days</span>
-                    </div>
+                    <h3>Practice This Week</h3>
+                    <div class="muse-graph-visual" id="week-graph" aria-label="Minutes practised per day over the last 7 days"></div>
+                    <p class="muse-stat-note" id="time-point-summary">Start recording to track days</p>
                 </div>
                 <div class="muse-graph-card">
-                    <h3>User Growth Graph</h3>
-                    <div class="muse-graph-visual">
-                        <span id="growth-summary">🚀 Accuracy +12% this week</span>
-                    </div>
+                    <h3>Accuracy Growth</h3>
+                    <div class="muse-graph-visual" id="growth-graph" aria-label="Accuracy of your recent sessions"></div>
+                    <p class="muse-stat-note" id="growth-summary">Complete a session to see progress</p>
                 </div>
             </div>
 
-            <div class="muse-heatmap-card">
-                <h3>🔥 Trending HeatMaps: Top 3 Trends</h3>
-                <div class="muse-heatmap-items">
-                    <div class="muse-trend-row">
-                        <span class="muse-trend-rank">#1</span>
-                        <span class="muse-trend-name">Hip-Hop Sync & Beats</span>
-                        <span class="muse-trend-badge">98% Hot</span>
-                    </div>
-                    <div class="muse-trend-row">
-                        <span class="muse-trend-rank">#2</span>
-                        <span class="muse-trend-name">Contemporary Flow</span>
-                        <span class="muse-trend-badge">85% Hot</span>
-                    </div>
-                    <div class="muse-trend-row">
-                        <span class="muse-trend-rank">#3</span>
-                        <span class="muse-trend-name">Classical Piano Rhythm</span>
-                        <span class="muse-trend-badge">72% Hot</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+      
+
+            
 
         <p class="profile-footer">Small steps. Every day. <span aria-hidden="true">✦</span></p>
     </main>
@@ -201,5 +192,5 @@
 
     <script src="../JS/chat.js"></script>
 </body>
-
 </html>
+

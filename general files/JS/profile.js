@@ -161,54 +161,116 @@
         } catch (error) { /* Ignore malformed data from other tabs. */ }
     });
 
-    /* Stats come from the sessions saved with "Save session" on the Features
-       page (pose-sync.js stores them under muse.syncHistory, scores 0-1). */
+        /* Stats come from muse.syncHistory (scores 0-1). pose-sync.js adds a session there automatically each
+       time an uploaded recording finishes analyzing, and when "Save session" is pressed on the Features page.
+       This page redraws whenever that list changes: on load, on tab focus/return, and when another tab saves. */
     const SYNC_HISTORY_KEY = 'muse.syncHistory';
-    const percent = value => (value * 100).toFixed(1) + '%';
+    const DAY = 86400000;
+    const percent = value => Math.round(value * 100) + '%';
 
     function readSessions() {
         try {
             const sessions = JSON.parse(localStorage.getItem(SYNC_HISTORY_KEY)) || [];
-            return Array.isArray(sessions) ? sessions.filter(session => typeof session.avg === 'number') : [];
+            return Array.isArray(sessions)
+                ? sessions.filter(s => s && typeof s.avg === 'number' && typeof s.date === 'number') : [];
         } catch (error) { return []; }
     }
+    const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+    const mean = (list, key) => list.reduce((sum, item) => sum + (item[key] || 0), 0) / list.length;
 
-    function setText(id, text) {
-        const element = document.getElementById(id);
-        if (element) element.textContent = text;
+    function formatDuration(seconds) {
+        if (seconds < 60) return `${Math.round(seconds)} sec`;
+        if (seconds < 3600) return `${Math.round(seconds / 60)} min`;
+        return `${(seconds / 3600).toFixed(1)} hrs`;
+    }
+
+    function setBar(name, value) {
+        const fill = document.getElementById('bar-' + name);
+        if (fill) fill.style.width = value == null ? '0%' : Math.round(value * 100) + '%';
+        setText('val-' + name, value == null ? '--' : percent(value));
+    }
+
+    /* Bars: minutes practised on each of the last 7 days. */
+    function renderWeek(sessions) {
+        const holder = document.getElementById('week-graph');
+        if (!holder) return;
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const days = Array.from({ length: 7 }, (_, i) => {
+            const start = today.getTime() - (6 - i) * DAY;
+            const secs = sessions.filter(s => s.date >= start && s.date < start + DAY)
+                .reduce((sum, s) => sum + (s.secs || 0), 0);
+            return { start, secs, label: new Date(start).toLocaleDateString(undefined, { weekday: 'narrow' }) };
+        });
+        const max = Math.max(60, ...days.map(day => day.secs));
+        holder.innerHTML = days.map(day => `
+            <div class="muse-mini-col" title="${new Date(day.start).toLocaleDateString()}: ${formatDuration(day.secs)}">
+                <span class="muse-mini-bar${day.secs ? '' : ' empty'}" style="height:${day.secs ? Math.max(10, Math.round(day.secs / max * 100)) : 6}%"></span>
+                <span class="muse-mini-label">${day.label}</span>
+            </div>`).join('');
+        const active = days.filter(day => day.secs > 0).length;
+        setText('time-point-summary', active
+            ? `Active on ${active} of the last 7 days`
+            : 'Start recording to track days');
+    }
+
+    /* Line + soft area: accuracy of up to the last 12 sessions. */
+    function renderGrowth(sessions) {
+        const holder = document.getElementById('growth-graph');
+        if (!holder) return;
+        const recent = sessions.slice(-12);
+        if (recent.length < 2) {
+            holder.innerHTML = '<span class="muse-graph-empty">' + (recent.length ? 'One more session to draw your line' : 'No sessions yet') + '</span>';
+            setText('growth-summary', recent.length ? 'Analyze another session to see growth' : 'Complete a session to see progress');
+            return;
+        }
+        const W = 200, H = 60, pad = 6;
+        const x = i => pad + i / (recent.length - 1) * (W - pad * 2);
+        const y = v => pad + (1 - v) * (H - pad * 2);
+        const points = recent.map((s, i) => `${x(i).toFixed(1)},${y(s.avg).toFixed(1)}`);
+        holder.innerHTML = `
+            <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-hidden="true">
+                <polygon points="${x(0)},${H - pad} ${points.join(' ')} ${x(recent.length - 1)},${H - pad}" class="muse-line-area"/>
+                <polyline points="${points.join(' ')}" class="muse-line"/>
+                <circle cx="${x(recent.length - 1).toFixed(1)}" cy="${y(recent[recent.length - 1].avg).toFixed(1)}" r="3" class="muse-line-dot"/>
+            </svg>`;
+        const change = Math.round((recent[recent.length - 1].avg - recent[0].avg) * 100);
+        setText('growth-summary', `Accuracy ${change >= 0 ? '+' : ''}${change}% over your last ${recent.length} sessions`);
     }
 
     function renderStats() {
-        const sessions = readSessions();
-        const totalSeconds = sessions.reduce((sum, session) => sum + (session.secs || 0), 0);
+        const sessions = readSessions().sort((a, b) => a.date - b.date);
+        const totalSeconds = sessions.reduce((sum, s) => sum + (s.secs || 0), 0);
         setText('stat-sessions', sessions.length);
-        setText('stat-learning-time', `${(totalSeconds / 3600).toFixed(1)} hrs`);
+        setText('stat-learning-time', formatDuration(totalSeconds));
+        renderWeek(sessions);
+        renderGrowth(sessions);
 
         if (!sessions.length) {
-            setText('stat-accuracy', '0%');
-            setText('time-point-summary', '📈 Start recording to track days');
-            setText('growth-summary', '🚀 Complete a session to see progress');
+            setText('stat-accuracy', '--');
+            setText('stat-best', '--');
+            ['timing', 'align', 'energy'].forEach(name => setBar(name, null));
+            setText('stat-focus', 'Analyze a recording on the Features page to see your numbers here.');
             return;
         }
-        const average = sessions.reduce((sum, session) => sum + session.avg, 0) / sessions.length;
-        setText('stat-accuracy', percent(average));
+        setText('stat-accuracy', percent(mean(sessions, 'avg')));
+        setText('stat-best', percent(Math.max(...sessions.map(s => s.avg))));
+        const averages = { timing: mean(sessions, 'timing'), align: mean(sessions, 'align'), energy: mean(sessions, 'energy') };
+        Object.entries(averages).forEach(([name, value]) => setBar(name, value));
 
-        const weekAgo = Date.now() - 7 * 86400000;
-        const activeDays = new Set(sessions.filter(session => session.date >= weekAgo)
-            .map(session => new Date(session.date).toDateString())).size;
-        setText('time-point-summary', `📈 Active on ${activeDays} recent day${activeDays === 1 ? '' : 's'}`);
-
-        if (sessions.length === 1) {
-            setText('growth-summary', '🚀 Save another session to see growth');
-        } else {
-            const change = Math.round((sessions[sessions.length - 1].avg - sessions[0].avg) * 100);
-            setText('growth-summary', `🚀 Accuracy ${change >= 0 ? '+' : ''}${change}% since first session`);
-        }
+        const weakest = Object.entries(averages).sort((a, b) => a[1] - b[1])[0];
+        const hints = {
+            timing: 'Timing is your weakest area: try starting each move a touch earlier.',
+            align: 'Align is your weakest area: watch the dancer\'s angles and copy them closely.',
+            energy: 'Energy is your weakest area: make your moves bigger and sharper.'
+        };
+        setText('stat-focus', weakest[1] >= 0.85 ? 'Excellent across the board. Keep it up!' : hints[weakest[0]]);
     }
 
     renderStats();
+    document.addEventListener('muse:statsupdate', renderStats);
     window.addEventListener('storage', event => {
         if (event.key === SYNC_HISTORY_KEY || event.key === null) renderStats();
     });
     window.addEventListener('pageshow', renderStats);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) renderStats(); });
 })();
