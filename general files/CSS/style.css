@@ -5102,6 +5102,20 @@ body:has(.profile-avatar-dialog[open]) {
   font-size: 0.8rem;
   cursor: pointer;
 }
+.muse-session-foot { display: flex; justify-content: flex-end; margin-top: 16px; }
+.muse-session-delete {
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 120, 140, 0.35);
+  background: transparent;
+  color: #ff9aaa;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.muse-session-delete:hover { border-color: rgba(255, 120, 140, 0.7); background: rgba(255, 120, 140, 0.1); }
+.muse-session-delete.confirming { border-color: #ff7a8c; background: rgba(255, 120, 140, 0.2); color: #fff; }
 .muse-session-card .sync-chart svg { display: block; cursor: crosshair; }
 .muse-chart-axis { fill: rgba(255, 255, 255, 0.45); font-size: 11px; }
 .muse-chart-avg { stroke: rgba(248, 184, 216, 0.7); stroke-width: 1; stroke-dasharray: 4 4; }

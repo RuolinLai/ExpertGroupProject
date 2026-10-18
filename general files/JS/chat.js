@@ -89,7 +89,10 @@
     async function collectStats() {
         const profile = readJSON('muse.profile.v1', {});
         const streak = window.MUSE?.streak?.get?.() || readJSON('muse.visitStreak.v1', null);
-        const syncSessions = readJSON('muse.syncHistory', []);
+        const stored = readJSON('muse.syncHistory', []);
+        // same check as profile.js: number date, 0-1 score (older test entries used other formats)
+        const syncSessions = (Array.isArray(stored) ? stored : [])
+            .filter(s => s && Number.isFinite(s.date) && Number.isFinite(s.avg) && s.avg >= 0 && s.avg <= 1);
         const videos = await readGallery();
         return {
             username: profile.username || 'MUSE Dancer',

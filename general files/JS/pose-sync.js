@@ -851,8 +851,15 @@
 
     /* ---------- session report in the Analyzer card ---------- */
     const SYNC_HISTORY_KEY = 'muse.syncHistory';
+    /* Only entries written by syncCommitSession count: a number date and a 0-1 score. Older test code saved
+       some with a text date and a 0-100 score, which showed up as "7000" and "NaN/NaN". Saving the next
+       session writes this filtered list back, so those entries are cleaned out of storage too. */
+    const syncValidEntry = h => h && Number.isFinite(h.date) && Number.isFinite(h.avg) && h.avg >= 0 && h.avg <= 1;
     function syncHistory() {
-        try { return JSON.parse(localStorage.getItem(SYNC_HISTORY_KEY) || '[]'); } catch (e) { return []; }
+        try {
+            const hist = JSON.parse(localStorage.getItem(SYNC_HISTORY_KEY) || '[]');
+            return Array.isArray(hist) ? hist.filter(syncValidEntry) : [];
+        } catch (e) { return []; }
     }
     function syncAvg() {
         if (!sess.n) return null;

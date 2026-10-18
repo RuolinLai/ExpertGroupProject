@@ -173,7 +173,7 @@
         try {
             const sessions = JSON.parse(localStorage.getItem(SYNC_HISTORY_KEY)) || [];
             return Array.isArray(sessions)
-                ? sessions.filter(s => s && typeof s.avg === 'number' && typeof s.date === 'number') : [];
+                ? sessions.filter(s => s && Number.isFinite(s.date) && Number.isFinite(s.avg) && s.avg >= 0 && s.avg <= 1) : [];
         } catch (error) { return []; }
     }
     const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
@@ -314,7 +314,7 @@
     const clock = sec => Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
     const labelFor = o => o >= 0.85 ? 'Excellent sync!' : o >= 0.7 ? 'Good sync' : o >= 0.5 ? 'Getting there' : 'Out of sync';
     const sessionEl = Object.fromEntries(['select', 'prev', 'next', 'empty', 'detail', 'ring', 'score', 'label',
-        'hint', 'meta', 'timing', 'align', 'energy', 'chart', 'parts', 'tips']
+        'hint', 'meta', 'timing', 'align', 'energy', 'chart', 'parts', 'tips', 'delete']
         .map(name => [name, document.getElementById('session-' + name)]));
     let allSessions = [];
     let shownIndex = -1;
@@ -365,7 +365,35 @@
     function showSession(index) {
         shownIndex = Math.max(0, Math.min(allSessions.length - 1, index));
         followNewest = shownIndex === allSessions.length - 1;
+        resetDeleteButton();
         renderSessionHistory();
+    }
+
+    /* Delete asks twice: the first click arms the button, a second click within a few seconds deletes.
+       Sessions are matched by their save time, which pose-sync.js sets once per session. */
+    let deleteTimer = 0;
+    function resetDeleteButton() {
+        clearTimeout(deleteTimer);
+        if (!sessionEl.delete) return;
+        sessionEl.delete.classList.remove('confirming');
+        sessionEl.delete.textContent = 'Delete this session';
+    }
+    function deleteShownSession() {
+        const s = allSessions[shownIndex];
+        if (!s) return;
+        if (!sessionEl.delete.classList.contains('confirming')) {
+            sessionEl.delete.classList.add('confirming');
+            sessionEl.delete.textContent = 'Click again to delete';
+            deleteTimer = setTimeout(resetDeleteButton, 4000);
+            return;
+        }
+        resetDeleteButton();
+        try {
+            const stored = JSON.parse(localStorage.getItem(SYNC_HISTORY_KEY)) || [];
+            localStorage.setItem(SYNC_HISTORY_KEY, JSON.stringify(stored.filter(x => !(x && x.date === s.date))));
+        } catch (error) { return; }
+        followNewest = shownIndex >= allSessions.length - 1;   // show the next one, or the newest if it was the last
+        renderStats();
     }
 
     /* score over time, drawn like the Analyzer's chart: 0/50/100% grid, dashed session average, hover tooltip */
@@ -477,6 +505,7 @@
         sessionEl.next.addEventListener('click', () => showSession(shownIndex + 1));
         sessionEl.chart.addEventListener('mousemove', sessionChartHover);
         sessionEl.chart.addEventListener('mouseleave', sessionChartLeave);
+        sessionEl.delete?.addEventListener('click', deleteShownSession);
     }
 
     /* the SVG graphs are drawn at pixel size, so redraw them when their boxes change size */
