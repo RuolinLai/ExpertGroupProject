@@ -349,7 +349,8 @@
         sessionEl.score.textContent = percent(s.avg);
         sessionEl.label.textContent = labelFor(s.avg) + ' (session average)';
         sessionEl.hint.textContent = new Date(s.date).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
-            + (s.source === 'manual' ? ' · saved with “Save session”' : s.source === 'recording' ? ' · analyzed recording' : '');
+            + (s.source === 'manual' ? ' · saved with “Save session”' : s.source === 'recording' ? ' · analyzed recording'
+                : s.source === 'camera' ? ' · camera, full video' : '');
         sessionEl.meta.textContent = 'Danced ' + clock(s.secs || 0)
             + (typeof s.lag === 'number' ? ' · on average ' + s.lag.toFixed(2) + 's behind' : '')
             + (s.mirror ? ' · mirror mode' : '');

@@ -392,7 +392,11 @@
                     e.target.setVolume(Math.round(parseFloat(pbVol?.value ?? '1') * 100));
                     if (pbMuted) e.target.mute();
                 },
-                onStateChange: updatePlayIcon,
+                onStateChange: e => {
+                    updatePlayIcon();
+                    // pose-sync.js ends the camera session when the video finishes
+                    if (e.data === YT.PlayerState.ENDED) document.dispatchEvent(new Event('muse:videoended'));
+                },
                 onError: e => setLinkStatus(youTubeErrorMessage(e && e.data), true)
             }
         });
@@ -426,6 +430,9 @@
         }
     });
 
+    // pose-sync.js turns the skeleton on. Tab sharing needs a click, and this runs right after the Load click.
+    const linkLoaded = () => document.dispatchEvent(new Event('muse:linkloaded'));
+
     linkForm?.addEventListener('submit', async e => {
         e.preventDefault();
         const raw = linkInput.value.trim();
@@ -440,15 +447,18 @@
                 setLinkStatus('Loading YouTube video…', false);
                 await loadYouTube(info.id, info.vertical);
                 setLinkStatus('Now learning from YouTube. ' + LINK_HINT, false);
+                linkLoaded();
             } else if (info.type === 'tiktok') {
-                // TikTok's current embed player (the old /embed/v2/ page often stays black); loop=1 replays it
-                loadIframe('https://www.tiktok.com/player/v1/' + info.id + '?loop=1&rel=0&music_info=0&description=0');
-                setLinkStatus('Now learning from TikTok. It loops by itself; use the player’s own controls. Mirror still works.', false);
+                // TikTok's current embed player (the old /embed/v2/ page often stays black); loop=0 so it plays once
+                loadIframe('https://www.tiktok.com/player/v1/' + info.id + '?loop=0&rel=0&music_info=0&description=0');
+                setLinkStatus('Now learning from TikTok. Use the player’s own controls. Mirror still works.', false);
+                linkLoaded();
             } else if (info.type === 'tiktok-short') {
                 setLinkStatus('Short TikTok links (vm.tiktok.com) can’t be read. Open it in your browser and copy the full link that contains /video/.', true);
             } else if (info.type === 'instagram') {
                 loadIframe('https://www.instagram.com/' + info.kind + '/' + info.id + '/embed');
                 setLinkStatus('Now learning from Instagram. Use the player’s own controls; when it ends, press Replay to watch it again here. Mirror still works.', false);
+                linkLoaded();
             }
         } catch (err) {
             setLinkStatus(err.message || 'Could not load that video.', true);

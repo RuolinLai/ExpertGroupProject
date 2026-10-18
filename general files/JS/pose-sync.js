@@ -48,7 +48,7 @@
     const vpCapCtx = vpCapOverlay.getContext('2d');
     let vpCapKind = 'element';             // 'element' = skeleton on the video, 'region' = separate Pose view
     const VP_HINT = 'Upload a dance video: the dancer is tracked automatically. Skeleton On / Off only shows or hides it.';
-    const VP_LINK_HINT = 'Links: press Skeleton once, then choose \u201cThis tab\u201d and Share in the window your browser shows (browsers only allow this after a click). Needs Chrome or Edge 132+ on a computer.';
+    const VP_LINK_HINT = 'Links: after Load, choose \u201cThis tab\u201d and Share in the window your browser shows (if it does not appear, press Skeleton). Needs Chrome or Edge 132+ on a computer.';
     const VP_COLORS = [['#c4b0ff', '#f8b8d8'], ['#8fe3d0', '#ffe08a']];   // line / dot colours per person
     let vpLandmarker = null, vpLoading = null;
     let vpOn = false, vpGen = 0, vpMode = 'file';   // vpOn = tracking the dancer (runs in the background)
@@ -449,7 +449,7 @@
         }, err => vpFail('Could not analyse the captured video: ', err));
     }
 
-    async function vpStartCapture() {
+    async function vpStartCapture(auto) {
         const hasElement = !!(window.RestrictionTarget && RestrictionTarget.fromElement);   // Chrome / Edge 132+
         const hasRegion = !!(window.CropTarget && CropTarget.fromElement);                  // Chrome / Edge 104+
         const canCapture = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) && (hasElement || hasRegion);
@@ -490,6 +490,13 @@
         } catch (err) {
             if (stream) stream.getTracks().forEach(t => t.stop());
             vpBtn.disabled = false;
+            // started by Load: the browser may refuse because the click was too long ago (InvalidStateError)
+            if (auto) {
+                vpSetStatus(err && err.name === 'NotAllowedError'
+                    ? 'Sharing was cancelled. Press Skeleton any time to track the dancer.'
+                    : 'Press Skeleton, then choose “This tab” and Share to track the dancer.');
+                return;
+            }
             vpSetStatus(err && err.name === 'NotAllowedError'
                 ? 'Sharing was cancelled, so the skeleton could not start.'
                 : 'Could not capture the player: ' + (err.message || err) + ' Choose \u201cThis tab\u201d in the sharing window.', true);
@@ -574,6 +581,12 @@
         vpShow = !vpShow;
         vpApplyShow();
         if (vpMode === 'file' && !vpOn) vpStartFile();   // e.g. the model failed to load earlier: try again
+    });
+
+    /* video-editor.js: a link was just loaded with the Load click, so ask to share the tab right away
+       (already tracking from an earlier link: the capture keeps going) */
+    document.addEventListener('muse:linkloaded', () => {
+        if (vpMode !== 'file' && !vpOn && !vpBtn.disabled) vpStartCapture(true);
     });
 
     /* =========================================================
@@ -759,6 +772,11 @@
         b.c.per.forEach((s, i) => { if (s != null) syncSegFit[i] += (s - syncSegFit[i]) * k; });
 
         if (paused) return;                // the session report only counts time the dancer is playing
+        if (sess.ended) {                  // the practice video finished: keep that report until it plays again
+            if (syncRefs[syncRefs.length - 1].t <= sess.endT) return;
+            sess = syncNewSession();
+            syncEl.saveNote.textContent = '';
+        }
         sess.n++;
         for (const key in sess.sum) sess.sum[key] += cur[key];
         if (moving) { sess.lagSum += lag; sess.lagN++; }
@@ -1026,7 +1044,7 @@
         const hard = syncHardestPart();
         const entry = {
             date: Date.now(), avg: a.overall, align: a.align, timing: a.timing, energy: a.energy, secs: a.secs,
-            source,                                                     // 'recording' (auto) or 'manual'
+            source,                                                     // 'recording' / 'camera' (auto) or 'manual'
             parts: a.parts.filter(p => p.v != null).map(p => ({ name: p.name, v: p.v })),
             // the rest lets the Profile page's Session History show the full Analyzer report later
             lag: sess.lagN ? r3(a.lag) : null, mirror: syncMirror,
@@ -1064,6 +1082,21 @@
         syncEl.saveNote.textContent = '';
         syncRenderReport();
     });
+
+    /* With the camera, one session = one play-through of the practice video: when the video ends the
+       session is saved to the Profile stats, and the next play starts a new one (see syncAddCam). */
+    function syncCameraEnded() {
+        if (!camRunning() || recState !== 'idle' || sess.ended) return;
+        const a = syncAvg();
+        const saved = a && sess.n >= 20 ? syncCommitSession('camera') : null;
+        sess.ended = true; sess.endT = performance.now();
+        syncEl.saveNote.textContent = saved
+            ? 'Video finished: ' + syncPct(a.overall) + ' saved to your stats. Play the video again for a new session.'
+            : 'Video finished, but there was not enough to score. Play the video again for a new session.';
+        syncRenderReport();
+    }
+    vpVideo.addEventListener('ended', syncCameraEnded);
+    document.addEventListener('muse:videoended', syncCameraEnded);   // YouTube (video-editor.js)
 
     /* =========================================================
        ANALYZE AN UPLOADED RECORDING OF YOURSELF
