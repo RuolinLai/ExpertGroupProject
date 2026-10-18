@@ -214,9 +214,10 @@
             : 'Start recording to track days');
     }
 
-    /* Line + soft area: accuracy of up to the last 12 sessions. */
+    /* Line + soft area: accuracy of up to the last 12 sessions, with each score above its point and the
+       session number below. Drawn at the box's real pixel size so the labels never stretch. */
     function renderGrowth(sessions) {
-        const holder = document.getElementById('growth-graph');
+        const holder = document.getElementById('growth-graph-visual');
         if (!holder) return;
         const recent = sessions.slice(-12);
         if (recent.length < 2) {
@@ -224,27 +225,278 @@
             setText('growth-summary', recent.length ? 'Analyze another session to see growth' : 'Complete a session to see progress');
             return;
         }
-        const W = 200, H = 60, pad = 6;
-        const x = i => pad + i / (recent.length - 1) * (W - pad * 2);
-        const y = v => pad + (1 - v) * (H - pad * 2);
-        const points = recent.map((s, i) => `${x(i).toFixed(1)},${y(s.avg).toFixed(1)}`);
+        const W = holder.clientWidth, H = holder.clientHeight;
+        if (!W || !H) return;
+        const first = sessions.length - recent.length + 1;            // same numbering as Session History
+        const padX = 20, top = 24, bottom = 26;
+        const x = i => padX + i / (recent.length - 1) * (W - padX * 2);
+        const y = v => top + (1 - v) * (H - top - bottom);
+        const points = recent.map((s, i) => `${x(i).toFixed(1)},${y(s.avg).toFixed(1)}`).join(' ');
+        const grid = [0, 0.5, 1].map(v =>
+            `<line x1="${padX}" x2="${W - padX}" y1="${y(v)}" y2="${y(v)}" class="muse-growth-grid"/>`).join('');
+        const marks = recent.map((s, i) => {
+            const latest = i === recent.length - 1;
+            return `
+                <circle cx="${x(i).toFixed(1)}" cy="${y(s.avg).toFixed(1)}" r="${latest ? 4.5 : 3.5}"
+                    class="muse-growth-dot${latest ? ' latest' : ''}"><title>Session ${first + i}: ${percent(s.avg)}</title></circle>
+                <text x="${x(i).toFixed(1)}" y="${(y(s.avg) - 9).toFixed(1)}" class="muse-growth-score">${percent(s.avg)}</text>
+                <text x="${x(i).toFixed(1)}" y="${H - 8}" class="muse-growth-session">S${first + i}</text>`;
+        }).join('');
         holder.innerHTML = `
-            <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-hidden="true">
-                <polygon points="${x(0)},${H - pad} ${points.join(' ')} ${x(recent.length - 1)},${H - pad}" class="muse-line-area"/>
-                <polyline points="${points.join(' ')}" class="muse-line"/>
-                <circle cx="${x(recent.length - 1).toFixed(1)}" cy="${y(recent[recent.length - 1].avg).toFixed(1)}" r="3" class="muse-line-dot"/>
+            <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img"
+                aria-label="Overall score for sessions ${first} to ${sessions.length}">
+                ${grid}
+                <polygon points="${x(0)},${y(0)} ${points} ${x(recent.length - 1)},${y(0)}" class="muse-line-area"/>
+                <polyline points="${points}" class="muse-line"/>
+                ${marks}
             </svg>`;
         const change = Math.round((recent[recent.length - 1].avg - recent[0].avg) * 100);
         setText('growth-summary', `Accuracy ${change >= 0 ? '+' : ''}${change}% over your last ${recent.length} sessions`);
     }
 
+    /* Radar: average score for each body part pose-sync.js tracks (stored in each session's "parts"). */
+    const RADAR_PARTS = ['left arm', 'right arm', 'left leg', 'right leg', 'upper body'];
+    let radarChart = null;
+
+    function renderRadar(sessions) {
+        const canvas = document.getElementById('skillRadarCanvas');
+        if (!canvas || typeof Chart === 'undefined') return;
+        const values = RADAR_PARTS.map(name => {
+            const scores = sessions.flatMap(s => (s.parts || [])
+                .filter(p => p.name === name && typeof p.v === 'number').map(p => p.v));
+            return scores.length ? Math.round(scores.reduce((sum, v) => sum + v, 0) / scores.length * 100) : 0;
+        });
+        if (radarChart) {
+            radarChart.data.datasets[0].data = values;
+            radarChart.update();
+            return;
+        }
+        radarChart = new Chart(canvas, {
+            type: 'radar',
+            data: {
+                labels: RADAR_PARTS.map(name => name.replace(/\b\w/g, c => c.toUpperCase())),
+                datasets: [{
+                    label: 'Average score',
+                    data: values,
+                    backgroundColor: 'rgba(196, 176, 255, 0.25)',
+                    borderColor: '#c4b0ff',
+                    pointBackgroundColor: '#ff7ebb',
+                    pointBorderColor: '#120e18',
+                    pointHoverBackgroundColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 100,
+                        angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        pointLabels: { color: 'rgba(255, 255, 255, 0.75)', font: { size: 11 } },
+                        ticks: { display: false, stepSize: 25 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: item => `${item.raw}%` } }
+                }
+            }
+        });
+    }
+
+    /* Session History: the same report as the Features page's Synchronization Analyzer, for any saved
+       session. Timeline, lag, energy direction and hardest part are only saved by newer versions of
+       pose-sync.js, so older sessions show those parts as unavailable. */
+    const pct = value => typeof value === 'number' ? percent(value) : '--';
+    const clock = sec => Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
+    const labelFor = o => o >= 0.85 ? 'Excellent sync!' : o >= 0.7 ? 'Good sync' : o >= 0.5 ? 'Getting there' : 'Out of sync';
+    const sessionEl = Object.fromEntries(['select', 'prev', 'next', 'empty', 'detail', 'ring', 'score', 'label',
+        'hint', 'meta', 'timing', 'align', 'energy', 'chart', 'parts', 'tips']
+        .map(name => [name, document.getElementById('session-' + name)]));
+    let allSessions = [];
+    let shownIndex = -1;
+    let followNewest = true;               // keep showing the newest session until another one is picked
+
+    function sessionTitle(s, i) {
+        const d = new Date(s.date);
+        return `Session ${i + 1} · ${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}, `
+            + `${d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })} · ${percent(s.avg)}`;
+    }
+
+    function renderSessionHistory() {
+        if (!sessionEl.select) return;
+        const sessions = allSessions;
+        sessionEl.empty.hidden = sessions.length > 0;
+        sessionEl.detail.hidden = !sessions.length;
+        if (!sessions.length) {
+            sessionEl.select.innerHTML = '';
+            sessionEl.prev.disabled = sessionEl.next.disabled = sessionEl.select.disabled = true;
+            return;
+        }
+        if (followNewest || shownIndex < 0 || shownIndex >= sessions.length) shownIndex = sessions.length - 1;
+        sessionEl.select.innerHTML = sessions.map((s, i) => `<option value="${i}">${sessionTitle(s, i)}</option>`)
+            .reverse().join('');                                        // newest first in the list
+        sessionEl.select.value = String(shownIndex);
+        sessionEl.select.disabled = false;
+        sessionEl.prev.disabled = shownIndex === 0;
+        sessionEl.next.disabled = shownIndex === sessions.length - 1;
+
+        const s = sessions[shownIndex];
+        sessionEl.ring.style.setProperty('--p', Math.round(s.avg * 100));
+        sessionEl.score.textContent = percent(s.avg);
+        sessionEl.label.textContent = labelFor(s.avg) + ' (session average)';
+        sessionEl.hint.textContent = new Date(s.date).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+            + (s.source === 'manual' ? ' · saved with “Save session”' : s.source === 'recording' ? ' · analyzed recording' : '');
+        sessionEl.meta.textContent = 'Danced ' + clock(s.secs || 0)
+            + (typeof s.lag === 'number' ? ' · on average ' + s.lag.toFixed(2) + 's behind' : '')
+            + (s.mirror ? ' · mirror mode' : '');
+        sessionEl.timing.textContent = pct(s.timing);
+        sessionEl.align.textContent = pct(s.align);
+        sessionEl.energy.textContent = pct(s.energy);
+        renderSessionChart(s);
+        renderSessionParts(s);
+        sessionEl.tips.innerHTML = sessionTips(s).map(t => '<li>' + t + '</li>').join('');
+    }
+
+    function showSession(index) {
+        shownIndex = Math.max(0, Math.min(allSessions.length - 1, index));
+        followNewest = shownIndex === allSessions.length - 1;
+        renderSessionHistory();
+    }
+
+    /* score over time, drawn like the Analyzer's chart: 0/50/100% grid, dashed session average, hover tooltip */
+    function renderSessionChart(s) {
+        const box = sessionEl.chart;
+        const pts = Array.isArray(s.samples) ? s.samples.filter(p => typeof p.s === 'number' && typeof p.o === 'number') : [];
+        box.geom = null;
+        if (pts.length < 4) {
+            box.innerHTML = '<div class="sync-chart-empty"><p class="sync-empty">' + (Array.isArray(s.samples)
+                ? 'This session was too short to draw a timeline.'
+                : 'No timeline was saved for this session (it was recorded before timelines were kept).') + '</p></div>';
+            return;
+        }
+        const W = box.clientWidth, H = box.clientHeight;
+        if (!W || !H) return;
+        const L = 34, R = 8, T = 8, B = 20, pw = W - L - R, ph = H - T - B;
+        const s0 = pts[0].s, s1 = pts[pts.length - 1].s, span = Math.max(1, s1 - s0);
+        const X = p => L + (p.s - s0) / span * pw, Y = v => T + ph * (1 - v);
+        const line = pts.map(p => `${X(p).toFixed(1)},${Y(p.o).toFixed(1)}`).join(' ');
+        const grid = [0, 50, 100].map(v => `
+            <line x1="${L}" x2="${W - R}" y1="${Y(v / 100)}" y2="${Y(v / 100)}" class="muse-growth-grid"/>
+            <text x="${L - 6}" y="${Y(v / 100)}" class="muse-chart-axis" text-anchor="end" dominant-baseline="middle">${v}%</text>`).join('');
+        box.innerHTML = `
+            <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Score over time">
+                ${grid}
+                <text x="${L}" y="${H - 5}" class="muse-chart-axis">${clock(s0)}</text>
+                <text x="${W - R}" y="${H - 5}" class="muse-chart-axis" text-anchor="end">${clock(s1)}</text>
+                <polygon points="${X(pts[0])},${Y(0)} ${line} ${X(pts[pts.length - 1])},${Y(0)}" class="muse-line-area"/>
+                <polyline points="${line}" class="muse-line"/>
+                <line x1="${L}" x2="${W - R}" y1="${Y(s.avg)}" y2="${Y(s.avg)}" class="muse-chart-avg"/>
+                <text x="${W - R}" y="${Y(s.avg) - 4}" class="muse-chart-avg-label" text-anchor="end">avg ${percent(s.avg)}</text>
+                <g class="muse-chart-hover" visibility="hidden"><line y1="${T}" y2="${T + ph}"/><circle r="5"/></g>
+            </svg>
+            <div class="sync-tip" hidden></div>`;
+        box.geom = { pts, X, Y, L, pw, s0, span };
+    }
+
+    function sessionChartHover(event) {
+        const box = sessionEl.chart, g = box.geom;
+        if (!g) return;
+        const r = box.getBoundingClientRect();
+        const at = g.s0 + (event.clientX - r.left - g.L) / g.pw * g.span;
+        const p = g.pts.reduce((best, q) => Math.abs(q.s - at) < Math.abs(best.s - at) ? q : best);
+        const hover = box.querySelector('.muse-chart-hover'), tip = box.querySelector('.sync-tip');
+        const x = g.X(p);
+        hover.setAttribute('visibility', 'visible');
+        hover.querySelector('line').setAttribute('x1', x);
+        hover.querySelector('line').setAttribute('x2', x);
+        hover.querySelector('circle').setAttribute('cx', x);
+        hover.querySelector('circle').setAttribute('cy', g.Y(p.o));
+        tip.hidden = false;
+        tip.innerHTML = `<b>${percent(p.o)}</b> overall<br>Timing ${pct(p.t)} · Align ${pct(p.a)} · Energy ${pct(p.e)}<br>`
+            + (p.v != null ? 'video ' + clock(p.v) : 'at ' + clock(p.s));
+        tip.style.left = Math.min(Math.max(0, x - 90), r.width - 190) + 'px';
+    }
+
+    function sessionChartLeave() {
+        sessionEl.chart.querySelector('.muse-chart-hover')?.setAttribute('visibility', 'hidden');
+        const tip = sessionEl.chart.querySelector('.sync-tip');
+        if (tip) tip.hidden = true;
+    }
+
+    /* body parts: one bar per part, weakest one marked (same markup as the Analyzer) */
+    function renderSessionParts(s) {
+        if (!Array.isArray(s.parts) || !s.parts.length) {
+            sessionEl.parts.innerHTML = '<p class="sync-empty">No body-part data was saved for this session.</p>';
+            return;
+        }
+        const parts = RADAR_PARTS.map(name => {
+            const saved = s.parts.find(p => p.name === name);
+            return { name, v: saved && typeof saved.v === 'number' ? saved.v : null };
+        });
+        const weakest = parts.filter(p => p.v != null).reduce((w, p) => (!w || p.v < w.v ? p : w), null);
+        sessionEl.parts.innerHTML = parts.map(p => `
+            <div class="sync-part${p === weakest && p.v < 0.8 ? ' weak' : ''}" title="${p.name}: ${p.v == null ? 'not visible' : percent(p.v)}">
+                <span class="sync-part-name">${p.name}</span>
+                <span class="sync-part-track"><span class="sync-part-fill" style="width:${p.v == null ? 0 : Math.round(p.v * 100)}%"></span></span>
+                <span class="sync-part-val">${p.v == null ? '–' : percent(p.v)}</span>
+            </div>`).join('');
+    }
+
+    /* the Analyzer's tips, worked out from what was saved with the session */
+    function sessionTips(s) {
+        const tips = [];
+        const parts = (s.parts || []).filter(p => typeof p.v === 'number');
+        const weakest = parts.reduce((w, p) => (!w || p.v < w.v ? p : w), null);
+        if (weakest && weakest.v < 0.75)
+            tips.push(`Your <b>${weakest.name}</b> matched the least (${percent(weakest.v)}). Watch only the dancer's ${weakest.name} for a few counts and copy its angle.`);
+        if (s.timing < 0.8 && s.lag > 0.25)
+            tips.push(`You were about <b>${s.lag.toFixed(1)}s behind</b> on average. Learn the moves at 0.5x in the Speed box, then speed up, and try to start each move a little earlier.`);
+        if (s.energy < 0.75)
+            tips.push(s.moves === 'smaller'
+                ? 'Your moves were <b>smaller or softer</b> than the dancer\'s. Go bigger: stretch your arms fully and hit each move harder.'
+                : s.moves === 'bigger'
+                    ? 'You were <b>moving more</b> than the dancer. Keep the moves controlled and stop sharply where the dancer stops.'
+                    : 'Your <b>energy</b> did not match the dancer\'s. Copy the size and sharpness of each move.');
+        if (s.hardest && s.hardest.m < 0.75)
+            tips.push(`Hardest part: <b>${clock(s.hardest.from)}–${clock(s.hardest.from + 5)}</b> of the video (${percent(s.hardest.m)}). Drag the timeline there on the Features page and loop it.`);
+        if (!tips.length)
+            tips.push(s.avg >= 0.85
+                ? 'Great session! For a challenge, try 1.25x in the Speed box or turn off Mirror.'
+                : 'Solid work. Keep practising this section until the score stays above 85%.');
+        return tips;
+    }
+
+    if (sessionEl.select) {
+        sessionEl.select.addEventListener('change', () => showSession(Number(sessionEl.select.value)));
+        sessionEl.prev.addEventListener('click', () => showSession(shownIndex - 1));
+        sessionEl.next.addEventListener('click', () => showSession(shownIndex + 1));
+        sessionEl.chart.addEventListener('mousemove', sessionChartHover);
+        sessionEl.chart.addEventListener('mouseleave', sessionChartLeave);
+    }
+
+    /* the SVG graphs are drawn at pixel size, so redraw them when their boxes change size */
+    if (window.ResizeObserver) {
+        const growthBox = document.getElementById('growth-graph-visual');
+        if (growthBox) new ResizeObserver(() => renderGrowth(allSessions)).observe(growthBox);
+        if (sessionEl.chart) new ResizeObserver(() => {
+            if (allSessions[shownIndex]) renderSessionChart(allSessions[shownIndex]);
+        }).observe(sessionEl.chart);
+    }
+
     function renderStats() {
         const sessions = readSessions().sort((a, b) => a.date - b.date);
+        allSessions = sessions;
         const totalSeconds = sessions.reduce((sum, s) => sum + (s.secs || 0), 0);
         setText('stat-sessions', sessions.length);
         setText('stat-learning-time', formatDuration(totalSeconds));
         renderWeek(sessions);
         renderGrowth(sessions);
+        renderRadar(sessions);
+        renderSessionHistory();
 
         if (!sessions.length) {
             setText('stat-accuracy', '--');

@@ -154,7 +154,7 @@
                         <div class="muse-radar-container">
                             <canvas id="skillRadarCanvas"></canvas>
                         </div>
-                        <p class="muse-stat-note">Visualizes your balance across core performance dimensions.</p>
+                        <p class="muse-stat-note">Your average score for each body part across all sessions.</p>
                     </div>
 
                     <!-- Average Breakdown Card -->
@@ -211,7 +211,7 @@
                     </div>
 
                     <!-- User Growth Graph Card -->
-                    <div class="muse-graph-card">
+                    <div class="muse-graph-card muse-growth-card">
                         <h3>User Growth Graph</h3>
                         <div class="muse-graph-visual" id="growth-graph-visual">
                             <!-- SVG renders inside here -->
@@ -223,6 +223,51 @@
 
                 </div>
 
+            </div>
+
+            <!-- Session History Card: the Features page's Analyzer report for any saved session -->
+            <div class="muse-graph-card muse-session-card">
+                <div class="muse-session-head">
+                    <h3>✦ Session History</h3>
+                    <div class="muse-session-nav">
+                        <button type="button" class="muse-session-step" id="session-prev"
+                            aria-label="Previous session">‹</button>
+                        <select class="muse-session-select" id="session-select" aria-label="Choose a session"></select>
+                        <button type="button" class="muse-session-step" id="session-next"
+                            aria-label="Next session">›</button>
+                    </div>
+                </div>
+
+                <p class="sync-empty" id="session-empty">Analyze a recording on the Features page to see each
+                    session here.</p>
+
+                <div id="session-detail" hidden>
+                    <div class="sync-panel">
+                        <div class="sync-ring" id="session-ring">
+                            <div class="sync-ring-inner" id="session-score">--</div>
+                        </div>
+                        <div class="sync-summary">
+                            <p class="sync-label" id="session-label"></p>
+                            <p class="sync-hint" id="session-hint"></p>
+                            <p class="sync-meta" id="session-meta"></p>
+                        </div>
+                    </div>
+
+                    <div class="sync-stats">
+                        <div class="sync-stat">Timing <span id="session-timing">--</span></div>
+                        <div class="sync-stat">Align <span id="session-align">--</span></div>
+                        <div class="sync-stat">Energy <span id="session-energy">--</span></div>
+                    </div>
+
+                    <h4 class="sync-h">Score over time</h4>
+                    <div class="sync-chart" id="session-chart"></div>
+
+                    <h4 class="sync-h">Body parts</h4>
+                    <div class="sync-parts" id="session-parts"></div>
+
+                    <h4 class="sync-h">Tips</h4>
+                    <ul class="sync-tips" id="session-tips"></ul>
+                </div>
             </div>
         </section>
 
@@ -251,64 +296,8 @@
         </dialog>
 
         <!-- JavaScript Libraries & Custom Scripts -->
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const canvas = document.getElementById('skillRadarCanvas');
-                if (!canvas) return;
-
-                const ctx = canvas.getContext('2d');
-
-                // Skill Radar global initialization bound directly to window object
-                window.skillRadarChart = new Chart(ctx, {
-                    type: 'radar',
-                    data: {
-                        labels: ['Timing', 'Alignment', 'Energy', 'Pitch', 'Consistency'],
-                        datasets: [{
-                            label: 'Current Skills',
-                            data: [0, 0, 0, 0, 0],
-                            backgroundColor: 'rgba(196, 176, 255, 0.25)',
-                            borderColor: '#c4b0ff',
-                            pointBackgroundColor: '#ff7ebb',
-                            pointBorderColor: '#120e18',
-                            pointHoverBackgroundColor: '#fff',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            r: {
-                                angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
-                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                                pointLabels: {
-                                    color: 'rgba(255, 255, 255, 0.75)',
-                                    font: { size: 11 }
-                                },
-                                ticks: { display: false, beginAtZero: true, max: 100 }
-                            }
-                        },
-                        plugins: {
-                            legend: { display: false }
-                        }
-                    }
-                });
-
-                // Trigger complete dashboard update if script function is available
-                if (typeof window.updateDashboardStats === 'function') {
-                    try {
-                        const syncHistory = JSON.parse(localStorage.getItem('muse.syncHistory')) ||
-                            JSON.parse(localStorage.getItem('muse.sessions')) || [];
-                        if (syncHistory.length > 0) {
-                            window.updateDashboardStats(syncHistory[syncHistory.length - 1]);
-                        }
-                    } catch (e) {
-                        console.warn('Could not auto-load session stats:', e);
-                    }
-                }
-            });
-        </script>
+        <!-- Chart.js draws the Skill Radar; profile.js builds and updates it -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 
         <!-- Floating Side Toggle Button -->
         <button id="toggle-chat-btn" class="chat-trigger-btn">

@@ -1016,13 +1016,24 @@
            /* Writes the current session into muse.syncHistory. The Profile page reads this same list to build
        its statistics, so every saved session updates those numbers. Returns the saved entry (or null). */
     const SYNC_HISTORY_MAX = 100;
+    const SYNC_SAVED_SAMPLES = 120;        // timeline points kept per saved session (keeps localStorage small)
     function syncCommitSession(source) {
         const a = syncAvg();
         if (!a || sess.n < 20 || sess.saved) return null;
+        const r3 = v => v == null ? null : Math.round(v * 1000) / 1000;
+        const r1 = v => v == null ? null : Math.round(v * 10) / 10;
+        const step = Math.max(1, Math.ceil(sess.samples.length / SYNC_SAVED_SAMPLES));
+        const hard = syncHardestPart();
         const entry = {
             date: Date.now(), avg: a.overall, align: a.align, timing: a.timing, energy: a.energy, secs: a.secs,
             source,                                                     // 'recording' (auto) or 'manual'
-            parts: a.parts.filter(p => p.v != null).map(p => ({ name: p.name, v: p.v }))
+            parts: a.parts.filter(p => p.v != null).map(p => ({ name: p.name, v: p.v })),
+            // the rest lets the Profile page's Session History show the full Analyzer report later
+            lag: sess.lagN ? r3(a.lag) : null, mirror: syncMirror,
+            moves: sess.camSpd < sess.refSpd ? 'smaller' : 'bigger',
+            hardest: hard ? { from: hard.from, m: r3(hard.m) } : null,
+            samples: sess.samples.filter((p, i) => i % step === 0 || i === sess.samples.length - 1)
+                .map(p => ({ s: r1(p.s), v: r1(p.v), o: r3(p.o), a: r3(p.a), t: r3(p.t), e: r3(p.e) }))
         };
         const hist = syncHistory();
         hist.push(entry);
@@ -1358,26 +1369,3 @@
     vpUpdateBtn();
     vpStartFile();
 })();
-
-// Call this function inside pose-sync.js when a recording session finishes:
-function saveCompletedSession(scores) {
-    const syncHistory = JSON.parse(localStorage.getItem('muse.syncHistory')) || [];
-
-    const newSession = {
-        date: new Date().toISOString(),
-        timing: scores.timing || 85,
-        align: scores.align || scores.alignment || 85,
-        energy: scores.energy || 85,
-        pitch: scores.pitch || Math.round(((scores.timing || 85) + (scores.align || 85)) / 2),
-        consistency: scores.consistency || Math.round(((scores.timing || 85) + (scores.align || 85) + (scores.energy || 85)) / 3),
-        avg: scores.avg || scores.overall || Math.round(((scores.timing || 85) + (scores.align || 85) + (scores.energy || 85)) / 3)
-    };
-
-    syncHistory.push(newSession);
-    localStorage.setItem('muse.syncHistory', JSON.stringify(syncHistory));
-
-    // Instantly refresh profile graphs if active
-    if (typeof window.updateDashboardStats === 'function') {
-        window.updateDashboardStats(newSession);
-    }
-}

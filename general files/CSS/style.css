@@ -794,10 +794,22 @@ html.auth-pending body {
   aspect-ratio: 21 / 9;
 }
 
-/* The two smaller cards share one shape so the row lines up, placeholder included. */
-#features .shot:not(.big) .shot-img,
-#features .shot:not(.big) .media-slot {
-  aspect-ratio: 13 / 12;
+/* The two smaller cards: each card's width follows its screenshot's shape (--r = width / height), so both
+   images show in full at the same height. flex-basis 30px is the card's padding + border, which leaves the
+   leftover width to be shared in proportion to --r. */
+.shots-row {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 28px;
+}
+
+.shots-row .shot {
+  flex: var(--r, 1) 1 30px;
+  min-width: 0;
+}
+
+.shots-row .shot-img {
+  aspect-ratio: var(--r, 1);
 }
 
 .shot-bar {
@@ -1041,6 +1053,14 @@ html.auth-pending body {
   .shots,
   .about {
     grid-template-columns: 1fr;
+  }
+
+  .shots-row {
+    flex-direction: column;
+  }
+
+  .shots-row .shot {
+    flex: none;
   }
 
   .shot.big .media-slot {
@@ -4401,7 +4421,7 @@ body:has(.profile-avatar-dialog[open]) {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  align-items: start;
+  align-items: stretch;   /* both columns share one height so the last cards line up at the bottom */
 }
 
 /* Right Column Stack */
@@ -5025,3 +5045,71 @@ body:has(.profile-avatar-dialog[open]) {
 .muse-line-area { fill: rgba(196, 176, 255, 0.12); stroke: none; }
 .muse-line-dot { fill: none; stroke: var(--pink); stroke-width: 7; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .muse-graph-empty { align-self: center; font-size: 0.78rem; color: rgba(255, 255, 255, 0.45); text-align: center; }
+
+/* User Growth card: grows so its bottom edge lines up with Average Breakdown; the graph takes the extra height */
+.muse-growth-card { flex: 1; }
+.muse-graph-card #growth-graph-visual {
+  position: relative;
+  flex: 1;
+  height: auto;
+  min-height: 170px;
+  padding: 0;
+  align-items: center;
+}
+#growth-graph-visual svg { position: absolute; inset: 0; }
+.muse-growth-grid { stroke: rgba(255, 255, 255, 0.08); stroke-width: 1; stroke-dasharray: 3 3; }
+.muse-growth-dot { fill: var(--purple, #c4b0ff); stroke: #120e18; stroke-width: 1.5; }
+.muse-growth-dot.latest { fill: var(--pink, #ff7ebb); }
+.muse-growth-score { fill: rgba(255, 255, 255, 0.85); font-size: 10px; font-weight: 600; text-anchor: middle; }
+.muse-growth-session { fill: rgba(255, 255, 255, 0.45); font-size: 9px; text-anchor: middle; }
+
+/* Session History card (reuses the Analyzer's .sync-* styles for the report itself) */
+.muse-session-card { margin-top: 16px; min-height: 0 !important; }
+.muse-session-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.muse-session-head h3 { margin: 0; }
+.muse-session-nav { display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; }
+.muse-session-step {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.muse-session-step:hover:not(:disabled) { border-color: rgba(196, 176, 255, 0.5); background: rgba(196, 176, 255, 0.12); }
+.muse-session-step:disabled { opacity: 0.35; cursor: default; }
+.muse-session-select {
+  min-width: 0;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #120e18;
+  color: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.muse-session-card .sync-chart svg { display: block; cursor: crosshair; }
+.muse-chart-axis { fill: rgba(255, 255, 255, 0.45); font-size: 11px; }
+.muse-chart-avg { stroke: rgba(248, 184, 216, 0.7); stroke-width: 1; stroke-dasharray: 4 4; }
+.muse-chart-avg-label { fill: rgba(255, 255, 255, 0.7); font-size: 11px; }
+.muse-chart-hover line { stroke: rgba(255, 255, 255, 0.35); }
+.muse-chart-hover circle { fill: #c4b0ff; stroke: #120e18; stroke-width: 2; }
+@media (max-width: 560px) {
+  .muse-session-nav { width: 100%; }
+  .muse-session-select { flex: 1; }
+  .muse-session-card .sync-panel { flex-direction: column; text-align: center; }
+}
