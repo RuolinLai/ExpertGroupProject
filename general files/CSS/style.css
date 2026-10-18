@@ -4329,252 +4329,199 @@ body:has(.profile-avatar-dialog[open]) {
   overflow: hidden;
 }
 
-/* ---------- Profile stats ---------- */
-/* Same glass cards, pastel tokens and bar style as the Analyzer card on the Features page. */
+/* ---------- Profile Stats (Aligned with Profile Card Theme) ---------- */
 
 .muse-statistics-section {
-  margin-top: 28px;
   width: 100%;
+  max-width: 1080px;
+  margin: 40px auto 0;
+  padding-top: 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   color: #fff;
 }
 
+/* Section Title */
 .stats-main-title {
-  margin-bottom: 14px;
-  font-size: var(--font-size-m);
-  font-weight: var(--font-weight-semi-bold);
-  color: #fff;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.5px;
 }
 
+/* 4-Card Quick Stat Bar */
 .muse-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
+/* Shared Glassmorphism Card Style */
 .muse-stat-card,
 .muse-breakdown-card,
-.muse-graph-card,
-.muse-heatmap-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.025));
+.muse-graph-card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
-  backdrop-filter: blur(14px);
+  border-radius: 22px;
+  backdrop-filter: blur(18px);
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
+/* Quick Stat Cards */
 .muse-stat-card {
-  padding: 16px 8px;
+  padding: 20px 12px;
   text-align: center;
-  transition: transform .2s ease, border-color .2s ease;
 }
+
 .muse-stat-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(196, 176, 255, 0.4);
+  border-color: rgba(196, 176, 255, 0.35);
 }
 
 .muse-stat-number {
   display: block;
-  margin-bottom: 4px;
-  font-size: 1.15rem;
-  font-weight: var(--font-weight-bold);
+  margin-bottom: 6px;
+  font-size: 1.35rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  background: linear-gradient(120deg, var(--pink), var(--purple) 60%, var(--blue));
+  background: linear-gradient(120deg, var(--pink, #ff7ebb), var(--purple, #c4b0ff) 60%, var(--blue, #70a5ff));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .muse-stat-label {
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Two-Column Side-by-Side Dashboard Layout */
+.muse-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Right Column Stack */
+.muse-graphs-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .muse-breakdown-card,
-.muse-graph-card,
-.muse-heatmap-card {
-  padding: 16px;
+.muse-graph-card {
+  padding: 24px;
 }
-.muse-breakdown-card { margin-bottom: 12px; }
 
 .muse-breakdown-card h3,
-.muse-graph-card h3,
-.muse-heatmap-card h3 {
-  margin-bottom: 12px;
+.muse-graph-card h3 {
+  margin-bottom: 16px;
   font-size: 0.85rem;
-  font-weight: var(--font-weight-medium);
-  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
 }
 
+/* Progress Bars */
 .muse-breakdown {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
+
 .muse-bar-row {
   display: grid;
-  grid-template-columns: 56px 1fr 40px;
+  grid-template-columns: 60px 1fr 40px;
   align-items: center;
-  gap: 10px;
-  font-size: 0.82rem;
+  gap: 12px;
+  font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.75);
 }
+
 .muse-bar-track {
   height: 8px;
-  border-radius: 4px;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
+
 .muse-bar-fill {
   display: block;
-  width: 0;
+  width: 0%;
   height: 100%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--purple), var(--pink));
-  transition: width .5s ease;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--purple, #c4b0ff), var(--pink, #ff7ebb));
+  transition: width 0.5s ease;
 }
+
 .muse-bar-val {
   text-align: right;
   font-variant-numeric: tabular-nums;
   color: #fff;
+  font-size: 0.8rem;
 }
 
 .muse-stat-note {
-  margin: 12px 0 0;
-  font-size: 0.78rem;
+  margin-top: 18px;
+  font-size: 0.72rem;
   line-height: 1.4;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.muse-graphs-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-
-
-.muse-mini-col {
-  flex: 1;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 4px;
-}
-.muse-mini-bar {
-  display: block;
-  width: 100%;
-  max-height: calc(100% - 16px);
-  border-radius: 4px 4px 0 0;
-  background: var(--purple);
-  transition: height .4s ease;
-}
-.muse-mini-bar.empty { background: rgba(255, 255, 255, 0.1); }
-.muse-mini-col:last-child .muse-mini-bar:not(.empty) { background: var(--pink); }
-.muse-mini-label {
-  font-size: 0.62rem;
   color: rgba(255, 255, 255, 0.45);
 }
 
-.muse-line {
-  fill: none;
-  stroke: var(--purple);
-  stroke-width: 2;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
-.muse-line-area { fill: rgba(196, 176, 255, 0.12); stroke: none; }
-.muse-line-dot { fill: var(--pink); stroke: #120e18; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
-.muse-graph-empty { align-self: center; font-size: 0.78rem; color: rgba(255, 255, 255, 0.45); text-align: center; }
-
-.muse-heatmap-items {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.muse-trend-row {
+/* Graph Placeholders & Visuals */
+.muse-graph-visual {
+  min-height: 100px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 9px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  font-size: 0.85rem;
+  justify-content: center;
 }
-.muse-trend-rank {
-  width: 28px;
-  font-weight: var(--font-weight-bold);
-  color: var(--pink);
+
+.muse-graph-empty {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
 }
-.muse-trend-name {
-  flex-grow: 1;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: var(--font-weight-medium);
-}
+
 .muse-trend-badge {
-  padding: 2px 10px;
+  padding: 4px 12px;
   border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: var(--font-weight-semi-bold);
-  color: var(--purple);
-  background: rgba(196, 176, 255, 0.12);
-  border: 1px solid rgba(196, 176, 255, 0.3);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--purple, #c4b0ff);
+  background: rgba(196, 176, 255, 0.1);
+  border: 1px solid rgba(196, 176, 255, 0.25);
 }
 
-@media (max-width: 768px) {
-  .muse-stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .muse-graphs-row { grid-template-columns: 1fr; }
+/* ---------- Skill Radar Canvas Container ---------- */
+.muse-radar-container {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  height: 260px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* ---------- Profile responsive ---------- */
-
-@media (max-width: 700px) {
-  .profile-page {
-    padding-top: 30px;
-  }
+.muse-radar-container canvas {
+  max-width: 100% !important;
+  max-height: 100% !important;
 }
 
-@media (max-width: 420px) {
-  .profile-page {
-    padding-inline: 16px;
-  }
-
-  .profile-card {
-    padding: 29px 23px 12px;
-    border-radius: 22px;
-  }
-
-  .profile-input-meta {
-    font-size: 0.6rem;
-    gap: 8px;
-  }
-
-  .profile-week {
-    gap: 5px;
-  }
-
-  .profile-avatar-dialog {
-    padding: 22px 18px;
-  }
-
-  .profile-avatar-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
-  }
-
-  .profile-dialog-foot {
-    flex-direction: column-reverse;
-    align-items: stretch;
-    text-align: center;
+/* Responsive Collapsing */
+@media (max-width: 860px) {
+  .muse-dashboard-grid {
+    grid-template-columns: 1fr;
   }
 }
 
-
+@media (max-width: 640px) {
+  .muse-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 /* =========================================================
    11. KEYFRAME ANIMATIONS
    ========================================================= */

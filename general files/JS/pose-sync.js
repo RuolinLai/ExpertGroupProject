@@ -1358,3 +1358,26 @@
     vpUpdateBtn();
     vpStartFile();
 })();
+
+// Call this function inside pose-sync.js when a recording session finishes:
+function saveCompletedSession(scores) {
+    const syncHistory = JSON.parse(localStorage.getItem('muse.syncHistory')) || [];
+
+    const newSession = {
+        date: new Date().toISOString(),
+        timing: scores.timing || 85,
+        align: scores.align || scores.alignment || 85,
+        energy: scores.energy || 85,
+        pitch: scores.pitch || Math.round(((scores.timing || 85) + (scores.align || 85)) / 2),
+        consistency: scores.consistency || Math.round(((scores.timing || 85) + (scores.align || 85) + (scores.energy || 85)) / 3),
+        avg: scores.avg || scores.overall || Math.round(((scores.timing || 85) + (scores.align || 85) + (scores.energy || 85)) / 3)
+    };
+
+    syncHistory.push(newSession);
+    localStorage.setItem('muse.syncHistory', JSON.stringify(syncHistory));
+
+    // Instantly refresh profile graphs if active
+    if (typeof window.updateDashboardStats === 'function') {
+        window.updateDashboardStats(newSession);
+    }
+}

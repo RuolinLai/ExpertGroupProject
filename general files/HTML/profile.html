@@ -18,7 +18,7 @@
             if (localStorage.getItem("muse.authenticated.v1") === "true") {
                 document.documentElement.classList.add("auth-cached");
             }
-        } catch {}
+        } catch { }
     </script>
 
 </head>
@@ -62,12 +62,16 @@
             <div class="profile-avatar-section">
                 <button class="profile-avatar-button" id="chooseAvatar" type="button"
                     aria-label="Change profile picture" aria-haspopup="dialog">
-                    <img id="profileAvatar" src="../../assets/avatars/avatar-01.webp" alt="Quokka profile picture" width="160" height="160">
+                    <img id="profileAvatar" src="../../assets/avatars/avatar-01.webp" alt="Quokka profile picture"
+                        width="160" height="160">
                     <span class="profile-avatar-edit" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 5l4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15v5Z"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M15 5l4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15v5Z" />
+                        </svg>
                     </span>
                 </button>
-                <button class="profile-text-button" id="changeAvatar" type="button">Change picture <span aria-hidden="true">↗</span></button>
+                <button class="profile-text-button" id="changeAvatar" type="button">Change picture <span
+                        aria-hidden="true">↗</span></button>
             </div>
 
             <div class="profile-username-section">
@@ -75,7 +79,9 @@
                 <div class="profile-username-field">
                     <input id="profileUsername" type="text" value="MUSE Dancer" autocomplete="nickname"
                         spellcheck="false" enterkeyhint="done" aria-describedby="usernameHelp usernameCount">
-                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 5l4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15v5Z"/></svg>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                        <path d="M15 5l4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15v5Z" />
+                    </svg>
                 </div>
                 <div class="profile-input-meta">
                     <p id="usernameHelp">Changes save automatically.</p>
@@ -89,21 +95,34 @@
                     <span class="profile-today-badge"><span aria-hidden="true"></span> Checked in today</span>
                 </div>
                 <div class="profile-streak-value">
-                    <svg class="profile-flame" aria-hidden="true" viewBox="0 0 40 48" fill="none"><path d="M22 2c2 11 12 13 14 23 2 11-5 20-16 21C8 47 2 39 3 29c1-7 5-12 10-16-1 7 2 9 4 10 5-5 6-13 5-21Z" fill="url(#flameGradient)"/><path d="M21 25c1 5 7 7 7 12 0 5-4 8-8 8s-7-3-7-7c0-5 5-8 8-13Z" fill="#fff" fill-opacity=".65"/><defs><linearGradient id="flameGradient" x1="4" y1="45" x2="30" y2="3" gradientUnits="userSpaceOnUse"><stop stop-color="#c4b0ff"/><stop offset="1" stop-color="#f8b8d8"/></linearGradient></defs></svg>
+                    <svg class="profile-flame" aria-hidden="true" viewBox="0 0 40 48" fill="none">
+                        <path
+                            d="M22 2c2 11 12 13 14 23 2 11-5 20-16 21C8 47 2 39 3 29c1-7 5-12 10-16-1 7 2 9 4 10 5-5 6-13 5-21Z"
+                            fill="url(#flameGradient)" />
+                        <path d="M21 25c1 5 7 7 7 12 0 5-4 8-8 8s-7-3-7-7c0-5 5-8 8-13Z" fill="#fff"
+                            fill-opacity=".65" />
+                        <defs>
+                            <linearGradient id="flameGradient" x1="4" y1="45" x2="30" y2="3"
+                                gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#c4b0ff" />
+                                <stop offset="1" stop-color="#f8b8d8" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
                     <strong id="profileStreak">1</strong><span id="profileStreakUnit">day</span>
                 </div>
                 <p class="profile-streak-caption" id="streakCaption">Your first step. Keep the rhythm going.</p>
                 <div class="profile-week" id="profileWeek" aria-label="Your visits over the last seven days"></div>
             </section>
 
-           <p class="profile-status" id="profileStatus" role="status" aria-live="polite"></p>
+            <p class="profile-status" id="profileStatus" role="status" aria-live="polite"></p>
         </section>
 
-        <!-- Statistics Section -->
-    
-        <div class="muse-statistics-section">
+        <!-- Expanded Statistics Widescreen Dashboard Section -->
+        <section class="muse-statistics-section">
             <h2 class="stats-main-title">✦ User Statistics & Performance</h2>
 
+            <!-- Quick Stats 4-Column Bar -->
             <div class="muse-stats-grid">
                 <div class="muse-stat-card">
                     <span class="muse-stat-number" id="stat-learning-time">0 min</span>
@@ -123,100 +142,202 @@
                 </div>
             </div>
 
-            <div class="muse-breakdown-card">
-                <h3>Average Breakdown</h3>
-                <div class="muse-breakdown" id="stat-breakdown">
-                    <div class="muse-bar-row"><span class="muse-bar-name">Timing</span><span class="muse-bar-track"><span class="muse-bar-fill" id="bar-timing"></span></span><span class="muse-bar-val" id="val-timing">--</span></div>
-                    <div class="muse-bar-row"><span class="muse-bar-name">Align</span><span class="muse-bar-track"><span class="muse-bar-fill" id="bar-align"></span></span><span class="muse-bar-val" id="val-align">--</span></div>
-                    <div class="muse-bar-row"><span class="muse-bar-name">Energy</span><span class="muse-bar-track"><span class="muse-bar-fill" id="bar-energy"></span></span><span class="muse-bar-val" id="val-energy">--</span></div>
+            <!-- Dashboard Layout Grid: Balanced 2-Column Structure -->
+            <div class="muse-dashboard-grid">
+
+                <!-- Left Side Column: Metrics & Skill Matrix -->
+                <div class="muse-graphs-column">
+
+                    <!-- Skill Radar Card -->
+                    <div class="muse-breakdown-card">
+                        <h3>✦ Performance Shape (Skill Radar)</h3>
+                        <div class="muse-radar-container">
+                            <canvas id="skillRadarCanvas"></canvas>
+                        </div>
+                        <p class="muse-stat-note">Visualizes your balance across core performance dimensions.</p>
+                    </div>
+
+                    <!-- Average Breakdown Card -->
+                    <div class="muse-breakdown-card">
+                        <h3>Average Breakdown</h3>
+                        <div class="muse-breakdown" id="stat-breakdown">
+                            <div class="muse-bar-row">
+                                <span class="muse-bar-name">Timing</span>
+                                <span class="muse-bar-track"><span class="muse-bar-fill" id="bar-timing"></span></span>
+                                <span class="muse-bar-val" id="val-timing">--</span>
+                            </div>
+                            <div class="muse-bar-row">
+                                <span class="muse-bar-name">Align</span>
+                                <span class="muse-bar-track"><span class="muse-bar-fill" id="bar-align"></span></span>
+                                <span class="muse-bar-val" id="val-align">--</span>
+                            </div>
+                            <div class="muse-bar-row">
+                                <span class="muse-bar-name">Energy</span>
+                                <span class="muse-bar-track"><span class="muse-bar-fill" id="bar-energy"></span></span>
+                                <span class="muse-bar-val" id="val-energy">--</span>
+                            </div>
+                        </div>
+                        <p class="muse-stat-note" id="stat-focus">Analyze a recording on the Features page to see your
+                            numbers here.</p>
+                    </div>
+
                 </div>
-                <p class="muse-stat-note" id="stat-focus">Analyze a recording on the Features page to see your numbers here.</p>
+
+                <!-- Right Side Column: Activity & Growth Visualizations -->
+                <div class="muse-graphs-column">
+
+                    <!-- Practice Weekly Bar Chart Container -->
+                    <div class="muse-graph-card">
+                        <h3>✦ Practice This Week</h3>
+                        <div class="muse-graph-visual" id="week-graph"
+                            aria-label="Minutes practised per day over the last 7 days">
+                            <!-- Default Empty State Structure -->
+                            <div class="muse-mini-col"><span class="muse-mini-bar empty"
+                                    style="height: 10%;"></span><span class="muse-mini-label">M</span></div>
+                            <div class="muse-mini-col"><span class="muse-mini-bar empty"
+                                    style="height: 10%;"></span><span class="muse-mini-label">T</span></div>
+                            <div class="muse-mini-col"><span class="muse-mini-bar empty"
+                                    style="height: 10%;"></span><span class="muse-mini-label">W</span></div>
+                            <div class="muse-mini-col"><span class="muse-mini-bar empty"
+                                    style="height: 10%;"></span><span class="muse-mini-label">T</span></div>
+                            <div class="muse-mini-col"><span class="muse-mini-bar empty"
+                                    style="height: 10%;"></span><span class="muse-mini-label">F</span></div>
+                            <div class="muse-mini-col"><span class="muse-mini-bar empty"
+                                    style="height: 10%;"></span><span class="muse-mini-label">S</span></div>
+                            <div class="muse-mini-col"><span class="muse-mini-bar empty"
+                                    style="height: 10%;"></span><span class="muse-mini-label">S</span></div>
+                        </div>
+                        <p class="muse-stat-note" id="time-point-summary">Start recording to track days</p>
+                    </div>
+
+                    <!-- User Growth Graph Card -->
+                    <div class="muse-graph-card">
+                        <h3>User Growth Graph</h3>
+                        <div class="muse-graph-visual" id="growth-graph-visual">
+                            <!-- SVG renders inside here -->
+                        </div>
+                        <div style="text-align: center; margin-top: 10px;">
+                            <span id="growth-summary" class="muse-trend-badge">No sessions recorded yet</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Footer Actions -->
+        <footer class="profile-footer-container">
+            <p class="profile-footer">Small steps. Every day. <span aria-hidden="true">✦</span></p>
+            <button id="profile-logout-button" class="profile-logout-button" type="button">Log out</button>
+        </footer>
+
+        <!-- Avatar Dialog Picker -->
+        <dialog class="profile-avatar-dialog" id="avatarDialog" aria-labelledby="avatarDialogTitle">
+            <div class="profile-dialog-head">
+                <div>
+                    <h2 id="avatarDialogTitle">Pick your <span class="shimmer">MUSE</span></h2>
+                </div>
+                <button class="profile-dialog-close" id="closeAvatarDialog" type="button"
+                    aria-label="Close avatar picker">×</button>
+            </div>
+            <div class="profile-avatar-grid" id="avatarGrid" role="group" aria-label="Profile picture options"></div>
+            <div class="profile-dialog-foot">
+                <a href="https://ipaslogo.com/" target="_blank" rel="noopener noreferrer">Characters by IP as Logo ↗</a>
+                <button class="profile-save-button" id="saveAvatar" type="button">
+                    Use this picture <span aria-hidden="true">✦</span>
+                </button>
+            </div>
+        </dialog>
+
+        <!-- JavaScript Libraries & Custom Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const canvas = document.getElementById('skillRadarCanvas');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+
+                // Skill Radar global initialization bound directly to window object
+                window.skillRadarChart = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Timing', 'Alignment', 'Energy', 'Pitch', 'Consistency'],
+                        datasets: [{
+                            label: 'Current Skills',
+                            data: [0, 0, 0, 0, 0],
+                            backgroundColor: 'rgba(196, 176, 255, 0.25)',
+                            borderColor: '#c4b0ff',
+                            pointBackgroundColor: '#ff7ebb',
+                            pointBorderColor: '#120e18',
+                            pointHoverBackgroundColor: '#fff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                pointLabels: {
+                                    color: 'rgba(255, 255, 255, 0.75)',
+                                    font: { size: 11 }
+                                },
+                                ticks: { display: false, beginAtZero: true, max: 100 }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+
+                // Trigger complete dashboard update if script function is available
+                if (typeof window.updateDashboardStats === 'function') {
+                    try {
+                        const syncHistory = JSON.parse(localStorage.getItem('muse.syncHistory')) ||
+                            JSON.parse(localStorage.getItem('muse.sessions')) || [];
+                        if (syncHistory.length > 0) {
+                            window.updateDashboardStats(syncHistory[syncHistory.length - 1]);
+                        }
+                    } catch (e) {
+                        console.warn('Could not auto-load session stats:', e);
+                    }
+                }
+            });
+        </script>
+
+        <!-- Floating Side Toggle Button -->
+        <button id="toggle-chat-btn" class="chat-trigger-btn">
+            💬 <span>Ask MUSE AI</span>
+        </button>
+
+        <!-- Sliding Collapsible Side Panel -->
+        <div id="side-chat-panel" class="side-panel">
+            <div class="panel-header">
+                <h3> MUSE AI Assistant</h3>
+                <button id="close-chat-btn" class="close-btn" type="button">&times;</button>
             </div>
 
-            <div class="muse-graphs-row">
-                <div class="muse-graph-card">
-                    <h3>✦ Practice This Week</h3>
-                    <div class="muse-graph-visual" id="week-graph" aria-label="Minutes practised per day over the last 7 days"></div>
-                    <p class="muse-stat-note" id="time-point-summary">Start recording to track days</p>
-                </div>
-                <div class="muse-graph-card">
-                    <h3>User Growth Graph</h3>
-                    <div class="muse-graph-visual">
-                        <span id="growth-summary">🚀 Accuracy +12% this week</span>
-                    </div>
-                </div>
+            <div id="chat-box" class="chat-box">
+                <div class="message ai-message">Hello! I'm your MUSE assistant. Ask me anything about your dance
+                    progress or stats!</div>
             </div>
 
-            <div class="muse-heatmap-card">
-                <h3>🔥 Trending HeatMaps: Top 3 Trends</h3>
-                <div class="muse-heatmap-items">
-                    <div class="muse-trend-row">
-                        <span class="muse-trend-rank">#1</span>
-                        <span class="muse-trend-name">Hip-Hop Sync & Beats</span>
-                        <span class="muse-trend-badge">98% Hot</span>
-                    </div>
-                    <div class="muse-trend-row">
-                        <span class="muse-trend-rank">#2</span>
-                        <span class="muse-trend-name">Contemporary Flow</span>
-                        <span class="muse-trend-badge">85% Hot</span>
-                    </div>
-                    <div class="muse-trend-row">
-                        <span class="muse-trend-rank">#3</span>
-                        <span class="muse-trend-name">Classical Piano Rhythm</span>
-                        <span class="muse-trend-badge">72% Hot</span>
-                    </div>
-                </div>
-            </div>
+            <form id="chat-form" class="chat-input-area">
+                <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" required />
+                <button type="submit" id="send-btn">Send</button>
+            </form>
         </div>
 
-        <p class="profile-footer">Small steps. Every day. <span aria-hidden="true">✦</span></p>
-        <button id="profile-logout-button" class="profile-logout-button" type="button">Log out</button>
-    </main>
-
-    <dialog class="profile-avatar-dialog" id="avatarDialog" aria-labelledby="avatarDialogTitle">
-        <div class="profile-dialog-head">
-            <div><h2 id="avatarDialogTitle">Pick your <span class="shimmer">MUSE</span></h2></div>
-            <button class="profile-dialog-close" id="closeAvatarDialog" type="button" aria-label="Close avatar picker">×</button>
-        </div>
-        <div class="profile-avatar-grid" id="avatarGrid" role="group" aria-label="Profile picture options"></div>
-        <div class="profile-dialog-foot">
-            <a href="https://ipaslogo.com/" target="_blank" rel="noopener noreferrer">Characters by IP as Logo ↗</a>
-            <button class="profile-save-button" id="saveAvatar" type="button">Use this picture <span aria-hidden="true">✦</span></button>
-        </div>
-    </dialog>
-
-    <!-- ============================================================ -->
-    <!--          AI CHATBOT SIDE PANEL & TRIGGER BUTTON              -->
-    <!-- ============================================================ -->
-    
-    <!-- Floating Side Toggle Button -->
-    <button id="toggle-chat-btn" class="chat-trigger-btn">
-        💬 <span>Ask MUSE AI</span>
-    </button>
-
-    <!-- Sliding Collapsible Side Panel -->
-    <div id="side-chat-panel" class="side-panel">
-        <div class="panel-header">
-            <h3> MUSE AI Assistant</h3>
-            <button id="close-chat-btn" class="close-btn" type="button">&times;</button>
-        </div>
-
-        <div id="chat-box" class="chat-box">
-            <div class="message ai-message">Hello! I'm your MUSE assistant. Ask me anything about your dance progress or stats!</div>
-        </div>
-
-        <form id="chat-form" class="chat-input-area">
-            <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" required />
-            <button type="submit" id="send-btn">Send</button>
-        </form>
-    </div>
-
-    <!-- Scripts -->
-    <script src="../JS/script.js"></script>
-    <script src="../JS/profile.js"></script>
-
-    <script src="../JS/chat.js"></script>
-    <script type="module" src="../JS/auth-ui.js"></script>
+        <!-- Scripts -->
+        <script src="../JS/script.js"></script>
+        <script src="../JS/profile.js"></script>
+        <script src="../JS/chat.js"></script>
+        <script type="module" src="../JS/auth-ui.js"></script>
 </body>
-</html>
 
+</html>
