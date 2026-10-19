@@ -207,6 +207,10 @@
                       - (camFrame.getBoundingClientRect().top - cam.getBoundingClientRect().top);
             if (gap > 0) camFrame.style.marginTop = gap + 'px';
         }
+        /* How far the camera box sits below the card's top, so the sticky card can stop with the box
+           (not the card's title) right under the navbar and the whole box stays on screen */
+        cam.style.setProperty('--cam-offset',
+            (camFrame.getBoundingClientRect().top - cam.getBoundingClientRect().top) + 'px');
     }
     if (videoFrame && camFrame && 'ResizeObserver' in window) {
         const ro = new ResizeObserver(syncCamFrame);

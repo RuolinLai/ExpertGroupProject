@@ -1749,10 +1749,11 @@ html.auth-pending body {
 }
 
 /* Side by side: the camera box is as tall as the video box and starts at the same height (both set from
-   script.js), and the camera card stays on screen while you scroll the editor's controls. */
+   script.js), and the camera box stays on screen while you scroll the editor's controls.
+   --cam-offset (set in video-editor.js) lifts the card so the box itself, not the title, stops under the navbar. */
 .dance-cam {
   position: sticky;
-  top: calc(var(--nav-h, 80px) + 12px);
+  top: calc(var(--nav-h, 80px) + 12px - var(--cam-offset, 0px));
 }
 
 .dance-cam .cam-frame {
