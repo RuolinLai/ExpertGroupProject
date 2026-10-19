@@ -859,6 +859,10 @@ html.auth-pending body {
   box-shadow: 0 0 80px rgba(196, 176, 255, 0.2), 0 25px 60px rgba(0, 0, 0, 0.6);
 }
 
+.demo>video {
+  border-radius: 18px;
+}
+
 .play {
   width: 84px;
   height: 84px;
